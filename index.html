@@ -133,6 +133,12 @@ details.note li{margin-bottom:4px}
 .snack .meta{font:400 .78rem var(--f-mono);color:var(--muted)}
 .snackrow{align-items:center}
 .snackrow input{width:70px}
+.ing-tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.ing-tools input{flex:1 1 220px;font:500 1rem var(--f-body);padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);min-width:0}
+.ing-tools select{font:500 .95rem var(--f-body);padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+table.ingtable{min-width:520px}
+.ihint{grid-column:1/-1;font-size:.76rem;color:var(--muted);margin-top:-2px}
+.ro{font:500 .95rem var(--f-body);padding:7px 0;color:var(--muted)}
 .recipe-sheet{max-width:620px}
 .rv-body{overflow-y:auto;display:flex;flex-direction:column;gap:14px;min-height:0}
 .rv-meta{font:400 .8rem var(--f-mono);color:var(--muted)}
@@ -192,6 +198,7 @@ textarea{font:500 .92rem var(--f-body);padding:8px 9px;border-radius:6px;border:
       <button role="tab" data-tab="house" aria-selected="false">Household</button>
       <button role="tab" data-tab="shop" aria-selected="false">Shopping list</button>
       <button role="tab" data-tab="recipes" aria-selected="false">Recipes</button>
+      <button role="tab" data-tab="ing" aria-selected="false">Ingredients</button>
       <button role="tab" data-tab="preg" aria-selected="false">Pregnancy</button>
       <button role="tab" data-tab="stores" aria-selected="false">Stores &amp; school</button>
     </nav>
@@ -203,9 +210,16 @@ textarea{font:500 .92rem var(--f-body);padding:8px 9px;border-radius:6px;border:
   <section id="tab-house" hidden></section>
   <section id="tab-shop" hidden></section>
   <section id="tab-recipes" hidden></section>
+  <section id="tab-ing" hidden></section>
   <section id="tab-preg" hidden></section>
   <section id="tab-stores" hidden></section>
 </main>
+<div class="sheet-bg" id="ingBg" hidden>
+ <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ieTitle">
+  <div class="sheet-head"><h3 id="ieTitle">Edit ingredient</h3><button class="btn small" id="ieClose">Close</button></div>
+  <div id="ieBody" class="rv-body"></div>
+ </div>
+</div>
 <div class="sheet-bg" id="recipeBg" hidden>
  <div class="sheet recipe-sheet" role="dialog" aria-modal="true" aria-labelledby="rvTitle">
   <div class="sheet-head"><h3 id="rvTitle"></h3><button class="btn small" id="rvClose">Close</button></div>
@@ -526,9 +540,11 @@ const BASE_R=[
  {id:"dpp",m:"d",n:"Pesto chicken pasta",t:25,i:[["pasta",100],["chicken_breast",120],["pesto",25],["spinach",15],["tomato",.5],["parmesan",8]],st:"Cook pasta. Pan-fry sliced chicken, toss with pasta, pesto, spinach and tomato. Top with parmesan. Contains nuts."},
 ];
 const BASE_C=Object.keys(C);
+const BASE_ORIG=JSON.parse(JSON.stringify(C));
 let R=[],RBY={};
 function syncCustom(){
  Object.keys(C).forEach(k=>{if(!BASE_C.includes(k))delete C[k]});
+ BASE_C.forEach(k=>{C[k]=Object.assign(JSON.parse(JSON.stringify(BASE_ORIG[k])),(S.ingEdits||{})[k]||{})});
  Object.entries(S.customIng||{}).forEach(([k,v])=>C[k]=v);
  R=BASE_R.concat(S.custom||[]);RBY=Object.fromEntries(R.map(r=>[r.id,r]));
  (S.custom||[]).forEach(r=>{if(r.preg)PREG[r.id]={avoid:"You marked this as containing a pregnancy high-risk food."};else delete PREG[r.id]});
@@ -618,6 +634,7 @@ const DEFAULT={
  rules:{nutFree:true,eggFree:false,crunch:true,adultLunch:true,snackCount:4,lunchKit:true},
  box:null,
  snacks:null,
+ ingEdits:{},
  postcode:"",
  plan:null,
  have:{},
@@ -628,7 +645,7 @@ if(!S)S=structuredClone(DEFAULT);
 S.custom=S.custom||[];S.customIng=S.customIng||{};
 /* Shared household: one document both of you read and write; this browser keeps a copy too */
 let firstSnap=true,ref=null,lastSent="",writing=false,again=false,canWrite=true,pushTimer=null,sharedExists=false;
-function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box}}
+function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{}}}
 function setSync(kind){
  const el=document.getElementById("sync");if(!el)return;el.className="sync";
  if(kind==="ok"){el.classList.add("ok");el.innerHTML=`<span class="dot"></span>Shared · up to date`}
@@ -1049,11 +1066,17 @@ function renderShop(){
 let rFilter="all",draft=null,niDraft=null,formErr="",savedMsg="",pendingDel=null;
 const UNIT_LABEL={g:"g",ml:"ml",ea:"each"};
 function blankDraft(){return {id:null,n:"",m:"d",t:30,serves:4,rows:[{id:"",q:""},{id:"",q:""},{id:"",q:""}],st:"",preg:false}}
+function packText(c){
+ if(c.u==="ea")return c.p===1?"each":"pack of "+c.p;
+ const big=c.u==="g"?"kg":"L",small=c.u==="g"?"g":"ml";
+ return c.p>=1000?(Math.round(c.p/10)/100).toString()+" "+big:c.p+" "+small;
+}
+function ingHint(id){const c=C[id];if(!c)return "";const pr=storePrices(c);return `${packText(c)} · ${STORES.map((st,i)=>`${st} ${money(pr[i])}`).join(" · ")}`}
 function ingOptions(sel){
  const ids=Object.keys(C).sort((a,b)=>C[a].n.localeCompare(C[b].n));
  return `<option value="">Choose an ingredient…</option>`+SECTIONS.map((sec,si)=>{
   const o=ids.filter(k=>C[k].s===si);if(!o.length)return "";
-  return `<optgroup label="${sec}">${o.map(k=>`<option value="${k}"${k===sel?" selected":""}>${esc(C[k].n)}</option>`).join("")}</optgroup>`;
+  return `<optgroup label="${sec}">${o.map(k=>`<option value="${k}"${k===sel?" selected":""}>${esc(C[k].n)}${/\d/.test(C[k].n)?"":" · "+packText(C[k])}</option>`).join("")}</optgroup>`;
  }).join("");
 }
 function formHTML(){
@@ -1068,7 +1091,7 @@ function formHTML(){
   <label class="fld"><span class="label">Minutes</span><input type="number" id="dr-t" data-dr="t" min="1" max="600" value="${d.t}"></label>
  </div>
  <div><span class="label">Ingredients</span></div>
- <div class="irows">${d.rows.map((r,i)=>`<div class="irow"><select id="dr-ing-${i}" data-dr="ing" data-i="${i}" aria-label="Ingredient ${i+1}">${ingOptions(r.id)}</select><input type="number" id="dr-q-${i}" data-dr="q" data-i="${i}" min="0" step="any" value="${esc(r.q)}" placeholder="Amount" aria-label="Amount for ingredient ${i+1}"><span class="unit" id="dr-u-${i}">${r.id&&C[r.id]?UNIT_LABEL[C[r.id].u]:""}</span><button type="button" class="reroll" data-act="del-row" data-i="${i}" aria-label="Remove ingredient ${i+1}">✕</button></div>`).join("")}</div>
+ <div class="irows">${d.rows.map((r,i)=>`<div class="irow"><select id="dr-ing-${i}" data-dr="ing" data-i="${i}" aria-label="Ingredient ${i+1}">${ingOptions(r.id)}</select><input type="number" id="dr-q-${i}" data-dr="q" data-i="${i}" min="0" step="any" value="${esc(r.q)}" placeholder="Amount" aria-label="Amount for ingredient ${i+1}"><span class="unit" id="dr-u-${i}">${r.id&&C[r.id]?UNIT_LABEL[C[r.id].u]:""}</span><button type="button" class="reroll" data-act="del-row" data-i="${i}" aria-label="Remove ingredient ${i+1}">✕</button><span class="ihint" id="dr-h-${i}">${r.id&&C[r.id]?esc(ingHint(r.id)):""}</span></div>`).join("")}</div>
  <div class="frow"><button type="button" class="btn small" data-act="add-row">Add another ingredient</button><button type="button" class="btn small" data-act="toggle-ni">${niDraft?"Close new ingredient":"Ingredient not listed? Add it"}</button></div>`;
  if(niDraft){const n=niDraft;
   h+=`<div class="sub-panel"><h3>New ingredient</h3><p class="note">Enter a typical pack and its price at each store you know. Leave a store blank if you're not sure, and the app will use your lowest price for it.</p>
@@ -1267,7 +1290,82 @@ function renderTotal(){
  const split=list.reduce((s,x)=>s+x.prices[x.best],0);
  $("#hdrTotal").innerHTML=list.length?`Week's groceries ≈ <b>${money(split)}</b>`:"";
 }
-function render(){renderWeek();renderHouse();renderShop();renderRecipes();renderPreg();renderStores();renderTotal()}
+/* ---------- Ingredients: see and edit pack sizes and prices ---------- */
+let ingQ="",ingSec="all",ie=null,ieMsg="";
+function usedIn(id){
+ const rs=R.filter(r=>r.i.some(([x])=>x===id)).map(r=>r.n);
+ const sn=SNACKS.filter(x=>x.i.some(([y])=>y===id)).map(x=>x.n+" (snack)");
+ const bx=[...BOX.f,...BOX.s,...BOX.x].filter(x=>x.i.some(([y])=>y===id)).map(x=>x.n+" (lunchbox)");
+ return rs.concat(sn,bx);
+}
+function isEdited(id){return !!(S.ingEdits&&S.ingEdits[id])}
+function renderIng(){
+ const el=$("#tab-ing");if(!el)return;
+ const q=ingQ.trim().toLowerCase();
+ const ids=Object.keys(C).filter(k=>(ingSec==="all"||C[k].s===+ingSec)&&(!q||C[k].n.toLowerCase().includes(q))).sort((a,b)=>C[a].s-C[b].s||C[a].n.localeCompare(C[b].n));
+ let h=`<div class="bar"><div><h2>Ingredients</h2><p class="lead">Every ingredient with its pack size and prices. Tap one to change its name, pack size or prices. Recipes, costs and the shopping list update straight away${gh?", and your other devices get the change too":""}.</p></div><button class="btn primary" id="ingAdd">Add an ingredient</button></div>
+ <div class="ing-tools"><input type="search" id="ingSearch" placeholder="Search ingredients, e.g. rice" value="${esc(ingQ)}" aria-label="Search ingredients" autocomplete="off">
+ <select id="ingSec" aria-label="Aisle"><option value="all">All aisles</option>${SECTIONS.map((x,i)=>`<option value="${i}"${String(i)===ingSec?" selected":""}>${x}</option>`).join("")}</select></div>`;
+ if(!ids.length)h+=`<div class="empty">No ingredients match "${esc(ingQ)}". Try another word, or add it with <b>Add an ingredient</b>.</div>`;
+ else{
+  h+=`<div class="tablewrap"><table class="ingtable"><thead><tr><th>Ingredient</th><th>Pack</th>${STORES.map(st=>`<th class="num">${st}</th>`).join("")}<th></th></tr></thead><tbody>`;
+  let sec=-1;
+  ids.forEach(k=>{const c=C[k];const pr=storePrices(c);
+   if(c.s!==sec){sec=c.s;h+=`<tr class="sec"><td colspan="${3+STORES.length}">${SECTIONS[sec]}</td></tr>`}
+   h+=`<tr><td>${esc(c.n)}${isEdited(k)?' <span class="tag preg">Edited</span>':""}${!BASE_C.includes(k)?' <span class="tag ok">Yours</span>':""}</td><td>${packText(c)}</td>${pr.map(v=>`<td class="num">${money(v)}</td>`).join("")}<td><button class="btn small" data-ingedit="${k}">Edit</button></td></tr>`;
+  });
+  h+=`</tbody></table></div>`;
+ }
+ el.innerHTML=h;
+}
+function openIng(id,from){
+ const c=id?C[id]:{n:"",u:"g",p:"",pr:[0,"",""],s:4,a:[]};
+ ie={id,from:from||null,n:c.n,u:c.u,p:String(c.p),pr:c.pr.map(v=>v===""?"":String(v)),s:c.s,a:(c.a||[]).slice(),pendingDel:false};
+ ieMsg="";$("#ieTitle").textContent=id?"Edit ingredient":"Add an ingredient";$("#ingBg").hidden=false;renderIe();setTimeout(()=>$("#ie-n")?.focus(),0);
+}
+function closeIng(){$("#ingBg").hidden=true;const f=ie&&ie.from;ie=null;if(f&&document.body.contains(f))f.focus()}
+function renderIe(){
+ if(!ie)return;const id=ie.id;const used=id?usedIn(id):[];
+ const unitLabel=ie.u==="g"?"grams":ie.u==="ml"?"millilitres":"items";
+ $("#ieBody").innerHTML=`
+ <div class="fgrid">
+  <label class="fld wide"><span class="label">Name</span><input type="text" id="ie-n" value="${esc(ie.n)}" placeholder="e.g. White rice 1kg"></label>
+  ${id?`<div class="fld"><span class="label">Measured in</span><div class="ro">${unitLabel}</div></div>`:`<label class="fld"><span class="label">Measured in</span><select id="ie-u"><option value="g"${ie.u==="g"?" selected":""}>grams</option><option value="ml"${ie.u==="ml"?" selected":""}>millilitres</option><option value="ea"${ie.u==="ea"?" selected":""}>items</option></select></label>`}
+  <label class="fld"><span class="label">Pack size (${ie.u==="ea"?"items per pack":ie.u})</span><input type="number" id="ie-p" min="0" step="any" value="${esc(ie.p)}" placeholder="${ie.u==="ea"?"e.g. 1":"e.g. 1000"}"></label>
+  ${ACTIVE.map(i=>`<label class="fld"><span class="label">${ALL_STORES[i]} price per pack $</span><input type="number" id="ie-pr-${i}" data-i="${i}" min="0" step="0.01" value="${esc(ie.pr[i])}"></label>`).join("")}
+  <label class="fld"><span class="label">Aisle</span><select id="ie-s">${SECTIONS.map((x,i)=>`<option value="${i}"${+ie.s===i?" selected":""}>${x}</option>`).join("")}</select></label>
+ </div>
+ <p class="note" style="margin:0">${ie.u==="g"?"1 kg is 1000 g, so a 1 kg bag is a pack size of 1000.":ie.u==="ml"?"1 L is 1000 ml, so a 2 L bottle is a pack size of 2000.":"For loose items like bananas, use 1. For a 12-pack of eggs, use 12."}${id?" Recipe amounts stay the same; only how many packs to buy and the costs change.":""}</p>
+ <div><span class="label">Contains</span><div class="filters" style="margin-top:6px">${Object.entries(ALLERGEN_LABEL).map(([k,l])=>`<button type="button" class="chip" data-iea="${k}" aria-pressed="${ie.a.includes(k)}">${l}</button>`).join("")}</div></div>
+ ${id?`<div><span class="label">Used in</span><p class="note" style="margin:4px 0 0">${used.length?used.slice(0,12).map(esc).join(", ")+(used.length>12?` and ${used.length-12} more`:""):"Nothing yet"}</p></div>`:""}
+ ${ieMsg?`<p class="err" role="alert">${esc(ieMsg)}</p>`:""}
+ <div class="frow"><button class="btn primary" id="ieSave">${id?"Save changes":"Add ingredient"}</button>
+ ${id&&isEdited(id)?`<button class="btn" id="ieReset">Undo my changes</button>`:""}
+ ${id&&!BASE_C.includes(id)&&!used.length?`<button class="btn" id="ieDel">${ie.pendingDel?"Tap again to delete":"Delete"}</button>`:""}
+ <button class="btn" id="ieCancel">Cancel</button></div>`;
+}
+function readIe(){
+ if(!ie)return;const g=x=>document.getElementById(x);
+ ie.n=g("ie-n").value;ie.p=g("ie-p").value;if(g("ie-u"))ie.u=g("ie-u").value;ie.s=+g("ie-s").value;
+ ACTIVE.forEach(i=>{ie.pr[i]=g("ie-pr-"+i).value});
+}
+function saveIe(){
+ readIe();const name=ie.n.trim();const pack=+ie.p;
+ const prs=ie.pr.map(v=>v===""?null:+v);const known=ACTIVE.map(i=>prs[i]).filter(v=>v>0);
+ if(!name)return "Give the ingredient a name.";
+ if(!(pack>0))return "Enter the pack size as a number above 0.";
+ if(!known.length)return "Enter a price for at least one store.";
+ const low=Math.min(...known);const pr=[0,0,0].map((_,i)=>prs[i]>0?prs[i]:(ACTIVE.includes(i)?low:(C[ie.id]?.pr[i]||0)));
+ const rec={n:name,p:pack,pr,s:ie.s,a:ie.a.slice()};
+ if(!ie.id){const id="x_"+Date.now().toString(36);S.customIng[id]=Object.assign({u:ie.u},rec);ie.id=id}
+ else if(BASE_C.includes(ie.id)){
+  const o=BASE_ORIG[ie.id];const diff={};
+  Object.entries(rec).forEach(([k,v])=>{if(JSON.stringify(v)!==JSON.stringify(o[k]))diff[k]=v});
+  S.ingEdits=S.ingEdits||{};if(Object.keys(diff).length)S.ingEdits[ie.id]=diff;else delete S.ingEdits[ie.id];
+ } else S.customIng[ie.id]=Object.assign({},S.customIng[ie.id],rec);
+ syncCustom();save();render();return "";
+}
+function render(){renderWeek();renderHouse();renderShop();renderRecipes();renderIng();renderPreg();renderStores();renderTotal()}
 
 /* Copy text: the Android app provides a native copy; elsewhere use the browser clipboard */
 function copyText(txt){
@@ -1332,6 +1430,17 @@ function renderRecipeView(){
   ${PREG[r.id]?`<p class="note" style="margin:0"><span class="tag ${PREG[r.id].avoid?"warn":"preg"}">Pregnancy</span> ${esc(PREG[r.id].avoid||PREG[r.id].tip)}</p>`:""}`;
 }
 $("#rvClose").addEventListener("click",closeRecipe);
+$("#ieClose").addEventListener("click",closeIng);
+$("#ingBg").addEventListener("click",e=>{
+ if(e.target.id==="ingBg"){closeIng();return}
+ if(!ie)return;const t=e.target;
+ if(t.dataset.iea){readIe();const k=t.dataset.iea;const i=ie.a.indexOf(k);i<0?ie.a.push(k):ie.a.splice(i,1);renderIe();return}
+ if(t.id==="ieCancel"){closeIng();return}
+ if(t.id==="ieSave"){const err=saveIe();if(err){ieMsg=err;renderIe()}else closeIng();return}
+ if(t.id==="ieReset"){delete S.ingEdits[ie.id];syncCustom();save();render();closeIng();return}
+ if(t.id==="ieDel"){if(!ie.pendingDel){readIe();ie.pendingDel=true;renderIe();return}delete S.customIng[ie.id];syncCustom();save();render();closeIng();return}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&ie)closeIng()});
 $("#recipeBg").addEventListener("click",e=>{
  if(e.target.id==="recipeBg"){closeRecipe();return}
  if(!rv)return;
@@ -1395,6 +1504,9 @@ $("#tabs").addEventListener("click",e=>{
  document.querySelectorAll("main>section").forEach(s=>s.hidden=s.id!=="tab-"+b.dataset.tab);
 });
 document.addEventListener("click",e=>{
+ const t0=e.target;
+ if(t0.id==="ingAdd"){openIng(null,t0);return}
+ const ied=t0.closest&&t0.closest("[data-ingedit]");if(ied){openIng(ied.dataset.ingedit,ied);return}
  if(e.target.id==="printWeek"){printWeek();return}
  if(e.target.id==="boxNew"){pickBoxes();save();render();return}
  if(e.target.id==="snackNew"){pickSnacks();save();render();return}
@@ -1457,9 +1569,10 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("input",e=>{
  const t=e.target;
+ if(t.id==="ingSearch"){ingQ=t.value;renderIng();const n=$("#ingSearch");n.focus();n.setSelectionRange(n.value.length,n.value.length);return}
  if(t.dataset.dr&&draft){
   const f=t.dataset.dr,i=+t.dataset.i;
-  if(f==="ing"){draft.rows[i].id=t.value;const u=$(`#dr-u-${i}`);if(u)u.textContent=t.value&&C[t.value]?UNIT_LABEL[C[t.value].u]:""}
+  if(f==="ing"){draft.rows[i].id=t.value;const u=$(`#dr-u-${i}`);if(u)u.textContent=t.value&&C[t.value]?UNIT_LABEL[C[t.value].u]:"";const hh=$(`#dr-h-${i}`);if(hh)hh.textContent=t.value?ingHint(t.value):""}
   else if(f==="q")draft.rows[i].q=t.value;
   else if(f==="preg")draft.preg=t.checked;
   else draft[f]=t.value;
@@ -1468,7 +1581,9 @@ document.addEventListener("input",e=>{
 });
 document.addEventListener("change",e=>{
  const t=e.target;
- if(t.dataset.dr||t.dataset.ni){if(t.dataset.dr==="preg"&&draft)draft.preg=t.checked;if(t.dataset.dr==="ing"&&draft){draft.rows[+t.dataset.i].id=t.value;const u=$(`#dr-u-${t.dataset.i}`);if(u)u.textContent=t.value&&C[t.value]?UNIT_LABEL[C[t.value].u]:""}return}
+ if(t.id==="ingSec"){ingSec=t.value;renderIng();return}
+ if(t.id==="ie-u"&&ie){readIe();renderIe();return}
+ if(t.dataset.dr||t.dataset.ni){if(t.dataset.dr==="preg"&&draft)draft.preg=t.checked;if(t.dataset.dr==="ing"&&draft){draft.rows[+t.dataset.i].id=t.value;const u=$(`#dr-u-${t.dataset.i}`);if(u)u.textContent=t.value&&C[t.value]?UNIT_LABEL[C[t.value].u]:"";const hh=$(`#dr-h-${t.dataset.i}`);if(hh)hh.textContent=t.value?ingHint(t.value):""}return}
  if(t.dataset.sel){const[d,ty]=t.dataset.sel.split(",");S.plan[+d][ty]=t.value;save();render();return}
  if(t.dataset.have){S.have[t.dataset.have]=t.checked;save();renderShop();renderTotal();return}
  if(t.dataset.box){const[d,g,i]=t.dataset.box.split(",");S.box[+d][g][+i]=t.value;save();render();return}
