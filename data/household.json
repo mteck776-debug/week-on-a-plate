@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-10-30T02:15:23.214Z",
+ "updated": "2026-10-30T02:19:35.971Z",
  "state": {
   "members": [
    {
@@ -370,6 +370,11 @@
    },
    null,
    null
-  ]
+  ],
+  "ingEdits": {
+   "rice": {
+    "n": "White rice 1kg Bag"
+   }
+  }
  }
 }
