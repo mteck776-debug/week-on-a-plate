@@ -1,0 +1,1340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2d6a3e">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Week on a Plate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky tab bar over one working pane; week = responsive grid of day cards, shopping = docket-style price table */
+:root{
+  --bg:#f3f6f1; --surface:#ffffff; --sunk:#e9eee6; --ink:#1c2a21; --muted:#5a6a5f; --line:#d6dfd2;
+  --leaf:#2d6a3e; --leaf-ink:#ffffff; --leaf-soft:#dcebdf; --citrus:#f2d36b; --citrus-ink:#3d3000; --tomato:#b8412c; --tomato-soft:#f6e0da;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Figtree", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111813; --surface:#19221c; --sunk:#141c16; --ink:#e5eee6; --muted:#9bab9f; --line:#2b3a2f;
+  --leaf:#7cc48d; --leaf-ink:#0e1a11; --leaf-soft:#22382a; --citrus:#e9c54e; --citrus-ink:#211a00; --tomato:#f08a72; --tomato-soft:#3a221d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111813; --surface:#19221c; --sunk:#141c16; --ink:#e5eee6; --muted:#9bab9f; --line:#2b3a2f;
+  --leaf:#7cc48d; --leaf-ink:#0e1a11; --leaf-soft:#22382a; --citrus:#e9c54e; --citrus-ink:#211a00; --tomato:#f08a72; --tomato-soft:#3a221d; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:14px 6px}
+h1{font-family:var(--f-display);font-weight:800;font-size:1.6rem;margin:0;letter-spacing:-.02em}
+h1 span{color:var(--leaf)}
+.hdr-right{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.sync{font-size:.78rem;color:var(--muted);display:flex;gap:6px;align-items:center}
+.sync .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.sync.ok .dot{background:var(--leaf)}
+.sync.err .dot{background:var(--tomato)}
+.total{font-family:var(--f-mono);font-size:.85rem;color:var(--muted)}
+.total b{color:var(--ink);font-weight:500;font-size:1rem}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;padding-bottom:0}
+nav.tabs button{font:600 .9rem var(--f-body);border:0;background:none;color:var(--muted);padding:10px 12px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--leaf)}
+main{padding-block:20px 60px}
+h2{font-family:var(--f-display);font-weight:600;font-size:1.3rem;margin:0;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:600;font-size:1.05rem;margin:0}
+.lead{color:var(--muted);max-width:65ch;margin:4px 0 0}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:16px}
+.btn{font:600 .9rem var(--f-body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px 14px;cursor:pointer}
+.btn.primary{background:var(--leaf);color:var(--leaf-ink);border-color:var(--leaf)}
+.btn.small{padding:4px 8px;font-size:.8rem}
+.btn:focus-visible,select:focus-visible,input:focus-visible,nav.tabs button:focus-visible,.chip:focus-visible{outline:2px solid var(--leaf);outline-offset:2px}
+.label{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.days{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.day header{display:flex;justify-content:space-between;align-items:baseline}
+.day header .d{font-family:var(--f-display);font-weight:800;font-size:1.15rem}
+.day header .c{font-family:var(--f-mono);font-size:.78rem;color:var(--muted)}
+.slot{display:flex;flex-direction:column;gap:3px}
+.slot .top{display:flex;justify-content:space-between;gap:6px;align-items:center}
+.slot select{width:100%;font:500 .9rem var(--f-body);padding:6px 8px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);min-width:0}
+.slot .meta{font-size:.76rem;color:var(--muted)}
+.slot.school{background:var(--leaf-soft);margin:0 -6px;padding:6px;border-radius:8px}
+.reroll{border:0;background:none;color:var(--muted);cursor:pointer;font-size:.85rem;padding:2px 4px}
+.reroll:hover{color:var(--leaf)}
+.chip{display:inline-flex;align-items:center;gap:4px;font:600 .75rem var(--f-body);padding:3px 9px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--leaf);border-color:var(--leaf);color:var(--leaf-ink)}
+.tag{display:inline-block;font:600 .68rem var(--f-body);padding:1px 7px;border-radius:999px;background:var(--sunk);color:var(--muted);letter-spacing:.02em}
+.tag.warn{background:var(--tomato-soft);color:var(--tomato)}
+.tag.ok{background:var(--leaf-soft);color:var(--leaf)}
+.tag.preg{background:var(--citrus);color:var(--citrus-ink)}
+.avoid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;padding:0;margin:0;list-style:none}
+.avoid li{background:var(--sunk);border-radius:8px;padding:10px 12px;font-size:.9rem}
+.avoid li b{display:block}
+.cols{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.cols{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.member{display:grid;grid-template-columns:minmax(0,1fr) 80px auto;gap:8px;align-items:center;padding-block:12px;border-top:1px solid var(--line)}
+.member:first-of-type{border-top:0}
+.member .chips{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+.member .sub{grid-column:1/-1;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+input[type=text],input[type=number]{font:500 .95rem var(--f-body);padding:7px 9px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);width:100%;min-width:0}
+label.check{display:flex;gap:8px;align-items:flex-start;font-size:.9rem;cursor:pointer}
+label.check input{margin-top:3px;accent-color:var(--leaf)}
+.note{font-size:.82rem;color:var(--muted);max-width:65ch}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:.88rem}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px dashed var(--line);vertical-align:top}
+th{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--sunk)}
+td.num,th.num{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.sec td{background:var(--sunk);font-family:var(--f-display);font-weight:600;font-size:.85rem;border-bottom:1px solid var(--line)}
+td.best{background:var(--citrus);color:var(--citrus-ink)}
+tr.have td{opacity:.45}
+tr.have td:first-child{opacity:1}
+tfoot td{font-weight:600;border-bottom:0;border-top:2px solid var(--ink)}
+.totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.tot{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px}
+.tot .v{font-family:var(--f-mono);font-size:1.35rem;font-variant-numeric:tabular-nums}
+.tot.win{border-color:var(--leaf);box-shadow:inset 0 0 0 1px var(--leaf)}
+.shoplinks{display:flex;gap:4px}
+.shoplinks .btn{text-decoration:none;white-space:nowrap}
+table{min-width:760px}
+.pick{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;font:500 .9rem var(--f-body);padding:7px 9px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);cursor:pointer;min-width:0}
+.pick span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.pick:hover{border-color:var(--leaf)}
+.pick:focus-visible,#pkSearch:focus-visible,.pk-item:focus-visible{outline:2px solid var(--leaf);outline-offset:2px}
+.sheet-bg{position:fixed;inset:0;z-index:20;background:color-mix(in srgb,var(--ink) 45%,transparent);display:flex;align-items:flex-start;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 40px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 16px) max(16px,env(safe-area-inset-left,0px))}
+.sheet-bg[hidden],[hidden]{display:none!important}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:12px;width:100%;max-width:560px;max-height:100%;display:flex;flex-direction:column;gap:10px;padding:16px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#pkSearch{font:500 1rem var(--f-body);padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);width:100%}
+.pk-list{list-style:none;margin:0;padding:0;overflow-y:auto;display:flex;flex-direction:column;gap:4px;min-height:0}
+.pk-item{width:100%;text-align:left;display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:9px 10px;border-radius:8px;border:1px solid transparent;background:none;color:var(--ink);font:500 .95rem var(--f-body);cursor:pointer}
+.pk-item:hover{background:var(--sunk)}
+.pk-item[aria-current="true"]{border-color:var(--leaf);background:var(--leaf-soft)}
+.box-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.boxday{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.boxday .top{display:flex;justify-content:space-between;align-items:baseline}
+.boxday .d{font-family:var(--f-display);font-weight:800;font-size:1.05rem}
+.boxday .c{font:400 .78rem var(--f-mono);color:var(--muted)}
+.boxrow{display:grid;grid-template-columns:62px minmax(0,1fr);gap:8px;align-items:center}
+.boxrow select{width:100%;font:500 .86rem var(--f-body);padding:5px 7px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);min-width:0}
+.boxrow .mainname{font-weight:600;font-size:.88rem}
+details.note summary{cursor:pointer;color:var(--leaf);font-weight:600}
+details.note ol{margin:6px 0 0;padding-left:18px}
+details.note li{margin-bottom:4px}
+.boxline{font-size:.78rem;color:var(--ink);margin-top:2px}
+.boxline .label{display:block;margin-bottom:1px}
+.snack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.snack{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.snack .top{display:flex;justify-content:space-between;align-items:center}
+.snack select{width:100%;font:500 .9rem var(--f-body);padding:6px 8px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);min-width:0}
+.snack .meta{font:400 .78rem var(--f-mono);color:var(--muted)}
+.snackrow{align-items:center}
+.snackrow input{width:70px}
+.pk-sep{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:12px 10px 4px;border-top:1px solid var(--line);margin-top:6px}
+.pk-item.off{color:var(--muted)}
+.pk-item .warnline{color:var(--tomato)}
+.pk-item small{color:var(--muted);font:400 .78rem var(--f-mono);white-space:nowrap}
+.pk-item .why{display:block;color:var(--muted);font-size:.78rem;font-weight:400}
+.recipes{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.recipe{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.recipe ul{margin:0;padding-left:18px;font-size:.86rem}
+.recipe p{margin:0;font-size:.88rem}
+.recipe .tags{display:flex;flex-wrap:wrap;gap:4px}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.stores{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+a{color:var(--leaf)}
+.rules li{margin-bottom:6px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.fld{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fld.wide{grid-column:1/-1}
+.fld select,.irow select{font:500 .9rem var(--f-body);padding:7px 8px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);min-width:0;width:100%}
+textarea{font:500 .92rem var(--f-body);padding:8px 9px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);width:100%;resize:vertical}
+.irows{display:flex;flex-direction:column;gap:6px}
+.irow{display:grid;grid-template-columns:minmax(0,1fr) 90px 44px 28px;gap:6px;align-items:center}
+.irow .unit{font-size:.8rem;color:var(--muted)}
+.frow{display:flex;gap:8px;flex-wrap:wrap}
+.sub-panel{border:1px dashed var(--leaf);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--bg)}
+.err{color:var(--tomato);font-weight:600;margin:0}
+.empty{padding:24px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <h1>Week on a <span>Plate</span></h1>
+      <div class="hdr-right"><div class="total" id="hdrTotal"></div><div class="sync" id="sync" role="status"></div></div>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs">
+      <button role="tab" data-tab="week" aria-selected="true">This week</button>
+      <button role="tab" data-tab="house" aria-selected="false">Household</button>
+      <button role="tab" data-tab="shop" aria-selected="false">Shopping list</button>
+      <button role="tab" data-tab="recipes" aria-selected="false">Recipes</button>
+      <button role="tab" data-tab="preg" aria-selected="false">Pregnancy</button>
+      <button role="tab" data-tab="stores" aria-selected="false">Stores &amp; school</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="tab-week"></section>
+  <section id="tab-house" hidden></section>
+  <section id="tab-shop" hidden></section>
+  <section id="tab-recipes" hidden></section>
+  <section id="tab-preg" hidden></section>
+  <section id="tab-stores" hidden></section>
+</main>
+<div class="sheet-bg" id="pickerBg" hidden>
+ <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pkTitle">
+  <div class="sheet-head"><h3 id="pkTitle"></h3><button class="btn small" id="pkClose">Close</button></div>
+  <input type="search" id="pkSearch" placeholder="Search meals or ingredients" autocomplete="off" aria-label="Search meals">
+  <p class="note" id="pkNote"></p>
+  <ul class="pk-list" id="pkList"></ul>
+ </div>
+</div>
+
+<script>
+/* ---------- Ingredient catalogue: pack size + rough pack price at [Aldi, Coles, Woolworths] in AUD (Brisbane, Oct 2026 estimates) ---------- */
+const ALL_STORES=["Aldi","Coles","Woolworths"];
+const ACTIVE=[1,2]; /* Aldi left out: no Aldi in Cairns. Add 0 back to use it. */
+const STORES=ACTIVE.map(i=>ALL_STORES[i]);
+const storePrices=c=>ACTIVE.map(i=>c.pr[i]);
+const SECTIONS=["Fruit & veg","Meat & seafood","Dairy & eggs","Bakery","Pantry","Frozen","Snacks & treats"];
+const C={
+ bread:{n:"Wholemeal bread",u:"g",p:700,pr:[2.49,3.60,3.60],s:3,a:["gluten"]},
+ bread_gf:{n:"Gluten-free bread",u:"g",p:500,pr:[4.99,6.50,6.50],s:3,a:[]},
+ wrap:{n:"Wholemeal wraps (8)",u:"ea",p:8,pr:[2.49,3.50,3.50],s:3,a:["gluten"]},
+ wrap_gf:{n:"Gluten-free wraps (6)",u:"ea",p:6,pr:[4.49,5.50,5.50],s:3,a:[]},
+ pizzabase:{n:"Pizza bases (2)",u:"ea",p:2,pr:[2.99,4.00,4.00],s:3,a:["gluten"]},
+ pizzabase_gf:{n:"Gluten-free pizza bases (2)",u:"ea",p:2,pr:[5.49,7.00,7.00],s:3,a:[]},
+ pasta:{n:"Pasta",u:"g",p:500,pr:[1.29,1.80,1.80],s:4,a:["gluten"]},
+ pasta_gf:{n:"Gluten-free pasta",u:"g",p:500,pr:[2.49,3.00,3.00],s:4,a:[]},
+ rice:{n:"White rice",u:"g",p:1000,pr:[1.99,2.90,2.90],s:4,a:[]},
+ oats:{n:"Rolled oats",u:"g",p:750,pr:[1.49,2.20,2.20],s:4,a:["gluten"]},
+ weetbix:{n:"Wheat biscuit cereal",q:"wheat biscuits",u:"g",p:575,pr:[3.49,5.00,5.00],s:4,a:["gluten"]},
+ cereal_gf:{n:"Gluten-free cereal",q:"gluten free cereal",u:"g",p:375,pr:[3.99,5.50,5.50],s:4,a:[]},
+ flour:{n:"Plain flour",u:"g",p:1000,pr:[1.19,1.80,1.80],s:4,a:["gluten"]},
+ flour_gf:{n:"Gluten-free flour",u:"g",p:1000,pr:[3.49,4.50,4.50],s:4,a:[]},
+ lentils:{n:"Canned lentils 400g",u:"g",p:400,pr:[0.85,1.20,1.20],s:4,a:[]},
+ beans:{n:"Kidney beans 400g",u:"g",p:400,pr:[0.85,1.20,1.20],s:4,a:[]},
+ tomcan:{n:"Diced tomatoes 400g",u:"g",p:400,pr:[0.85,1.20,1.20],s:4,a:[]},
+ passata:{n:"Passata 700g",u:"g",p:700,pr:[1.49,2.20,2.20],s:4,a:[]},
+ coconutmilk:{n:"Coconut milk 400ml",u:"ml",p:400,pr:[1.19,1.80,1.80],s:4,a:[]},
+ currypaste:{n:"Mild curry paste",u:"g",p:200,pr:[2.49,3.50,3.50],s:4,a:[]},
+ tacoshells:{n:"Taco shells (12)",u:"ea",p:12,pr:[2.49,3.50,3.50],s:4,a:[]},
+ tacoseas:{n:"Taco seasoning",u:"g",p:35,pr:[0.99,1.50,1.50],s:4,a:[]},
+ soy:{n:"Soy sauce",u:"ml",p:250,pr:[1.69,2.50,2.50],s:4,a:["gluten"]},
+ tamari:{n:"Tamari (GF soy)",q:"tamari",u:"ml",p:250,pr:[3.99,5.00,5.00],s:4,a:[]},
+ oil:{n:"Olive oil",u:"ml",p:750,pr:[6.99,10.00,10.00],s:4,a:[]},
+ hummus:{n:"Hummus",u:"g",p:200,pr:[2.29,3.00,3.00],s:2,a:["sesame"]},
+ peanutbutter:{n:"Peanut butter",u:"g",p:375,pr:[2.49,3.50,3.50],s:4,a:["nuts"]},
+ tuna:{n:"Tuna in springwater 95g",u:"g",p:95,pr:[0.99,1.50,1.50],s:4,a:["fish"]},
+ ricecrackers:{n:"Rice crackers",u:"g",p:100,pr:[0.99,1.50,1.50],s:4,a:[]},
+ corn:{n:"Corn kernels 420g",u:"g",p:420,pr:[0.99,1.50,1.50],s:4,a:[]},
+ milk:{n:"Full cream milk 2L",u:"ml",p:2000,pr:[3.10,3.10,3.10],s:2,a:["dairy"]},
+ oatmilk:{n:"Oat milk 1L",u:"ml",p:1000,pr:[2.49,3.50,3.50],s:2,a:[]},
+ cheese:{n:"Tasty cheese block",u:"g",p:500,pr:[5.99,7.50,7.50],s:2,a:["dairy"]},
+ cheese_df:{n:"Dairy-free cheese",u:"g",p:200,pr:[4.49,5.50,5.50],s:2,a:[]},
+ mozz:{n:"Shredded mozzarella",u:"g",p:250,pr:[3.49,4.50,4.50],s:2,a:["dairy"]},
+ yoghurt:{n:"Greek yoghurt 1kg",u:"g",p:1000,pr:[4.29,5.50,5.50],s:2,a:["dairy"]},
+ yog_coco:{n:"Coconut yoghurt",u:"g",p:500,pr:[4.49,6.00,6.00],s:2,a:[]},
+ butter:{n:"Butter",u:"g",p:250,pr:[3.99,5.50,5.50],s:2,a:["dairy"]},
+ spread_df:{n:"Dairy-free spread",u:"g",p:500,pr:[2.99,4.00,4.00],s:2,a:[]},
+ eggs:{n:"Free-range eggs (12)",u:"ea",p:12,pr:[5.49,6.50,6.50],s:2,a:["egg"]},
+ chicken_breast:{n:"Chicken breast",u:"g",p:1000,pr:[11.49,13.00,13.00],s:1,a:["meat"]},
+ chicken_thigh:{n:"Chicken thigh fillets",u:"g",p:1000,pr:[10.99,12.50,12.50],s:1,a:["meat"]},
+ chicken_whole:{n:"Whole chicken",u:"ea",p:1,pr:[9.99,12.00,12.00],s:1,a:["meat"]},
+ mince:{n:"Beef mince 500g",u:"g",p:500,pr:[6.49,7.50,7.50],s:1,a:["meat"]},
+ sausages:{n:"Beef sausages 500g",u:"g",p:500,pr:[4.99,6.00,6.00],s:1,a:["meat","gluten"]},
+ sausages_gf:{n:"Gluten-free sausages 500g",u:"g",p:500,pr:[6.49,7.50,7.50],s:1,a:["meat"]},
+ ham:{n:"Shaved ham",u:"g",p:250,pr:[3.99,5.00,5.00],s:1,a:["meat","pork"]},
+ fish:{n:"White fish fillets (frozen)",u:"g",p:400,pr:[7.49,9.00,9.00],s:5,a:["fish"]},
+ peas:{n:"Frozen peas",u:"g",p:1000,pr:[2.29,3.00,3.00],s:5,a:[]},
+ stirfryveg:{n:"Frozen stir-fry veg",u:"g",p:1000,pr:[3.49,4.00,4.00],s:5,a:[]},
+ berries:{n:"Frozen mixed berries",u:"g",p:500,pr:[4.49,5.50,5.50],s:5,a:[]},
+ banana:{n:"Bananas",u:"ea",p:1,pr:[0.55,0.70,0.70],s:0,a:[]},
+ apple:{n:"Apples",u:"ea",p:1,pr:[0.70,0.90,0.90],s:0,a:[]},
+ avocado:{n:"Avocados",u:"ea",p:1,pr:[1.79,2.00,2.00],s:0,a:[]},
+ tomato:{n:"Tomatoes",u:"ea",p:1,pr:[0.80,1.00,1.00],s:0,a:[]},
+ cucumber:{n:"Lebanese cucumbers",u:"ea",p:1,pr:[0.99,1.20,1.20],s:0,a:[]},
+ lettuce:{n:"Cos lettuce",u:"ea",p:1,pr:[2.49,3.00,3.00],s:0,a:[]},
+ carrot:{n:"Carrots 1kg bag",u:"g",p:1000,pr:[1.49,2.00,2.00],s:0,a:[]},
+ capsicum:{n:"Red capsicum",u:"ea",p:1,pr:[1.49,2.00,2.00],s:0,a:[]},
+ broccoli:{n:"Broccoli",u:"ea",p:1,pr:[1.99,2.50,2.50],s:0,a:[]},
+ onion:{n:"Brown onions 1kg bag",u:"g",p:1000,pr:[2.49,3.00,3.00],s:0,a:[]},
+ garlic:{n:"Garlic bulb",u:"ea",p:1,pr:[0.89,1.00,1.00],s:0,a:[]},
+ potato:{n:"Potatoes 2kg bag",u:"g",p:2000,pr:[3.99,4.50,4.50],s:0,a:[]},
+ sweetpot:{n:"Sweet potato",u:"g",p:1000,pr:[3.99,4.50,4.50],s:0,a:[]},
+ spinach:{n:"Baby spinach 120g",u:"g",p:120,pr:[2.29,3.00,3.00],s:0,a:[]},
+ mushrooms:{n:"Cup mushrooms 200g",u:"g",p:200,pr:[2.99,3.50,3.50],s:0,a:[]},
+ zucchini:{n:"Zucchini",u:"ea",p:1,pr:[1.29,1.50,1.50],s:0,a:[]},
+ pumpkin:{n:"Butternut pumpkin",u:"g",p:1000,pr:[2.49,3.00,3.00],s:0,a:[]},
+ lemon:{n:"Lemons",u:"ea",p:1,pr:[0.99,1.20,1.20],s:0,a:[]},
+ springonion:{n:"Spring onions (bunch)",u:"ea",p:1,pr:[1.99,2.50,2.50],s:0,a:[]},
+ beansgreen:{n:"Green beans 250g",u:"g",p:250,pr:[2.49,3.00,3.00],s:0,a:[]},
+ cabbage:{n:"Cabbage (half)",u:"ea",p:1,pr:[2.49,3.00,3.00],s:0,a:[]},
+ salmon:{n:"Salmon fillets 250g",u:"g",p:250,pr:[8.99,11.00,11.00],s:1,a:["fish"]},
+ prawns:{n:"Raw prawns 500g",u:"g",p:500,pr:[11.99,14.00,14.00],s:5,a:["fish"]},
+ lamb:{n:"Lamb loin chops 500g",u:"g",p:500,pr:[12.99,15.00,15.00],s:1,a:["meat"]},
+ beef_steak:{n:"Beef rump steak 500g",u:"g",p:500,pr:[11.99,14.00,14.00],s:1,a:["meat"]},
+ pork_chops:{n:"Pork loin chops 500g",u:"g",p:500,pr:[7.99,9.50,9.50],s:1,a:["meat","pork"]},
+ bacon:{n:"Middle bacon 250g",u:"g",p:250,pr:[4.49,5.50,5.50],s:1,a:["meat","pork"]},
+ drumsticks:{n:"Chicken drumsticks 1kg",u:"g",p:1000,pr:[5.99,7.00,7.00],s:1,a:["meat"]},
+ creamcheese:{n:"Cream cheese 250g",u:"g",p:250,pr:[2.49,3.50,3.50],s:2,a:["dairy"]},
+ cream:{n:"Thickened cream 300ml",u:"ml",p:300,pr:[2.49,3.20,3.20],s:2,a:["dairy"]},
+ parmesan:{n:"Grated parmesan 125g",u:"g",p:125,pr:[3.49,4.50,4.50],s:2,a:["dairy"]},
+ tofu:{n:"Firm tofu 300g",u:"g",p:300,pr:[2.49,3.50,3.50],s:2,a:[]},
+ breadrolls:{n:"Bread rolls (6)",u:"ea",p:6,pr:[2.49,3.50,3.50],s:3,a:["gluten"]},
+ breadrolls_gf:{n:"Gluten-free rolls (4)",u:"ea",p:4,pr:[5.49,6.50,6.50],s:3,a:[]},
+ muffins_eng:{n:"English muffins (6)",u:"ea",p:6,pr:[2.29,3.20,3.20],s:3,a:["gluten"]},
+ pita:{n:"Pita pockets (6)",u:"ea",p:6,pr:[2.29,3.20,3.20],s:3,a:["gluten"]},
+ pastry:{n:"Puff pastry sheets (6)",u:"ea",p:6,pr:[2.99,4.00,4.00],s:5,a:["gluten"]},
+ bakedbeans:{n:"Baked beans 420g",u:"g",p:420,pr:[0.99,1.50,1.50],s:4,a:[]},
+ chickpeas:{n:"Chickpeas 400g",u:"g",p:400,pr:[0.85,1.20,1.20],s:4,a:[]},
+ crumbs:{n:"Breadcrumbs 500g",u:"g",p:500,pr:[1.49,2.20,2.20],s:4,a:["gluten"]},
+ crumbs_gf:{n:"Gluten-free breadcrumbs 200g",u:"g",p:200,pr:[3.49,4.50,4.50],s:4,a:[]},
+ lasagne:{n:"Lasagne sheets 375g",u:"g",p:375,pr:[1.79,2.50,2.50],s:4,a:["gluten","egg"]},
+ lasagne_gf:{n:"Gluten-free lasagne sheets 250g",u:"g",p:250,pr:[3.99,4.50,4.50],s:4,a:[]},
+ eggnoodles:{n:"Egg noodles 450g",u:"g",p:450,pr:[1.99,2.80,2.80],s:4,a:["gluten","egg"]},
+ ricenoodles:{n:"Rice noodles 400g",u:"g",p:400,pr:[1.99,2.80,2.80],s:4,a:[]},
+ gnocchi:{n:"Potato gnocchi 500g",u:"g",p:500,pr:[1.99,3.00,3.00],s:4,a:["gluten"]},
+ butterchicken:{n:"Butter chicken sauce 485g",u:"g",p:485,pr:[2.49,3.50,3.50],s:4,a:["dairy"]},
+ teriyaki:{n:"Teriyaki sauce 250ml",u:"ml",p:250,pr:[2.29,3.00,3.00],s:4,a:["gluten"]},
+ pesto:{n:"Basil pesto 190g",u:"g",p:190,pr:[2.49,3.50,3.50],s:4,a:["dairy","nuts"]},
+ tinsalmon:{n:"Pink salmon 210g",u:"g",p:210,pr:[2.99,4.00,4.00],s:4,a:["fish"]},
+ stock:{n:"Chicken stock 1L",u:"ml",p:1000,pr:[1.49,2.50,2.50],s:4,a:[]},
+ honey:{n:"Honey 500g",u:"g",p:500,pr:[4.49,6.00,6.00],s:4,a:[]},
+ raisins:{n:"Sultanas 375g",u:"g",p:375,pr:[2.29,3.00,3.00],s:4,a:[]},
+ granola:{n:"Granola 750g",u:"g",p:750,pr:[3.99,5.50,5.50],s:4,a:["gluten","nuts"]},
+ nori:{n:"Nori sheets (10)",u:"ea",p:10,pr:[2.99,3.80,3.80],s:4,a:[]},
+ cornchips:{n:"Corn chips 230g",u:"g",p:230,pr:[1.99,3.00,3.00],s:4,a:[]},
+ mandarin:{n:"Mandarins",u:"ea",p:1,pr:[0,0.70,0.70],s:0,a:[]},
+ pear:{n:"Pears",u:"ea",p:1,pr:[0,0.95,0.95],s:0,a:[]},
+ kiwi:{n:"Kiwifruit",u:"ea",p:1,pr:[0,0.70,0.70],s:0,a:[]},
+ grapes:{n:"Grapes 500g",u:"g",p:500,pr:[0,4.50,4.50],s:0,a:[]},
+ strawberries:{n:"Strawberries 250g punnet",q:"strawberries",u:"g",p:250,pr:[0,3.50,3.50],s:0,a:[]},
+ blueberries:{n:"Blueberries 125g punnet",q:"blueberries",u:"g",p:125,pr:[0,4.00,4.00],s:0,a:[]},
+ lb_cream:{n:"Cream biscuit snack packs (8)",q:"oreo multipack",u:"ea",p:8,pr:[0,4.50,4.50],s:6,a:["gluten","dairy"]},
+ lb_shapes:{n:"Savoury biscuit snack packs (8)",q:"shapes multipack",u:"ea",p:8,pr:[0,4.50,4.50],s:6,a:["gluten","dairy"]},
+ lb_teddy:{n:"Teddy biscuit snack packs (8)",q:"tiny teddy multipack",u:"ea",p:8,pr:[0,4.50,4.50],s:6,a:["gluten","dairy"]},
+ lb_rice:{n:"Rice cracker snack packs (8)",q:"rice crackers multipack",u:"ea",p:8,pr:[0,3.80,3.80],s:6,a:[]},
+ lb_pop:{n:"Popcorn snack packs (8)",q:"popcorn multipack",u:"ea",p:8,pr:[0,4.20,4.20],s:6,a:[]},
+ lb_chips:{n:"Chip snack packs (10)",q:"chips multipack",u:"ea",p:10,pr:[0,5.50,5.50],s:6,a:[]},
+ lb_bar:{n:"Nut-free muesli bars (6)",q:"nut free muesli bars",u:"ea",p:6,pr:[0,3.80,3.80],s:6,a:["gluten"]},
+ lb_sultana:{n:"Sultana snack boxes (6)",q:"sultana snack boxes",u:"ea",p:6,pr:[0,3.20,3.20],s:6,a:[]},
+ lb_pretzel:{n:"Pretzel snack packs (8)",q:"pretzel multipack",u:"ea",p:8,pr:[0,4.00,4.00],s:6,a:["gluten"]},
+ lb_fruitstrip:{n:"Fruit strip snacks (6)",q:"fruit strips",u:"ea",p:6,pr:[0,4.00,4.00],s:6,a:[]},
+ lb_cheesecrack:{n:"Cheese & cracker dip packs (6)",q:"cheese and crackers snack pack",u:"ea",p:6,pr:[0,5.00,5.00],s:6,a:["gluten","dairy"]},
+ lb_yog:{n:"Kids yoghurt pouches (6)",q:"kids yoghurt pouch",u:"ea",p:6,pr:[0,6.00,6.00],s:2,a:["dairy"]},
+ lb_jelly:{n:"Jelly cups (4)",q:"jelly cups",u:"ea",p:4,pr:[0,3.00,3.00],s:6,a:["gelatine"]},
+ lb_cheesestick:{n:"Cheese sticks (8)",q:"cheese sticks",u:"ea",p:8,pr:[0,5.00,5.00],s:2,a:["dairy"]},
+ lb_fruitcup:{n:"Fruit cups in juice (4)",q:"fruit cups",u:"ea",p:4,pr:[0,4.00,4.00],s:6,a:[]},
+ lb_custard:{n:"Custard cups (4)",q:"custard cups",u:"ea",p:4,pr:[0,4.00,4.00],s:2,a:["dairy"]},
+ lb_puree:{n:"Fruit puree pouches (6)",q:"fruit pouch kids",u:"ea",p:6,pr:[0,5.00,5.00],s:6,a:[]},
+ lb_coyog:{n:"Dairy-free yoghurt pouches (4)",q:"dairy free yoghurt pouch",u:"ea",p:4,pr:[0,5.50,5.50],s:2,a:[]},
+ sn_chips:{n:"Potato chips 175g",q:"potato chips",u:"ea",p:1,pr:[0,3.50,3.50],s:6,a:[]},
+ sn_choc:{n:"Chocolate block 180g",q:"chocolate block",u:"ea",p:1,pr:[0,5.00,5.00],s:6,a:["dairy"]},
+ sn_bisc:{n:"Chocolate biscuits 200g",q:"chocolate biscuits",u:"ea",p:1,pr:[0,4.00,4.00],s:6,a:["gluten","dairy"]},
+ sn_pop:{n:"Microwave popcorn (5 pack)",q:"microwave popcorn",u:"ea",p:1,pr:[0,3.20,3.20],s:6,a:[]},
+ sn_nuts:{n:"Mixed nuts 375g",q:"mixed nuts",u:"ea",p:1,pr:[0,9.00,9.00],s:6,a:["nuts"]},
+ sn_lolly:{n:"Lollies 200g",q:"lollies",u:"ea",p:1,pr:[0,3.20,3.20],s:6,a:[]},
+ sn_ice:{n:"Ice cream tub 2L",q:"ice cream 2L",u:"ea",p:1,pr:[0,6.50,6.50],s:5,a:["dairy"]},
+ sn_bars:{n:"Muesli bars (6)",q:"muesli bars",u:"ea",p:1,pr:[0,3.80,3.80],s:6,a:["gluten","nuts"]},
+ sn_crack:{n:"Water crackers 125g",q:"water crackers",u:"ea",p:1,pr:[0,2.20,2.20],s:6,a:["gluten"]},
+ sn_dip:{n:"French onion dip 200g",q:"french onion dip",u:"ea",p:1,pr:[0,3.00,3.00],s:2,a:["dairy"]},
+ sn_pretz:{n:"Pretzels 200g",q:"pretzels",u:"ea",p:1,pr:[0,3.00,3.00],s:6,a:["gluten"]},
+ sn_jerky:{n:"Beef jerky 50g",q:"beef jerky",u:"ea",p:1,pr:[0,5.00,5.00],s:6,a:["meat"]},
+ sn_ricecake:{n:"Rice cakes 125g",q:"rice cakes",u:"ea",p:1,pr:[0,2.00,2.00],s:6,a:[]},
+ sn_dried:{n:"Dried fruit mix 300g",q:"dried fruit mix",u:"ea",p:1,pr:[0,4.50,4.50],s:6,a:[]},
+ sn_darkchoc:{n:"Dark chocolate 100g",q:"dark chocolate",u:"ea",p:1,pr:[0,4.00,4.00],s:6,a:[]},
+ salsa:{n:"Mild salsa 300g",u:"g",p:300,pr:[2.49,3.50,3.50],s:4,a:[]},
+};
+const SWAP={
+ gluten:{bread:"bread_gf",wrap:"wrap_gf",pizzabase:"pizzabase_gf",pasta:"pasta_gf",weetbix:"cereal_gf",flour:"flour_gf",soy:"tamari",sausages:"sausages_gf",breadrolls:"breadrolls_gf",pita:"wrap_gf",crumbs:"crumbs_gf",lasagne:"lasagne_gf",teriyaki:"tamari",eggnoodles:"ricenoodles"},
+ dairy:{milk:"oatmilk",cheese:"cheese_df",mozz:"cheese_df",yoghurt:"yog_coco",butter:"spread_df",cream:"coconutmilk",parmesan:"cheese_df"}
+};
+const DIETS=[
+ {id:"veg",l:"Vegetarian",x:["meat","fish","gelatine"]},
+ {id:"pesc",l:"Pescatarian",x:["meat"]},
+ {id:"gf",l:"Gluten-free",x:["gluten"],sw:"gluten"},
+ {id:"df",l:"Dairy-free",x:["dairy"],sw:"dairy"},
+ {id:"egg",l:"Egg allergy",x:["egg"]},
+ {id:"nut",l:"Nut allergy",x:["nuts"]},
+ {id:"ses",l:"Sesame allergy",x:["sesame"]},
+ {id:"nofish",l:"No seafood",x:["fish"]},
+ {id:"halal",l:"No pork / halal",x:["pork","gelatine"]},
+ {id:"preg",l:"Pregnant",x:[],preg:true},
+];
+/* Pregnancy food safety per recipe (listeria, raw egg, mercury). avoid = left out of plans for meals a pregnant person eats; tip = safe-handling note */
+const PREG={
+ hw:{avoid:"Cold deli ham is a listeria risk."},
+ cs:{avoid:"Cold cooked chicken is a listeria risk."},
+ ca:{avoid:"Cold cooked chicken is a listeria risk."},
+ sb:{avoid:"Hummus and other tahini dips are on the high-risk list."},
+ oo:{tip:"Simmer the frozen berries first, or use fresh berries washed at home."},
+ yb:{tip:"Simmer the frozen berries first, or use fresh berries washed at home."},
+ se:{tip:"Cook the eggs until firm, with no runny parts."},
+ es:{tip:"Hard-boil eggs right through. Use yoghurt, not homemade mayonnaise."},
+ tr:{tip:"Canned tuna is fine. Keep the rice chilled and pack an ice brick."},
+ vm:{tip:"Bake until cooked through. Keep chilled and eat within a day or two."},
+ ps:{tip:"Use a hard cheese like cheddar and keep the salad chilled."},
+ pz:{tip:"Ham and mozzarella are fine served straight from the oven, steaming hot."},
+ rc:{tip:"Eat hot. Reheat leftovers until steaming. Don't eat them cold."},
+ fc:{tip:"White fish is fine. Most fish: 2–3 serves a week."},
+ sp:{tip:"Cook mince right through, with no pink left."},
+ tc:{tip:"Cook mince right through, with no pink left."},
+ fr:{tip:"Cool leftover rice fast, refrigerate, and reheat until steaming."},
+ lpw:{avoid:"Cold deli ham is a listeria risk."},
+ lhr:{avoid:"Cold deli ham is a listeria risk."},
+ lhv:{avoid:"Hummus and other tahini dips are on the high-risk list."},
+ bft:{tip:"Cook the egg-soaked bread right through. Simmer frozen berries first."},
+ bbm:{tip:"Cook bacon until hot and crisp, and the egg until firm."},
+ bom:{tip:"Cook the omelette until firm, with no runny parts."},
+ bbr:{tip:"Scramble the eggs until firm."},
+ bgr:{tip:"Simmer the frozen berries first, or use fresh berries washed at home."},
+ lsu:{tip:"Use canned tuna only. No raw fish. Keep chilled with an ice brick."},
+ lqu:{tip:"Bake until set all the way through. Keep chilled."},
+ lfr:{tip:"Cook fritters through. Keep chilled and eat within a day."},
+ lsr:{tip:"Make fresh, cook through, keep chilled and eat within a day."},
+ lsp:{tip:"Canned salmon is fine. Cook patties through and keep chilled."},
+ dsa:{tip:"Cook salmon through. Most fish: 2–3 serves a week."},
+ dpt:{tip:"Cook prawns until pink and firm all the way through."},
+ dst:{tip:"Cook steak well done, with no pink in the middle."},
+ dbu:{tip:"Cook burger patties right through, with no pink left."},
+ dbp:{tip:"Cook bacon until crisp and serve the pasta hot."},
+ dft:{tip:"Cook fish through until it flakes. Wash the cabbage well."},
+ dla:{tip:"Cook lamb chops well done during pregnancy."},
+ dpc:{tip:"Cook pork through, with no pink in the middle."},
+};
+const ALLERGEN_LABEL={gluten:"Gluten",dairy:"Dairy",egg:"Egg",nuts:"Nuts",sesame:"Sesame",fish:"Seafood",meat:"Meat",pork:"Pork",gelatine:"Gelatine"};
+
+/* ---------- Recipes: quantities are per adult serving ---------- */
+const BASE_R=[
+ {id:"wb",m:"b",n:"Wheat biscuits & banana",t:5,i:[["weetbix",30],["milk",150],["banana",.5]],st:"Two biscuits in a bowl, pour over cold milk, slice half a banana on top."},
+ {id:"oo",m:"b",n:"Overnight oats with berries",t:5,i:[["oats",50],["milk",120],["yoghurt",50],["berries",50]],st:"Stir oats, milk and yoghurt in a jar the night before. Top with frozen berries; they thaw by morning."},
+ {id:"se",m:"b",n:"Scrambled eggs on toast",t:10,i:[["eggs",2],["bread",80],["butter",10],["milk",20]],st:"Whisk eggs with a splash of milk. Cook gently in butter, stirring, until just set. Serve on buttered toast."},
+ {id:"at",m:"b",n:"Avocado & tomato toast",t:5,i:[["bread",80],["avocado",.5],["tomato",.5]],st:"Toast bread, smash avocado on top with salt and pepper, add sliced tomato."},
+ {id:"yb",m:"b",n:"Yoghurt berry bowl",t:5,i:[["yoghurt",150],["berries",60],["banana",.5]],st:"Spoon yoghurt into a bowl, top with berries and sliced banana."},
+ {id:"bp",m:"b",n:"Banana pancakes",t:20,i:[["flour",50],["eggs",.5],["milk",80],["banana",.5],["butter",5]],st:"Mash banana, whisk in egg, milk and flour. Cook small rounds in a buttered pan, 2 minutes a side."},
+
+ {id:"hw",m:"l",n:"Ham, cheese & salad wrap",t:5,i:[["wrap",1],["ham",40],["cheese",20],["lettuce",.08],["tomato",.25]],st:"Lay ham, grated cheese, lettuce and tomato on a wrap. Roll tightly, cut in half, pack with an ice brick."},
+ {id:"cs",m:"l",n:"Chicken & salad sandwich",t:5,i:[["bread",80],["chicken_breast",50],["lettuce",.08],["cucumber",.2],["butter",5]],st:"Use leftover or poached chicken, sliced. Butter bread, layer chicken, lettuce and cucumber."},
+ {id:"ps",m:"l",n:"Pasta salad",t:15,i:[["pasta",70],["corn",40],["capsicum",.25],["cucumber",.2],["cheese",20],["oil",5]],st:"Cook pasta the night before, cool. Toss with corn, diced capsicum, cucumber, cheese cubes and a little oil."},
+ {id:"vm",m:"l",n:"Cheese & veg muffins",t:30,i:[["flour",50],["eggs",.5],["milk",50],["cheese",25],["carrot",30],["spinach",10],["oil",10]],st:"Bake on Sunday: mix flour, egg, milk, oil, grated cheese, grated carrot and chopped spinach. Bake 20 min at 180°C. Keeps 3 days in the fridge."},
+ {id:"tr",m:"l",n:"Tuna rice balls",t:20,i:[["rice",70],["tuna",50],["cucumber",.2],["carrot",20]],st:"Mix cooled cooked rice with drained tuna. Shape into balls. Pack with cucumber and carrot sticks."},
+ {id:"es",m:"l",n:"Egg & lettuce sandwich",t:15,i:[["bread",80],["eggs",1],["lettuce",.08],["yoghurt",10]],st:"Hard-boil eggs, mash with a spoon of yoghurt, salt and pepper. Spread on bread with lettuce."},
+ {id:"sb",m:"l",n:"Snack box with hummus",t:5,i:[["ricecrackers",25],["cheese",30],["cucumber",.2],["carrot",40],["hummus",30]],st:"Pack rice crackers, cheese cubes, veg sticks and a small tub of hummus in a bento box."},
+ {id:"ca",m:"l",n:"Chicken & avocado wrap",t:5,i:[["wrap",1],["chicken_breast",50],["avocado",.25],["lettuce",.08]],st:"Slice chicken, mash avocado onto the wrap, add lettuce and roll. Squeeze of lemon stops browning."},
+
+ {id:"sp",m:"d",n:"Spaghetti bolognese",t:35,i:[["pasta",100],["mince",125],["passata",120],["onion",50],["carrot",40],["garlic",.1],["cheese",10],["oil",5]],st:"Brown onion, garlic and grated carrot in oil. Add mince, cook through. Add passata, simmer 20 min. Serve over pasta with cheese."},
+ {id:"sf",m:"d",n:"Chicken stir-fry & rice",t:25,i:[["chicken_thigh",150],["stirfryveg",150],["rice",80],["soy",15],["garlic",.1],["oil",10]],st:"Cook rice. Stir-fry sliced chicken in oil until golden, add garlic and frozen veg, toss 4 min, finish with soy."},
+ {id:"tc",m:"d",n:"Beef tacos",t:20,i:[["mince",120],["tacoshells",3],["tacoseas",8],["lettuce",.1],["tomato",.5],["cheese",20],["yoghurt",20]],st:"Brown mince with seasoning and a splash of water. Warm shells. Everyone builds their own with lettuce, tomato, cheese and yoghurt."},
+ {id:"ss",m:"d",n:"Tray-bake sausages & veg",t:45,i:[["sausages",150],["potato",200],["sweetpot",100],["broccoli",.25],["onion",50],["oil",10]],st:"Chop potato, sweet potato and onion, toss in oil on a tray with sausages. Bake 35 min at 200°C, add broccoli for the last 10."},
+ {id:"fc",m:"d",n:"Oven fish & chips",t:35,i:[["fish",150],["potato",250],["peas",80],["oil",10]],st:"Cut potatoes into wedges, oil and bake 30 min at 220°C. Bake fish for the last 15 min. Serve with peas."},
+ {id:"lc",m:"d",n:"Lentil & sweet potato curry",t:35,i:[["lentils",200],["coconutmilk",100],["currypaste",20],["sweetpot",100],["spinach",20],["rice",80],["onion",50]],st:"Fry onion and curry paste, add diced sweet potato and coconut milk, simmer 15 min. Add lentils and spinach. Serve on rice."},
+ {id:"fr",m:"d",n:"Chicken fried rice",t:25,i:[["rice",90],["chicken_thigh",100],["eggs",1],["peas",50],["corn",40],["soy",15],["oil",10]],st:"Best with day-old rice. Cook chicken, push aside, scramble egg, add rice, peas and corn, finish with soy."},
+ {id:"pz",m:"d",n:"Homemade pizzas",t:25,i:[["pizzabase",.5],["passata",50],["mozz",50],["ham",30],["capsicum",.25],["spinach",10]],st:"Spread passata on bases, top with ham, capsicum, spinach and cheese. Bake 12–15 min at 220°C."},
+ {id:"rc",m:"d",n:"Roast chicken & veg",t:90,i:[["chicken_whole",.25],["potato",200],["carrot",100],["broccoli",.25],["oil",10]],st:"Roast chicken 75 min at 190°C with oiled potatoes and carrots around it. Steam broccoli. Keep leftovers for lunches."},
+ {id:"ch",m:"d",n:"Bean & veg chilli",t:35,i:[["beans",200],["tomcan",200],["onion",50],["capsicum",.5],["corn",50],["rice",80],["tacoseas",8],["cheese",15]],st:"Fry onion and capsicum, add seasoning, tomatoes, beans and corn. Simmer 20 min. Serve on rice with cheese."},
+ {id:"sa",m:"d",n:"Satay chicken & rice",t:30,i:[["chicken_thigh",150],["peanutbutter",30],["coconutmilk",60],["soy",10],["rice",80],["broccoli",.25]],st:"Brown chicken pieces, stir in peanut butter, coconut milk and soy, simmer 10 min. Serve with rice and broccoli. Home dinner only: contains peanuts."},
+
+ {id:"bft",m:"b",n:"French toast with berries",t:15,i:[["bread",80],["eggs",1],["milk",50],["butter",5],["berries",40]],st:"Whisk egg and milk, soak bread slices, cook in butter 2–3 minutes a side until golden. Top with warmed berries."},
+ {id:"bbm",m:"b",n:"Bacon & egg muffins",t:15,i:[["muffins_eng",1],["bacon",30],["eggs",1],["cheese",15]],st:"Fry bacon until crisp, fry eggs until firm. Toast muffins and stack with bacon, egg and a slice of cheese."},
+ {id:"bpb",m:"b",n:"Peanut butter & banana toast",t:5,i:[["bread",80],["peanutbutter",20],["banana",.5]],st:"Toast bread, spread peanut butter, top with sliced banana. Home breakfast only: contains peanuts."},
+ {id:"bpo",m:"b",n:"Porridge with honey & banana",t:10,i:[["oats",50],["milk",200],["honey",10],["banana",.5]],st:"Simmer oats and milk 5 minutes, stirring. Top with sliced banana and a drizzle of honey."},
+ {id:"bgr",m:"b",n:"Granola & yoghurt",t:5,i:[["granola",50],["yoghurt",120],["berries",40]],st:"Layer yoghurt, granola and berries in a bowl. Most granola contains nuts, so keep it for home."},
+ {id:"bom",m:"b",n:"Veggie omelette",t:15,i:[["eggs",2],["capsicum",.25],["spinach",15],["cheese",15],["oil",5]],st:"Soften diced capsicum and spinach in oil, pour over beaten eggs, cook until set, add cheese and fold."},
+ {id:"bmu",m:"b",n:"Mushrooms & spinach on toast",t:15,i:[["bread",80],["mushrooms",70],["spinach",20],["butter",10]],st:"Fry sliced mushrooms in butter until golden, wilt in spinach, season and pile onto toast."},
+ {id:"bsm",m:"b",n:"Banana oat smoothie",t:5,i:[["milk",200],["banana",1],["oats",20],["honey",5],["yoghurt",50]],st:"Blend everything until smooth. Use a frozen banana for a thicker smoothie."},
+ {id:"bbb",m:"b",n:"Baked beans on toast",t:10,i:[["bread",80],["bakedbeans",150],["butter",5]],st:"Heat beans in a small pot until bubbling. Serve over buttered toast."},
+ {id:"bbr",m:"b",n:"Breakfast burritos",t:15,i:[["wrap",1],["eggs",1.5],["cheese",15],["tomato",.5],["avocado",.25]],st:"Scramble eggs until firm, spoon onto warm wraps with cheese, tomato and avocado, and roll up."},
+ {id:"bbi",m:"b",n:"Apple bircher muesli",t:5,i:[["oats",50],["milk",100],["yoghurt",50],["apple",.5],["raisins",15]],st:"The night before, mix oats, milk, yoghurt, grated apple and sultanas. Stir and serve cold."},
+ {id:"bct",m:"b",n:"Cheese & tomato toastie",t:10,i:[["bread",80],["cheese",30],["butter",10],["tomato",.25]],st:"Butter the outsides, fill with cheese and tomato, cook in a pan or sandwich press until golden."},
+
+ {id:"lpw",m:"l",n:"Ham & cream cheese pinwheels",t:10,i:[["wrap",1],["creamcheese",20],["ham",30],["spinach",5]],st:"Spread cream cheese over a wrap, layer ham and spinach, roll tightly and slice into rounds."},
+ {id:"ltc",m:"l",n:"Tuna & corn wrap",t:5,i:[["wrap",1],["tuna",50],["corn",30],["lettuce",.08],["yoghurt",10]],st:"Mix drained tuna, corn and a spoon of yoghurt. Spread on a wrap with lettuce and roll."},
+ {id:"lsu",m:"l",n:"Tuna & avocado sushi rolls",t:30,i:[["rice",80],["nori",1.5],["tuna",40],["cucumber",.2],["avocado",.25]],st:"Cook rice and cool. Spread on nori, add tuna, cucumber and avocado strips, roll and slice. Uses canned tuna, no raw fish."},
+ {id:"lqu",m:"l",n:"Mini veggie quiches",t:30,i:[["eggs",1],["milk",40],["cheese",25],["spinach",10],["capsicum",.15]],st:"Whisk eggs and milk, stir in cheese, spinach and capsicum. Pour into a greased muffin tray, bake 18 min at 180°C."},
+ {id:"lfr",m:"l",n:"Corn & zucchini fritters",t:25,i:[["flour",40],["eggs",.5],["corn",50],["zucchini",.3],["cheese",15],["oil",10]],st:"Grate zucchini and squeeze dry. Mix with corn, cheese, egg and flour. Fry spoonfuls 3 minutes a side."},
+ {id:"lcs",m:"l",n:"Cheese & tomato scrolls",t:30,i:[["pastry",1],["passata",20],["cheese",30]],st:"Spread passata over a pastry sheet, sprinkle cheese, roll up and slice. Bake 18 min at 200°C."},
+ {id:"lsr",m:"l",n:"Homemade sausage rolls",t:40,i:[["pastry",1],["mince",60],["carrot",20],["onion",15],["crumbs",10],["eggs",.2]],st:"Mix mince, grated carrot and onion, breadcrumbs and egg. Roll in pastry strips, slice, bake 25 min at 200°C."},
+ {id:"lhv",m:"l",n:"Hummus & veggie wrap",t:5,i:[["wrap",1],["hummus",30],["carrot",30],["cucumber",.2],["lettuce",.08]],st:"Spread hummus on a wrap, add grated carrot, cucumber and lettuce, and roll tightly."},
+ {id:"lqb",m:"l",n:"Bean & cheese quesadillas",t:15,i:[["wrap",1],["beans",60],["cheese",30],["corn",20]],st:"Mash beans onto half a wrap, top with cheese and corn, fold and toast in a pan. Cool, slice into wedges."},
+ {id:"lpp",m:"l",n:"Pita pizzas",t:15,i:[["pita",1],["passata",20],["cheese",30],["capsicum",.15]],st:"Top pita with passata, capsicum and cheese. Bake 10 min at 200°C. Cool before packing."},
+ {id:"lsp",m:"l",n:"Salmon & potato patties",t:35,i:[["tinsalmon",70],["potato",100],["eggs",.3],["crumbs",15],["oil",10]],st:"Mash boiled potato with drained salmon and egg. Shape patties, coat in breadcrumbs, pan-fry until golden."},
+ {id:"lpe",m:"l",n:"Pesto pasta salad",t:15,i:[["pasta",70],["pesto",20],["cheese",10],["cucumber",.15]],st:"Toss cooled pasta with pesto, cheese cubes and cucumber. Pesto has nuts, so it won't come up for nut-aware schools."},
+ {id:"lac",m:"l",n:"Apple, cheese & crackers box",t:5,i:[["ricecrackers",25],["cheese",30],["apple",.5],["cucumber",.2]],st:"Pack crackers, cheese slices, apple wedges (squeeze of lemon stops browning) and cucumber."},
+ {id:"lbm",m:"l",n:"Banana oat muffins",t:30,i:[["flour",40],["oats",15],["banana",.5],["eggs",.3],["milk",30],["honey",10],["oil",10]],st:"Mash banana, mix with egg, milk, honey and oil, fold in flour and oats. Bake 20 min at 180°C."},
+ {id:"lhr",m:"l",n:"Ham & cheese rolls",t:5,i:[["breadrolls",1],["ham",40],["cheese",20],["lettuce",.08],["butter",5]],st:"Butter a roll and fill with ham, cheese and lettuce."},
+ {id:"lpu",m:"l",n:"Pumpkin & spinach pasta salad",t:30,i:[["pasta",70],["pumpkin",80],["spinach",10],["cheese",15],["oil",5]],st:"Roast diced pumpkin 20 min at 200°C. Toss with cooled pasta, spinach, cheese cubes and a little oil."},
+
+ {id:"dbc",m:"d",n:"Butter chicken & rice",t:30,i:[["chicken_thigh",150],["butterchicken",120],["rice",80],["beansgreen",50]],st:"Brown diced chicken, add sauce and simmer 15 min. Serve with rice and steamed beans."},
+ {id:"dlg",m:"d",n:"Beef lasagne",t:75,i:[["lasagne",60],["mince",120],["passata",120],["onion",40],["cheese",30],["milk",80],["flour",10],["butter",10]],st:"Make a meat sauce with mince, onion and passata. Make a white sauce with butter, flour and milk. Layer with sheets and cheese, bake 40 min at 180°C."},
+ {id:"dsh",m:"d",n:"Shepherd's pie",t:60,i:[["mince",130],["onion",40],["carrot",50],["peas",50],["stock",60],["potato",250],["milk",30],["butter",10]],st:"Brown mince with onion and carrot, add stock and peas, simmer 10 min. Top with mashed potato, bake 25 min at 200°C."},
+ {id:"dhs",m:"d",n:"Honey soy drumsticks",t:50,i:[["drumsticks",250],["honey",15],["soy",15],["rice",80],["broccoli",.25]],st:"Toss drumsticks in honey and soy, bake 40 min at 200°C, turning once. Serve with rice and broccoli."},
+ {id:"dsa",m:"d",n:"Salmon, potatoes & greens",t:35,i:[["salmon",150],["potato",200],["beansgreen",70],["lemon",.25],["oil",5]],st:"Roast potato chunks 25 min at 210°C. Add salmon for the last 12 min. Serve with steamed beans and lemon."},
+ {id:"dsc",m:"d",n:"Chicken schnitzel & mash",t:40,i:[["chicken_breast",150],["flour",10],["eggs",.3],["crumbs",30],["oil",15],["potato",250],["milk",30],["butter",10],["peas",60]],st:"Flatten chicken, dip in flour, egg and crumbs. Pan-fry 4 minutes a side. Serve with mash and peas."},
+ {id:"dps",m:"d",n:"Pumpkin soup & crusty bread",t:40,i:[["pumpkin",300],["onion",50],["stock",200],["cream",30],["bread",50]],st:"Soften onion, add diced pumpkin and stock, simmer 20 min. Blend, stir through cream. Serve with bread."},
+ {id:"dcs",m:"d",n:"Chicken & vegetable soup",t:45,i:[["stock",250],["chicken_thigh",80],["carrot",50],["potato",80],["onion",30],["pasta",20]],st:"Simmer diced chicken, onion, carrot and potato in stock 25 min. Add pasta for the last 10 min."},
+ {id:"dbb",m:"d",n:"Beef & broccoli stir-fry",t:25,i:[["beef_steak",140],["broccoli",.3],["soy",15],["garlic",.1],["rice",80],["oil",10]],st:"Slice steak thinly, stir-fry in batches. Add garlic and broccoli, splash of water, then soy. Serve on rice."},
+ {id:"dtn",m:"d",n:"Teriyaki chicken noodles",t:25,i:[["chicken_thigh",140],["eggnoodles",80],["teriyaki",25],["stirfryveg",120],["oil",10]],st:"Cook noodles. Stir-fry chicken until golden, add veg, then noodles and teriyaki. Toss 2 minutes."},
+ {id:"dpt",m:"d",n:"Prawn rice noodles",t:25,i:[["prawns",120],["ricenoodles",80],["eggs",.5],["springonion",.15],["soy",15],["lemon",.25],["oil",10]],st:"Soak noodles. Stir-fry prawns until pink, push aside, scramble egg, add noodles, soy and spring onion. Finish with lemon."},
+ {id:"dtf",m:"d",n:"Tofu & veg stir-fry",t:25,i:[["tofu",120],["stirfryveg",150],["soy",15],["garlic",.1],["rice",80],["oil",10]],st:"Cube tofu, fry until crisp. Add garlic and veg, toss 4 minutes, finish with soy. Serve on rice."},
+ {id:"dcc",m:"d",n:"Chickpea & spinach curry",t:30,i:[["chickpeas",200],["tomcan",150],["currypaste",20],["coconutmilk",60],["spinach",20],["onion",40],["rice",80]],st:"Fry onion and curry paste, add tomatoes, chickpeas and coconut milk, simmer 15 min. Stir in spinach. Serve on rice."},
+ {id:"dbu",m:"d",n:"Homemade beef burgers",t:30,i:[["breadrolls",1],["mince",130],["onion",20],["lettuce",.1],["tomato",.5],["cheese",20]],st:"Mix mince with grated onion, shape patties and cook 4–5 minutes a side. Serve in rolls with salad and cheese."},
+ {id:"dna",m:"d",n:"Beef nachos",t:25,i:[["cornchips",60],["mince",100],["beans",80],["tacoseas",6],["salsa",50],["cheese",30],["avocado",.25]],st:"Brown mince with seasoning and beans. Layer over corn chips with salsa and cheese, bake 10 min. Top with avocado."},
+ {id:"dla",m:"d",n:"Lamb chops & roast veg",t:50,i:[["lamb",180],["potato",200],["pumpkin",100],["beansgreen",60],["oil",10]],st:"Roast potato and pumpkin 35 min at 200°C. Grill or pan-fry chops 4 minutes a side. Serve with beans."},
+ {id:"dst",m:"d",n:"Steak, chips & salad",t:40,i:[["beef_steak",180],["potato",250],["lettuce",.15],["tomato",.5],["cucumber",.25],["oil",10]],st:"Bake potato wedges 30 min at 220°C. Pan-fry steak to your liking, rest 5 min. Serve with a simple salad."},
+ {id:"dmp",m:"d",n:"Creamy mushroom chicken pasta",t:30,i:[["pasta",100],["chicken_breast",120],["mushrooms",80],["cream",60],["spinach",15],["parmesan",10],["garlic",.1]],st:"Cook pasta. Brown chicken, add mushrooms and garlic, then cream. Simmer 5 min, stir in spinach, parmesan and pasta."},
+ {id:"dgn",m:"d",n:"Tomato gnocchi bake",t:30,i:[["gnocchi",150],["passata",120],["mozz",40],["spinach",15]],st:"Boil gnocchi until they float. Toss with passata and spinach in a dish, top with mozzarella, bake 15 min at 200°C."},
+ {id:"dbp",m:"d",n:"Bacon & pea pasta",t:20,i:[["pasta",100],["bacon",50],["peas",60],["cream",40],["parmesan",10]],st:"Cook pasta, adding peas for the last 3 min. Fry bacon until crisp, add cream, then pasta, peas and parmesan."},
+ {id:"dft",m:"d",n:"Fish tacos",t:25,i:[["fish",130],["wrap",1.5],["cabbage",.1],["avocado",.25],["lemon",.25],["yoghurt",30]],st:"Bake fish 15 min at 200°C and flake. Serve in warm wraps with shredded cabbage, avocado, yoghurt and lemon."},
+ {id:"dmc",m:"d",n:"Mac & cheese with broccoli",t:30,i:[["pasta",100],["cheese",50],["milk",120],["butter",10],["flour",10],["broccoli",.25]],st:"Cook pasta with broccoli florets. Make a cheese sauce with butter, flour, milk and cheese. Stir together."},
+ {id:"dpc",m:"d",n:"Pork chops, apple & mash",t:35,i:[["pork_chops",180],["apple",.5],["potato",250],["milk",30],["butter",10],["beansgreen",60]],st:"Pan-fry chops 4–5 minutes a side, then soften apple slices in the pan. Serve with mash and beans."},
+ {id:"dmr",m:"d",n:"Mexican bean rice bowls",t:25,i:[["rice",80],["beans",100],["corn",50],["capsicum",.3],["tacoseas",6],["salsa",40],["avocado",.25],["cheese",20]],st:"Cook rice. Fry capsicum with seasoning, add beans and corn. Build bowls with rice, beans, salsa, avocado and cheese."},
+ {id:"dsb",m:"d",n:"Sausage pasta bake",t:40,i:[["sausages",120],["pasta",90],["passata",120],["zucchini",.3],["mozz",30]],st:"Brown sausages and slice. Mix with cooked pasta, passata and diced zucchini, top with cheese, bake 20 min at 200°C."},
+ {id:"dtd",m:"d",n:"Drumstick tray bake",t:55,i:[["drumsticks",250],["potato",200],["carrot",80],["zucchini",.3],["oil",10]],st:"Toss drumsticks and chopped veg in oil and seasoning. Bake 45 min at 200°C, adding zucchini for the last 15."},
+ {id:"dmi",m:"d",n:"Minestrone soup",t:40,i:[["beans",100],["tomcan",150],["stock",200],["pasta",30],["carrot",40],["zucchini",.25],["onion",30],["parmesan",8]],st:"Soften onion and carrot, add tomatoes, stock and beans, simmer 15 min. Add pasta and zucchini for 10 min. Top with parmesan."},
+ {id:"dpp",m:"d",n:"Pesto chicken pasta",t:25,i:[["pasta",100],["chicken_breast",120],["pesto",25],["spinach",15],["tomato",.5],["parmesan",8]],st:"Cook pasta. Pan-fry sliced chicken, toss with pasta, pesto, spinach and tomato. Top with parmesan. Contains nuts."},
+];
+const BASE_C=Object.keys(C);
+let R=[],RBY={};
+function syncCustom(){
+ Object.keys(C).forEach(k=>{if(!BASE_C.includes(k))delete C[k]});
+ Object.entries(S.customIng||{}).forEach(([k,v])=>C[k]=v);
+ R=BASE_R.concat(S.custom||[]);RBY=Object.fromEntries(R.map(r=>[r.id,r]));
+ (S.custom||[]).forEach(r=>{if(r.preg)PREG[r.id]={avoid:"You marked this as containing a pregnancy high-risk food."};else delete PREG[r.id]});
+ if(S.plan)S.plan.forEach(d=>Object.keys(d).forEach(k=>{if(d[k]&&!RBY[d[k]])d[k]=null}));
+ fixSnacks();
+ fixBoxes();
+}
+/* Adult snacks: one shared pack each per week (more packs for bigger groups of adults) */
+const SNACKS=[
+ {id:"chips",n:"Chips",i:[["sn_chips",1]]},
+ {id:"choc",n:"Chocolate block",i:[["sn_choc",1]]},
+ {id:"darkchoc",n:"Dark chocolate",i:[["sn_darkchoc",1]]},
+ {id:"bisc",n:"Chocolate biscuits",i:[["sn_bisc",1]]},
+ {id:"pop",n:"Popcorn",i:[["sn_pop",1]]},
+ {id:"nuts",n:"Mixed nuts",i:[["sn_nuts",1]]},
+ {id:"lolly",n:"Lollies",i:[["sn_lolly",1]]},
+ {id:"ice",n:"Ice cream",i:[["sn_ice",1]]},
+ {id:"bars",n:"Muesli bars",i:[["sn_bars",1]]},
+ {id:"cheesecrack",n:"Cheese & crackers",i:[["sn_crack",1],["cheese",250]]},
+ {id:"dipcrack",n:"French onion dip & crackers",i:[["sn_dip",1],["sn_crack",1]]},
+ {id:"nachos",n:"Corn chips & salsa",i:[["cornchips",230],["salsa",300]]},
+ {id:"pretz",n:"Pretzels",i:[["sn_pretz",1]]},
+ {id:"jerky",n:"Beef jerky",i:[["sn_jerky",1]]},
+ {id:"ricecake",n:"Rice cakes",i:[["sn_ricecake",1]]},
+ {id:"dried",n:"Dried fruit mix",i:[["sn_dried",1]]},
+];
+const SBY=Object.fromEntries(SNACKS.map(x=>[x.id,x]));
+const adults=()=>S.members.filter(m=>(+m.age||0)>=18);
+function snackFits(sn){const nd=needs(adults(),"a");const al=new Set();sn.i.forEach(([x])=>C[x].a.forEach(a=>al.add(a)));return ![...al].some(a=>nd.excl.has(a))}
+function snackPacks(){return Math.max(1,Math.ceil(adults().length/2))}
+function snackCost(sn){return sn.i.reduce((t,[x,q])=>t+Math.min(...storePrices(C[x]))*Math.ceil(q*snackPacks()/C[x].p-1e-6),0)}
+function pickSnacks(){
+ const n=adults().length?Math.max(0,Math.min(10,+S.rules.snackCount||0)):0;
+ const ok=SNACKS.filter(snackFits);const bag=shuffle(ok);
+ S.snacks=Array.from({length:n},(_,i)=>bag.length?bag[i%bag.length].id:null);
+}
+function fixSnacks(){
+ if(S.rules.snackCount==null)S.rules.snackCount=4;
+ const n=adults().length?+S.rules.snackCount:0;
+ if(!Array.isArray(S.snacks)||S.snacks.length!==n)pickSnacks();
+}
+/* School lunchbox kit: per child, per school day */
+const BOX={
+ f:[{id:"apple",n:"Apple",i:[["apple",1]]},{id:"banana",n:"Banana",i:[["banana",1]]},{id:"mandarin",n:"Mandarin",i:[["mandarin",1]]},{id:"pear",n:"Pear",i:[["pear",1]]},{id:"kiwi",n:"Kiwifruit",i:[["kiwi",1]]},{id:"grapes",n:"Grapes",i:[["grapes",80]]},{id:"straw",n:"Strawberries",i:[["strawberries",60]]},{id:"blue",n:"Blueberries",i:[["blueberries",40]]}],
+ s:[{id:"cream",n:"Cream biscuits pack",i:[["lb_cream",1]]},{id:"shapes",n:"Savoury biscuits pack",i:[["lb_shapes",1]]},{id:"teddy",n:"Teddy biscuits pack",i:[["lb_teddy",1]]},{id:"rice",n:"Rice crackers pack",i:[["lb_rice",1]]},{id:"pop",n:"Popcorn pack",i:[["lb_pop",1]]},{id:"chips",n:"Chips pack",i:[["lb_chips",1]]},{id:"bar",n:"Muesli bar (nut-free)",i:[["lb_bar",1]]},{id:"sultana",n:"Sultana box",i:[["lb_sultana",1]]},{id:"pretzel",n:"Pretzels pack",i:[["lb_pretzel",1]]},{id:"strip",n:"Fruit strip",i:[["lb_fruitstrip",1]]},{id:"cheesecrack",n:"Cheese & crackers pack",i:[["lb_cheesecrack",1]]}],
+ x:[{id:"yog",n:"Yoghurt pouch",i:[["lb_yog",1]]},{id:"coyog",n:"Dairy-free yoghurt pouch",i:[["lb_coyog",1]]},{id:"jelly",n:"Jelly cup",i:[["lb_jelly",1]]},{id:"cheesestick",n:"Cheese stick",i:[["lb_cheesestick",1]]},{id:"fruitcup",n:"Fruit cup",i:[["lb_fruitcup",1]]},{id:"custard",n:"Custard cup",i:[["lb_custard",1]]},{id:"puree",n:"Fruit puree pouch",i:[["lb_puree",1]]}]
+};
+const BOXBY=Object.fromEntries([...BOX.f,...BOX.s,...BOX.x].map(x=>[x.id,x]));
+const BOX_PARTS=[["f",0,"Fruit 1"],["f",1,"Fruit 2"],["s",0,"Snack 1"],["s",1,"Snack 2"],["x",0,"Extra"]];
+const schoolKids=()=>S.members.filter(m=>m.school);
+function boxFits(item){const nd=needs(schoolKids(),"s");const al=new Set();item.i.forEach(([x])=>C[x].a.forEach(a=>al.add(a)));return ![...al].some(a=>nd.excl.has(a))}
+function boxOn(){return S.rules.lunchKit!==false&&schoolKids().length>0}
+function pickBoxes(){
+ if(!boxOn()){S.box=null;return}
+ /* A small set each week so multipacks get used up: 4 fruits, 3 snacks, 2 extras, rotated */
+ const set=(k,n)=>shuffle(BOX[k].filter(boxFits)).slice(0,n).map(x=>x.id);
+ const F=set("f",4),SN=set("s",3),X=set("x",2);
+ const at=(arr,i)=>arr.length?arr[i%arr.length]:null;
+ S.box=DAYS.map((_,d)=>d>4?null:{f:[at(F,d),at(F,d+1)],s:[at(SN,d),at(SN,d+1)],x:[at(X,d)]});
+}
+function fixBoxes(){
+ if(S.rules.lunchKit==null)S.rules.lunchKit=true;
+ if(!boxOn()){S.box=null;return}
+ if(!Array.isArray(S.box)||S.box.length!==7||!S.box[0])pickBoxes();
+}
+function boxCost(day){
+ const b=S.box?.[day];if(!b||!boxOn())return 0;const k=schoolKids().length;
+ return BOX_PARTS.reduce((t,[g,i])=>{const it=BOXBY[b[g][i]];return t+(it?it.i.reduce((a,[x,q])=>a+unitCost(x)*q*k,0):0)},0);
+}
+function boxSummary(day){
+ const b=S.box?.[day];if(!b)return "";const nm=id=>BOXBY[id]?.n||"–";
+ return `<div class="boxline"><span class="label">In the lunchbox</span> ${esc(nm(b.f[0]))}, ${esc(nm(b.f[1]))} · ${esc(nm(b.s[0]))}, ${esc(nm(b.s[1]))} · ${esc(nm(b.x[0]))}</div>`;
+}
+const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const SLOTS={b:"Breakfast",s:"School lunch",a:"Lunch",d:"Dinner"};
+
+/* ---------- State ---------- */
+const KEY="week-on-a-plate-v1";
+const DEFAULT={
+ example:true,
+ members:[
+  {id:1,name:"Parent 1",age:38,school:false,d:[]},
+  {id:2,name:"Parent 2",age:36,school:false,d:[]},
+  {id:3,name:"Child (11)",age:11,school:true,d:[]},
+  {id:4,name:"Child (7)",age:7,school:true,d:["df"]},
+ ],
+ rules:{nutFree:true,eggFree:false,crunch:true,adultLunch:true,snackCount:4,lunchKit:true},
+ box:null,
+ snacks:null,
+ postcode:"",
+ plan:null,
+ have:{},
+};
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))||null}catch(e){S=null}
+if(!S)S=structuredClone(DEFAULT);
+S.custom=S.custom||[];S.customIng=S.customIng||{};
+/* Shared household: one document both of you read and write; this browser keeps a copy too */
+let firstSnap=true,ref=null,lastSent="",writing=false,again=false,canWrite=true,pushTimer=null,sharedExists=false;
+function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box}}
+function setSync(kind){
+ const el=document.getElementById("sync");if(!el)return;el.className="sync";
+ if(kind==="ok"){el.classList.add("ok");el.innerHTML=`<span class="dot"></span>Shared · up to date`}
+ else if(kind==="saving"){el.classList.add("ok");el.innerHTML=`<span class="dot"></span>Saving…`}
+ else if(kind==="empty"){el.innerHTML=`<button class="btn small" id="startShare">Share this household</button>`}
+ else if(kind==="ro"){el.innerHTML=`<span class="dot"></span>View only. Ask the owner to make you an Editor.`}
+ else if(kind==="err"){el.classList.add("err");el.innerHTML=`<span class="dot"></span>Couldn't sync. Changes are kept on this device.`}
+ else el.innerHTML=`<span class="dot"></span>Saved on this device`;
+}
+async function push(){
+ if(!ref||!canWrite)return;
+ if(writing){again=true;return}
+ const str=JSON.stringify(sharedState());if(str===lastSent&&sharedExists)return;
+ writing=true;setSync("saving");
+ try{await ref.set({state:JSON.parse(str),updated:Date.now()});lastSent=str;sharedExists=true;setSync("ok")}
+ catch(e){if(e&&(e.code==="invalid_argument"||e.code==="not_granted")){canWrite=false;setSync("ro")}else setSync("err")}
+ writing=false;if(again){again=false;push()}
+}
+function save(){
+ try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+ if(gh){ghDirty=true;ghQueue()}
+ if(ref&&canWrite&&sharedExists){clearTimeout(pushTimer);pushTimer=setTimeout(push,700)}
+}
+/* ---------- Sync through a GitHub repository (phone and PC apps) ----------
+   The household is stored as data/household.json in your repository.
+   Each device reads it on open, every 45 seconds and when you come back to the app,
+   and writes it a moment after you change something. */
+const GH_KEY="woap-github",GH_PATH="data/household.json";
+const IN_CLAUDE=!!(window.claude&&typeof window.claude.use==="function");
+let gh=null,ghSha=null,ghBusy=false,ghAgain=false,ghTimer=null,ghDirty=false,ghFirst=true,ghMsg="",ghOkAt=0;
+function ghDefaults(){
+ const d={owner:"",repo:"week-on-a-plate",token:""};
+ const h=location.hostname;
+ if(h.endsWith(".github.io")){d.owner=h.split(".")[0];const seg=location.pathname.split("/").filter(Boolean)[0];if(seg&&!seg.includes("."))d.repo=seg}
+ try{if(window.AndroidApp&&typeof AndroidApp.syncConfig==="function"){const c=JSON.parse(AndroidApp.syncConfig()||"{}");["owner","repo","token"].forEach(k=>{if(c[k])d[k]=c[k]})}}catch(e){}
+ return d;
+}
+function ghLoad(){
+ try{const v=JSON.parse(localStorage.getItem(GH_KEY)||"null");if(v&&v.token&&v.owner&&v.repo)return v}catch(e){}
+ const d=ghDefaults();return d.token&&d.owner&&d.repo?d:null;
+}
+function ghStore(v){try{v?localStorage.setItem(GH_KEY,JSON.stringify(v)):localStorage.removeItem(GH_KEY)}catch(e){}}
+const ghRepoUrl=()=>`https://api.github.com/repos/${encodeURIComponent(gh.owner)}/${encodeURIComponent(gh.repo)}`;
+const ghHeaders=()=>({"Authorization":"Bearer "+gh.token,"Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"});
+function b64enc(str){const bytes=new TextEncoder().encode(str);let bin="";for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return btoa(bin)}
+function b64dec(b){return new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\s/g,"")),c=>c.charCodeAt(0)))}
+function ghErrText(st){
+ if(st===401)return "GitHub didn't accept the token. Check it under Household.";
+ if(st===403)return "The token can't change this repository. It needs Contents: Read and write.";
+ if(st===404)return `Can't find the repository ${gh?gh.owner+"/"+gh.repo:""}. Check the names under Household.`;
+ return "Couldn't reach GitHub. Changes are kept on this device and will sync later.";
+}
+function ghShow(kind){
+ const el=document.getElementById("sync");if(!el)return;el.className="sync";
+ if(kind==="ok"){el.classList.add("ok");el.innerHTML=`<span class="dot"></span>Synced with GitHub`}
+ else if(kind==="saving"){el.classList.add("ok");el.innerHTML=`<span class="dot"></span>Syncing…`}
+ else {el.classList.add("err");el.innerHTML=`<span class="dot"></span>${esc(ghMsg)}`}
+}
+async function ghGet(){
+ const r=await fetch(ghRepoUrl()+"/contents/"+GH_PATH,{headers:ghHeaders(),cache:"no-store"});
+ if(r.status===404){
+  const rr=await fetch(ghRepoUrl(),{headers:ghHeaders(),cache:"no-store"});
+  if(rr.ok)return {missing:true};
+  throw {status:rr.status===404?404:rr.status};
+ }
+ if(!r.ok)throw {status:r.status};
+ const j=await r.json();
+ let state=null;try{state=JSON.parse(b64dec(j.content)).state}catch(e){state=null}
+ return {sha:j.sha,state};
+}
+async function ghPut(){
+ const doc={app:"week-on-a-plate",version:1,updated:new Date().toISOString(),state:sharedState()};
+ const body={message:"Update meal plan",content:b64enc(JSON.stringify(doc,null,1))};
+ if(ghSha)body.sha=ghSha;
+ const r=await fetch(ghRepoUrl()+"/contents/"+GH_PATH,{method:"PUT",headers:{...ghHeaders(),"Content-Type":"application/json"},body:JSON.stringify(body)});
+ if(r.status===409||r.status===422)return {conflict:true};
+ if(!r.ok)throw {status:r.status};
+ const j=await r.json();ghSha=j.content.sha;return {};
+}
+/* Keep recipes and ingredients from both sides so nobody's new recipe is lost */
+function unionExtras(into,from){
+ let added=false;
+ const ids=new Set((into.custom||[]).map(r=>r.id));
+ (from.custom||[]).forEach(r=>{if(!ids.has(r.id)){into.custom=(into.custom||[]).concat([r]);added=true}});
+ Object.entries(from.customIng||{}).forEach(([k,v])=>{into.customIng=into.customIng||{};if(!into.customIng[k]){into.customIng[k]=v;added=true}});
+ return added;
+}
+function busyEditing(){const a=document.activeElement;return !!(a&&a.closest&&a.closest("main,.sheet")&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||!!draft||!!pk}
+function applyRemote(st){
+ S=Object.assign({},S,st);S.custom=S.custom||[];S.customIng=S.customIng||{};S.have=S.have||{};
+ try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+ syncCustom();if(!S.plan)generate();render();
+}
+async function ghPull(force){
+ if(!gh||ghBusy)return;
+ if(ghDirty){ghQueue(0);return}
+ if(!force&&!ghFirst&&busyEditing())return;
+ ghBusy=true;
+ try{
+  const res=await ghGet();
+  if(res.missing){ghSha=null;ghDirty=true;ghBusy=false;ghFirst=false;await ghPush();return}
+  if(res.sha!==ghSha&&res.state){
+   ghSha=res.sha;
+   const extra=ghFirst?unionExtras(res.state,sharedState()):false;
+   applyRemote(res.state);
+   if(extra)ghDirty=true;
+  }
+  ghFirst=false;ghOkAt=Date.now();ghShow("ok");
+ }catch(e){ghMsg=ghErrText(e&&e.status);ghShow("err")}
+ finally{ghBusy=false}
+ if(ghDirty)ghQueue(0);
+}
+async function ghPush(){
+ if(!gh)return;
+ if(ghBusy){ghAgain=true;return}
+ ghBusy=true;ghShow("saving");
+ try{
+  for(let attempt=0;attempt<4;attempt++){
+   const r=await ghPut();
+   if(!r.conflict){ghDirty=false;ghOkAt=Date.now();ghShow("ok");break}
+   /* someone else saved first: take their recipes too, then save ours on top */
+   const res=await ghGet();
+   if(res.missing)ghSha=null;else{ghSha=res.sha;if(res.state&&unionExtras(S,res.state)){syncCustom();render()}}
+  }
+ }catch(e){ghMsg=ghErrText(e&&e.status);ghShow("err")}
+ finally{ghBusy=false;if(ghAgain){ghAgain=false;ghPush()}}
+}
+function ghQueue(ms){clearTimeout(ghTimer);ghTimer=setTimeout(ghPush,ms==null?1500:ms)}
+function ghStart(){
+ gh=ghLoad();if(!gh)return false;
+ ghFirst=true;ghSha=null;renderHouse();ghShow("saving");ghPull(true);
+ if(!ghStart.wired){
+  ghStart.wired=true;
+  setInterval(()=>{if(gh&&!document.hidden)ghPull()},45000);
+  document.addEventListener("visibilitychange",()=>{if(gh&&!document.hidden)ghPull()});
+  window.addEventListener("focus",()=>{if(gh)ghPull()});
+  window.addEventListener("online",()=>{if(gh)ghPull(true)});
+ }
+ return true;
+}
+async function ghConnect(owner,repo,token){
+ const prev=gh;gh={owner:owner.trim(),repo:repo.trim(),token:token.trim()};
+ if(!gh.owner||!gh.repo||!gh.token){gh=prev;return "Fill in your GitHub username, the repository name and the token."}
+ try{const r=await fetch(ghRepoUrl(),{headers:ghHeaders(),cache:"no-store"});
+  if(!r.ok){const m=ghErrText(r.status);gh=prev;return m}
+  const j=await r.json();if(j.permissions&&j.permissions.push===false){gh=prev;return "This token can read the repository but not change it. It needs Contents: Read and write."}
+ }catch(e){gh=prev;return "Couldn't reach GitHub. Check your internet connection and try again."}
+ ghStore(gh);ghStart();return "";
+}
+function ghDisconnect(){ghStore(null);gh=null;ghSha=null;clearTimeout(ghTimer);setSync("local")}
+async function connectShared(){
+ if(ghStart())return; /* GitHub sync replaces Claude sharing on this device */
+ setSync("local");
+ if(!window.claude||typeof window.claude.use!=="function")return;
+ let db=null;try{db=await window.claude.use("db")}catch(e){db=null}
+ if(!db)return;
+ ref=db.doc("household/main");
+ ref.onSnapshot(snap=>{
+  if(snap.metadata.hasPendingWrites)return;
+  if(!snap.exists){sharedExists=false;setSync(canWrite?"empty":"ro");return}
+  sharedExists=true;
+  const d=snap.data();const str=JSON.stringify(d.state||{});
+  if(str===lastSent){setSync("ok");return}
+  lastSent=str;
+  const st=JSON.parse(str);
+  /* Never lose this device's own recipes: on first contact, merge them into the shared copy */
+  let extra=false;
+  if(firstSnap){
+   const have=new Set((st.custom||[]).map(r=>r.id));
+   const mine=(S.custom||[]).filter(r=>!have.has(r.id));
+   if(mine.length){st.custom=(st.custom||[]).concat(mine);extra=true}
+   const ingIds=new Set(Object.keys(st.customIng||{}));
+   Object.entries(S.customIng||{}).forEach(([k,v])=>{if(!ingIds.has(k)){st.customIng=st.customIng||{};st.customIng[k]=v;extra=true}});
+  }
+  firstSnap=false;
+  S=Object.assign({},S,st);S.custom=S.custom||[];S.customIng=S.customIng||{};
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+  syncCustom();render();setSync("ok");
+  if(extra){lastSent="";push()}
+ },()=>setSync("err"));
+}
+
+/* ---------- Logic ---------- */
+function portion(age){age=+age||0;if(age<4)return .4;if(age<9)return .6;if(age<14)return .85;if(age<19)return 1.1;if(age<65)return 1;return .9}
+function eaters(type,day){
+ const ms=S.members;
+ if(type==="s")return day<5?ms.filter(m=>m.school):[];
+ if(type==="a")return S.rules.adultLunch?(day<5?ms.filter(m=>!m.school):ms):[];
+ return ms;
+}
+function slotTypes(day){
+ const t=["b"];
+ if(day<5&&S.members.some(m=>m.school))t.push("s");
+ if(S.rules.adultLunch&&eaters("a",day).length)t.push("a");
+ t.push("d");return t;
+}
+function needs(ms,type){
+ const set=new Set(),swaps=new Set();let preg=false;
+ ms.forEach(m=>m.d.forEach(id=>{const d=DIETS.find(x=>x.id===id);if(!d)return;d.x.forEach(a=>set.add(a));if(d.sw)swaps.add(d.sw);if(d.preg)preg=true}));
+ if(type==="s"){if(S.rules.nutFree)set.add("nuts");if(S.rules.eggFree)set.add("egg")}
+ return {excl:set,swaps,preg};
+}
+function resolve(r,nd){
+ const ing=r.i.map(([id,q])=>{let x=id;nd.swaps.forEach(sw=>{if(SWAP[sw][x])x=SWAP[sw][x]});return [x,q,x!==id]});
+ const al=new Set();ing.forEach(([id])=>C[id].a.forEach(a=>al.add(a)));
+ const bad=[...al].filter(a=>nd.excl.has(a));
+ return {ing,al:[...al],ok:bad.length===0,bad};
+}
+const MEAL_WORD={b:"breakfast",l:"lunch",d:"dinner"};
+function whyNot(r,day,type){
+ const want=type==="b"?"b":type==="d"?"d":"l";const out=[];
+ if(r.m!==want)out.push(`Saved as a ${MEAL_WORD[r.m]} recipe`);
+ const ms=eaters(type,day);
+ ms.forEach(m=>{
+  const nd=needs([m],"x");const al=resolve(r,nd).al;
+  const hit=[...nd.excl].filter(a=>al.includes(a));
+  if(hit.length)out.push(`Has ${hit.map(a=>ALLERGEN_LABEL[a].toLowerCase()).join(", ")}: not suitable for ${m.name}`);
+  if(nd.preg&&PREG[r.id]?.avoid)out.push(`Pregnancy risk for ${m.name}`);
+ });
+ if(type==="s"){const al=resolve(r,needs(ms,"x")).al;
+  if(S.rules.nutFree&&al.includes("nuts"))out.push("Has nuts: breaks the nut-aware school rule");
+  if(S.rules.eggFree&&al.includes("egg"))out.push("Has egg: breaks the egg-aware class rule");}
+ return out;
+}
+function pool(type,ms){
+ const m=type==="b"?"b":type==="d"?"d":"l";const nd=needs(ms,type);
+ return R.filter(r=>r.m===m&&resolve(r,nd).ok&&!(nd.preg&&PREG[r.id]?.avoid));
+}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function generate(){
+ const plan=DAYS.map(()=>({}));
+ ["b","s","a","d"].forEach(type=>{
+  let bag=[];
+  DAYS.forEach((_,day)=>{
+   if(!slotTypes(day).includes(type))return;
+   const p=pool(type,eaters(type,day));if(!p.length){plan[day][type]=null;return}
+   if(!bag.length)bag=shuffle(p);
+   plan[day][type]=bag.pop().id;
+  });
+ });
+ S.plan=plan;
+ pickSnacks();
+ pickBoxes();
+}
+function reroll(day,type){
+ const p=pool(type,eaters(type,day)).filter(r=>r.id!==S.plan[day][type]);
+ if(p.length)S.plan[day][type]=p[Math.floor(Math.random()*p.length)].id;
+}
+function unitCost(id){const c=C[id];return Math.min(...storePrices(c))/c.p}
+function mealCost(day,type){
+ const id=S.plan?.[day]?.[type];if(!id||!RBY[id])return 0;
+ const ms=eaters(type,day);const nd=needs(ms,type);const f=ms.reduce((s,m)=>s+portion(m.age),0);
+ return resolve(RBY[id],nd).ing.reduce((s,[x,q])=>s+unitCost(x)*q*f,0);
+}
+function shopping(){
+ const tot={};
+ const add=(id,q,why)=>{tot[id]=tot[id]||{q:0,why:new Set()};tot[id].q+=q;if(why)tot[id].why.add(why)};
+ if(!S.plan)return [];
+ DAYS.forEach((_,day)=>slotTypes(day).forEach(type=>{
+  const id=S.plan[day]?.[type];if(!id||!RBY[id])return;
+  const ms=eaters(type,day);const nd=needs(ms,type);const f=ms.reduce((s,m)=>s+portion(m.age),0);
+  resolve(RBY[id],nd).ing.forEach(([x,q])=>add(x,q*f,RBY[id].n));
+ }));
+ const sp=snackPacks();(S.snacks||[]).forEach(id=>{const sn=SBY[id];if(sn)sn.i.forEach(([x,q])=>add(x,q*sp,"Adult snacks: "+sn.n))});
+ if(boxOn()&&S.box){const k=schoolKids().length;S.box.forEach((b,d)=>{if(!b)return;BOX_PARTS.forEach(([g,i])=>{const it=BOXBY[b[g][i]];if(it)it.i.forEach(([x,q])=>add(x,q*k,"Lunchbox: "+it.n))})})}
+ if(S.rules.crunch&&!boxOn()){const k=S.members.filter(m=>m.school).length;if(k){add("apple",k*3,"Crunch & Sip fruit");add("banana",k*2,"Crunch & Sip fruit")}}
+ return Object.entries(tot).map(([id,v])=>{
+  const c=C[id];const packs=Math.max(1,Math.ceil(v.q/c.p-1e-6));
+  const prices=storePrices(c).map(p=>p*packs);const best=prices.indexOf(Math.min(...prices));
+  return {id,c,q:v.q,packs,prices,best,why:[...v.why]};
+ }).sort((a,b)=>a.c.s-b.c.s||a.c.n.localeCompare(b.c.n));
+}
+function fmtQ(q,u){
+ if(u==="g")return q>=1000?(q/1000).toFixed(2).replace(/\.?0+$/,"")+" kg":Math.ceil(q)+" g";
+ if(u==="ml")return q>=1000?(q/1000).toFixed(2).replace(/\.?0+$/,"")+" L":Math.ceil(q)+" ml";
+ return (Math.round(q*10)/10)+"";
+}
+const $=s=>document.querySelector(s);
+const money=v=>"$"+v.toFixed(2);
+function searchTerm(c){return (c.q||c.n).replace(/\s*\(\d+\)/g,"").replace(/\s+\d+(\.\d+)?\s*(g|kg|ml|L)\b.*$/i,"").replace(/\s*\(frozen\)/i," frozen").trim()}
+function shopLinks(c){const t=encodeURIComponent(searchTerm(c));
+ return `<div class="shoplinks"><a class="btn small" href="https://www.coles.com.au/search/products?q=${t}" target="_blank" rel="noopener" aria-label="Find ${esc(searchTerm(c))} at Coles">Coles</a><a class="btn small" href="https://www.woolworths.com.au/shop/search/products?searchTerm=${t}" target="_blank" rel="noopener" aria-label="Find ${esc(searchTerm(c))} at Woolworths">Woolies</a></div>`}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------- Render ---------- */
+function renderWeek(){
+ const el=$("#tab-week");
+ if(!S.members.length){el.innerHTML=`<div class="empty">Add the people you're feeding in <b>Household</b> to build a plan.</div>`;return}
+ if(!S.plan)generate();
+ const kids=S.members.filter(m=>m.school);
+ let h=`<div class="bar"><div><h2>Meals for the week</h2><p class="lead">Every meal suits everyone eating it. School lunches follow your school's rules and need no heating. Tap any meal to search for a different one, or tap ↻ for a random pick.</p>${S.example?`<p class="note"><span class="tag ok">Example household</span> Edit it under Household.</p>`:""}</div><button class="btn primary" id="gen">New week's plan</button></div><div class="days">`;
+ DAYS.forEach((dn,day)=>{
+  const types=slotTypes(day);
+  const dc=types.reduce((s,t)=>s+mealCost(day,t),0)+boxCost(day);
+  h+=`<article class="day"><header><span class="d">${dn}</span><span class="c">≈ ${money(dc)}</span></header>`;
+  types.forEach(type=>{
+   const ms=eaters(type,day);const p=pool(type,ms);const cur=S.plan[day]?.[type];
+   const who=type==="s"?kids.map(k=>k.name).join(", "):type==="a"?ms.map(m=>m.name).join(", "):"";
+   const nd=needs(ms,type);const sw=cur&&RBY[cur]?resolve(RBY[cur],nd).ing.filter(x=>x[2]).map(x=>C[x[0]].n):[];
+   h+=`<div class="slot${type==="s"?" school":""}"><div class="top"><span class="label">${SLOTS[type]}${type==="s"&&S.rules.crunch?" · Crunch & Sip":""}</span><button class="reroll" data-rr="${day},${type}" aria-label="Pick another ${SLOTS[type]} for ${dn}">↻</button></div>`;
+   if(!p.length)h+=`<div class="meta">No recipe fits everyone's needs here yet.</div>`;
+   else h+=`<button class="pick" data-pick="${day},${type}" aria-haspopup="dialog"><span>${cur&&RBY[cur]?esc(RBY[cur].n):"Choose a meal"}</span><span aria-hidden="true">⌕</span></button>`;
+   const meta=[];if(who)meta.push(esc(who));if(sw.length)meta.push("Swap: "+sw.map(esc).join(", "));
+   if(cur&&RBY[cur]){const wn=whyNot(RBY[cur],day,type);if(wn.length)meta.push(`<span class="tag warn">Check</span> ${wn.map(esc).join(" · ")}`)}
+   if(cur&&nd.preg&&PREG[cur]?.tip)meta.push(`<span class="tag preg">Pregnancy</span> ${esc(PREG[cur].tip)}`);
+   if(meta.length)h+=`<div class="meta">${meta.join(" · ")}</div>`;
+   if(type==="s"&&boxOn())h+=boxSummary(day);
+   h+=`</div>`;
+  });
+  h+=`</article>`;
+ });
+ h+=`</div>`;
+ if(boxOn()&&S.box){
+  const k=schoolKids().length;const tot=[0,1,2,3,4].reduce((t,d)=>t+boxCost(d),0);
+  h+=`<section class="lunchbox"><div class="bar" style="margin:20px 0 10px"><div><h2>School lunchboxes</h2><p class="lead">Each lunchbox has one main, two fruits, two snacks and one extra, for ${k===1?"1 child":k+" children"}. Extras and snacks for the week cost about ${money(tot)}. Everything follows your school rules and allergies.</p></div><button class="btn" id="boxNew">New lunchbox picks</button></div><div class="box-grid">`;
+  [0,1,2,3,4].forEach(d=>{
+   const b=S.box[d];if(!b)return;const main=S.plan?.[d]?.s;
+   h+=`<div class="boxday"><div class="top"><span class="d">${DAYS[d]}</span><span class="c">≈ ${money(boxCost(d)+mealCost(d,"s"))}</span></div>
+   <div class="boxrow"><span class="label">Main</span><span class="mainname">${main&&RBY[main]?esc(RBY[main].n):"Choose above"}</span></div>`;
+   BOX_PARTS.forEach(([g,i,lab])=>{
+    const cur=b[g][i];const opts=BOX[g].filter(x=>boxFits(x)||x.id===cur);
+    h+=`<label class="boxrow"><span class="label">${lab}</span><select id="box-${d}-${g}${i}" data-box="${d},${g},${i}">${opts.map(o=>`<option value="${o.id}"${o.id===cur?" selected":""}>${esc(o.n)}</option>`).join("")}</select></label>`;
+   });
+   h+=`</div>`;
+  });
+  h+=`</div>${S.rules.crunch?`<p class="note" style="margin-top:8px">Crunch &amp; Sip: pack one of the two fruits for the morning fruit break.</p>`:""}</section>`;
+ }
+ if(adults().length&&S.snacks&&S.snacks.length){
+  const tot=S.snacks.reduce((t,id)=>t+(SBY[id]?snackCost(SBY[id]):0),0);
+  h+=`<section class="snacks"><div class="bar" style="margin:20px 0 10px"><div><h2>Adult snacks this week</h2><p class="lead">${S.snacks.length} treats for the adults, about ${money(tot)}. Change how many under Household.</p></div><button class="btn" id="snackNew">New snacks</button></div><div class="snack-grid">`;
+  S.snacks.forEach((id,i)=>{
+   const opts=SNACKS.filter(x=>snackFits(x)||x.id===id);
+   h+=`<div class="snack"><div class="top"><span class="label">Snack ${i+1}</span><button class="reroll" data-snackrr="${i}" aria-label="Pick another snack ${i+1}">↻</button></div>
+   <select id="snack-${i}" data-snack="${i}" aria-label="Snack ${i+1}">${opts.map(x=>`<option value="${x.id}"${x.id===id?" selected":""}>${esc(x.n)}</option>`).join("")}</select>
+   <div class="meta">≈ ${SBY[id]?money(snackCost(SBY[id])):"–"}</div></div>`;
+  });
+  h+=`</div></section>`;
+ }
+ el.innerHTML=h;
+}
+function renderHouse(){
+ if(!ghForm)ghForm=ghDefaults();
+ const el=$("#tab-house");
+ let h=`<div class="cols"><div class="panel"><div class="bar" style="margin:0"><div><h2>Who's eating</h2><p class="lead">Ages set portion sizes. Dietary needs filter recipes and swap ingredients where a swap exists, such as gluten-free bread or oat milk.</p></div><button class="btn" id="addM">Add person</button></div>`;
+ S.members.forEach(m=>{
+  const sch=m.age>=4&&m.age<=18;
+  h+=`<div class="member" data-m="${m.id}">
+   <input type="text" id="mn-${m.id}" aria-label="Name" value="${esc(m.name)}" data-f="name">
+   <input type="number" id="ma-${m.id}" aria-label="Age" min="0" max="110" value="${m.age}" data-f="age">
+   <button class="btn small" data-del="${m.id}" aria-label="Remove ${esc(m.name)}">Remove</button>
+   <div class="sub"><span>Portion ×${portion(m.age)}</span>${sch?`<label class="check"><input type="checkbox" id="ms-${m.id}" data-f="school"${m.school?" checked":""}> Needs a school lunch</label>`:""}</div>
+   <div class="chips">${DIETS.map(d=>`<button class="chip" data-diet="${d.id}" aria-pressed="${m.d.includes(d.id)}">${d.l}</button>`).join("")}</div>
+  </div>`;
+ });
+ if(!S.members.length)h+=`<div class="empty">No one yet. Add each person in the house.</div>`;
+ h+=`</div><div class="panel"><h3>Plan settings</h3>
+  <label class="check snackrow">Adult snacks per week <input type="number" id="r-snacks" min="0" max="10" value="${S.rules.snackCount??4}" aria-label="Adult snacks per week"></label>
+  <label class="check"><input type="checkbox" id="r-adult" data-rule="adultLunch"${S.rules.adultLunch?" checked":""}> Plan lunches for adults (and everyone on weekends)</label>
+  <h3 style="margin-top:8px">School lunch rules</h3>
+  <label class="check"><input type="checkbox" id="r-nut" data-rule="nutFree"${S.rules.nutFree?" checked":""}> Nut-aware school: no nuts or peanut butter in lunchboxes</label>
+  <label class="check"><input type="checkbox" id="r-egg" data-rule="eggFree"${S.rules.eggFree?" checked":""}> Egg-aware class: no egg in lunchboxes</label>
+  <label class="check"><input type="checkbox" id="r-kit" data-rule="lunchKit"${S.rules.lunchKit!==false?" checked":""}> Full lunchbox: one main, two fruits, two snacks and one extra each school day</label>
+  <label class="check"><input type="checkbox" id="r-crunch" data-rule="crunch"${S.rules.crunch?" checked":""}> Crunch &amp; Sip: add fresh fruit or veg for the morning break</label>
+  <p class="note">Changing people or rules rebuilds the plan so every meal still fits.</p>
+  <button class="btn" id="reset">Start over with the example household</button>
+  <h3 style="margin-top:8px">Sync your phone and PC with GitHub</h3>
+  ${IN_CLAUDE?`<p class="note">GitHub sync works in the Windows and Android apps. Here in Claude, use <b>Share this household</b> at the top instead.</p>`:gh?`<p class="note">Connected to <b>${esc(gh.owner)}/${esc(gh.repo)}</b>. Changes save to GitHub a moment after you make them, and this device checks for changes from your other devices every minute.</p>
+  <div class="frow"><button class="btn" id="ghNow">Sync now</button><button class="btn" id="ghOff">Disconnect</button></div>`:`<p class="note">Your household, plan and recipes are saved in your GitHub repository, so every device shows the same thing. Paste your token once on each device.</p>
+  <div class="fgrid">
+   <label class="fld"><span class="label">GitHub username</span><input type="text" id="gh-owner" value="${esc(ghForm.owner)}" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+   <label class="fld"><span class="label">Repository</span><input type="text" id="gh-repo" value="${esc(ghForm.repo)}" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+   <label class="fld wide"><span class="label">Access token</span><input type="password" id="gh-token" value="" placeholder="github_pat_…" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+  </div>
+  <div class="frow"><button class="btn primary" id="ghOn">Connect</button></div>
+  <details class="note"><summary>How to make a token</summary><ol>
+   <li>On GitHub, open <b>Settings → Developer settings → Personal access tokens → Fine-grained tokens</b> and choose <b>Generate new token</b>.</li>
+   <li>Name it "Week on a Plate" and set the longest expiry offered.</li>
+   <li>Under <b>Repository access</b>, choose <b>Only select repositories</b> and pick your Week on a Plate repository.</li>
+   <li>Under <b>Permissions → Repository permissions</b>, set <b>Contents</b> to <b>Read and write</b>.</li>
+   <li>Generate it, copy the token (it starts with github_pat_) and paste it above.</li>
+  </ol></details>`}
+  <p class="note" id="ghMsg" role="status">${esc(ghFormMsg)}</p>
+  <h3 style="margin-top:8px">Move to another device</h3>
+  <p class="note">Copy your backup code, then paste it into Week on a Plate on your other device, whether that's Windows, Android or here. It carries your household, this week's plan, ticks and your own recipes.</p>
+  <div class="frow"><button class="btn" id="bkCopy">Copy backup code</button></div>
+  <textarea id="bkText" rows="3" placeholder="Paste a backup code here" aria-label="Backup code"></textarea>
+  <div class="frow"><button class="btn" id="bkLoad">${bkPending?"Tap again to replace this household":"Load backup"}</button></div>
+  <p class="note" id="bkMsg" role="status">${esc(bkMsg)}</p>
+ </div></div>`;
+ el.innerHTML=h;
+}
+function renderShop(){
+ const el=$("#tab-shop");const list=shopping();
+ if(!list.length){el.innerHTML=`<div class="empty">Your plan is empty, so there's nothing to buy yet.</div>`;return}
+ const live=list.filter(x=>!S.have[x.id]);
+ const tots=STORES.map((_,i)=>live.reduce((s,x)=>s+x.prices[i],0));
+ const split=live.reduce((s,x)=>s+x.prices[x.best],0);
+ const bestStore=tots.indexOf(Math.min(...tots));
+ let h=`<div class="bar"><div><h2>Shopping list</h2><p class="lead">Quantities cover the whole week, rounded up to whole packs. Prices are rough Queensland estimates, so check in store or online before you shop. Tick anything you already have. To shop online, sign in to Coles or Woolworths first, then tap <b>Coles</b> or <b>Woolies</b> on an item to open that store's search for it, ready to add to your trolley.</p></div><button class="btn" id="copy">Copy list</button></div>
+ <div class="totals">${STORES.map((s,i)=>`<div class="tot${i===bestStore?" win":""}"><div class="label">All at ${s}</div><div class="v">${money(tots[i])}</div></div>`).join("")}
+ <div class="tot"><div class="label">Split shop, cheapest each</div><div class="v">${money(split)}</div></div></div>
+ <div class="tablewrap"><table><thead><tr><th>Have</th><th>Item</th><th class="num">Need</th><th class="num">Packs</th>${STORES.map(s=>`<th class="num">${s}</th>`).join("")}<th>Best at</th><th>Add online</th></tr></thead><tbody>`;
+ let sec=-1;
+ list.forEach(x=>{
+  if(x.c.s!==sec){sec=x.c.s;h+=`<tr class="sec"><td colspan="${6+STORES.length}">${SECTIONS[sec]}</td></tr>`}
+  const have=!!S.have[x.id];
+  h+=`<tr class="${have?"have":""}"><td><input type="checkbox" id="h-${x.id}" data-have="${x.id}" aria-label="Already have ${esc(x.c.n)}"${have?" checked":""}></td>
+  <td><div>${esc(x.c.n)}</div><div class="note">${esc(x.why.slice(0,3).join(", "))}${x.why.length>3?` +${x.why.length-3} more`:""}</div></td>
+  <td class="num">${fmtQ(x.q,x.c.u)}</td><td class="num">${x.packs}</td>
+  ${x.prices.map((p,i)=>`<td class="num${i===x.best&&!have?" best":""}">${money(p)}</td>`).join("")}
+  <td>${STORES[x.best]}</td><td>${have?"":shopLinks(x.c)}</td></tr>`;
+ });
+ h+=`</tbody><tfoot><tr><td></td><td>Total</td><td></td><td></td>${tots.map(t=>`<td class="num">${money(t)}</td>`).join("")}<td class="num">${money(split)}</td><td></td></tr></tfoot></table></div>
+ <p class="note" id="copyMsg" style="margin-top:8px">Highlighted cells are the cheaper store for that item. Coles and Woolworths both run weekly specials, so the cheaper store can change from week to week.</p>`;
+ el.innerHTML=h;
+}
+let rFilter="all",draft=null,niDraft=null,formErr="",savedMsg="",pendingDel=null;
+const UNIT_LABEL={g:"g",ml:"ml",ea:"each"};
+function blankDraft(){return {id:null,n:"",m:"d",t:30,serves:4,rows:[{id:"",q:""},{id:"",q:""},{id:"",q:""}],st:"",preg:false}}
+function ingOptions(sel){
+ const ids=Object.keys(C).sort((a,b)=>C[a].n.localeCompare(C[b].n));
+ return `<option value="">Choose an ingredient…</option>`+SECTIONS.map((sec,si)=>{
+  const o=ids.filter(k=>C[k].s===si);if(!o.length)return "";
+  return `<optgroup label="${sec}">${o.map(k=>`<option value="${k}"${k===sel?" selected":""}>${esc(C[k].n)}</option>`).join("")}</optgroup>`;
+ }).join("");
+}
+function formHTML(){
+ const d=draft;
+ let h=`<form class="panel" id="rform" style="margin-bottom:16px" novalidate>
+ <h2>${d.id?"Edit your recipe":"Add your own recipe"}</h2>
+ <p class="lead">Enter amounts for the whole recipe as you normally make it. The app works out a single serving and scales it for your household.</p>
+ <div class="fgrid">
+  <label class="fld wide"><span class="label">Recipe name</span><input type="text" id="dr-n" data-dr="n" value="${esc(d.n)}" placeholder="e.g. Nan's shepherd's pie"></label>
+  <label class="fld"><span class="label">Meal</span><select id="dr-m" data-dr="m"><option value="b"${d.m==="b"?" selected":""}>Breakfast</option><option value="l"${d.m==="l"?" selected":""}>Lunch or lunchbox</option><option value="d"${d.m==="d"?" selected":""}>Dinner</option></select></label>
+  <label class="fld"><span class="label">Serves</span><input type="number" id="dr-serves" data-dr="serves" min="1" max="30" value="${d.serves}"></label>
+  <label class="fld"><span class="label">Minutes</span><input type="number" id="dr-t" data-dr="t" min="1" max="600" value="${d.t}"></label>
+ </div>
+ <div><span class="label">Ingredients</span></div>
+ <div class="irows">${d.rows.map((r,i)=>`<div class="irow"><select id="dr-ing-${i}" data-dr="ing" data-i="${i}" aria-label="Ingredient ${i+1}">${ingOptions(r.id)}</select><input type="number" id="dr-q-${i}" data-dr="q" data-i="${i}" min="0" step="any" value="${esc(r.q)}" placeholder="Amount" aria-label="Amount for ingredient ${i+1}"><span class="unit" id="dr-u-${i}">${r.id&&C[r.id]?UNIT_LABEL[C[r.id].u]:""}</span><button type="button" class="reroll" data-act="del-row" data-i="${i}" aria-label="Remove ingredient ${i+1}">✕</button></div>`).join("")}</div>
+ <div class="frow"><button type="button" class="btn small" data-act="add-row">Add another ingredient</button><button type="button" class="btn small" data-act="toggle-ni">${niDraft?"Close new ingredient":"Ingredient not listed? Add it"}</button></div>`;
+ if(niDraft){const n=niDraft;
+  h+=`<div class="sub-panel"><h3>New ingredient</h3><p class="note">Enter a typical pack and its price at each store you know. Leave a store blank if you're not sure, and the app will use your lowest price for it.</p>
+  <div class="fgrid">
+   <label class="fld wide"><span class="label">Name</span><input type="text" id="ni-n" data-ni="n" value="${esc(n.n)}" placeholder="e.g. Frozen puff pastry"></label>
+   <label class="fld"><span class="label">Measured in</span><select id="ni-u" data-ni="u"><option value="g"${n.u==="g"?" selected":""}>grams</option><option value="ml"${n.u==="ml"?" selected":""}>millilitres</option><option value="ea"${n.u==="ea"?" selected":""}>each</option></select></label>
+   <label class="fld"><span class="label">Pack size</span><input type="number" id="ni-p" data-ni="p" min="0" step="any" value="${esc(n.p)}" placeholder="e.g. 500"></label>
+   <label class="fld"><span class="label">Aisle</span><select id="ni-s" data-ni="s">${SECTIONS.map((x,i)=>`<option value="${i}"${+n.s===i?" selected":""}>${x}</option>`).join("")}</select></label>
+   ${ACTIVE.map(i=>`<label class="fld"><span class="label">${ALL_STORES[i]} pack price $</span><input type="number" id="ni-pr-${i}" data-ni="pr" data-i="${i}" min="0" step="0.01" value="${esc(n.pr[i])}"></label>`).join("")}
+  </div>
+  <div><span class="label">Contains</span></div>
+  <div class="filters">${Object.entries(ALLERGEN_LABEL).map(([k,l])=>`<button type="button" class="chip" data-nia="${k}" aria-pressed="${n.a.includes(k)}">${l}</button>`).join("")}</div>
+  <div class="frow"><button type="button" class="btn" data-act="save-ni">Add ingredient</button></div></div>`;
+ }
+ h+=`<label class="fld"><span class="label">Method</span><textarea id="dr-st" data-dr="st" rows="4" placeholder="Short steps, e.g. Brown the mince, add veg, top with mash and bake 25 min at 200°C.">${esc(d.st)}</textarea></label>
+ <label class="check"><input type="checkbox" id="dr-preg" data-dr="preg"${d.preg?" checked":""}> Contains a pregnancy high-risk food (cold deli meat, cold cooked chicken, soft cheese, raw egg, raw seafood or hummus)</label>
+ ${formErr?`<p class="err" role="alert">${esc(formErr)}</p>`:""}
+ <div class="frow"><button type="button" class="btn primary" data-act="save-recipe">${d.id?"Save changes":"Save recipe"}</button><button type="button" class="btn" data-act="cancel-recipe">Cancel</button></div>
+ </form>`;
+ return h;
+}
+function saveIngredient(){
+ const n=niDraft;const name=n.n.trim();const pack=+n.p;
+ const prs=n.pr.map(v=>v===""?null:+v);const known=ACTIVE.map(i=>prs[i]).filter(v=>v>0);
+ if(!name)return "Give the new ingredient a name.";
+ if(!(pack>0))return "Enter the pack size as a number above 0.";
+ if(!known.length)return "Enter a price for at least one store.";
+ const low=Math.min(...known);
+ const id="x_"+Date.now().toString(36);
+ S.customIng[id]={n:name,u:n.u,p:pack,pr:prs.map(v=>v>0?v:low),s:+n.s,a:n.a.slice()};
+ syncCustom();
+ const empty=draft.rows.find(r=>!r.id);if(empty)empty.id=id;else draft.rows.push({id,q:""});
+ niDraft=null;save();return "";
+}
+function saveRecipe(){
+ const d=draft;const name=d.n.trim();const serves=Math.max(1,+d.serves||1);
+ const rows=d.rows.filter(r=>r.id&&+r.q>0);
+ if(!name)return "Give your recipe a name.";
+ if(!rows.length)return "Add at least one ingredient with an amount.";
+ if(d.rows.some(r=>r.id&&!(+r.q>0)))return "Every chosen ingredient needs an amount above 0.";
+ const rec={id:d.id||"u_"+Date.now().toString(36),m:d.m,n:name,t:Math.max(1,+d.t||30),serves,custom:true,preg:!!d.preg,
+  i:rows.map(r=>[r.id,+r.q/serves]),st:d.st.trim(),raw:rows.map(r=>[r.id,+r.q])};
+ const ix=S.custom.findIndex(r=>r.id===rec.id);if(ix<0)S.custom.push(rec);else S.custom[ix]=rec;
+ syncCustom();save();return "";
+}
+function renderRecipes(){
+ const el=$("#tab-recipes");
+ const fl=[["all","All"],["b","Breakfast"],["l","Lunchbox"],["d","Dinner"],["mine","Your recipes"]];
+ let h=`<div class="bar"><div><h2>Recipes</h2><p class="lead">Quantities are for one adult serving. The plan scales them by age. Lunchbox recipes are all eaten cold.</p></div><div class="filters"><button class="btn primary" data-act="new-recipe">Add your own recipe</button>${fl.map(([k,l])=>`<button class="chip" data-rf="${k}" aria-pressed="${rFilter===k}">${l}</button>`).join("")}</div></div>${draft?formHTML():""}${savedMsg?`<p class="note" role="status" style="margin-bottom:12px"><span class="tag ok">Saved</span> ${esc(savedMsg)}</p>`:""}<div class="recipes">`;
+ const shown=R.filter(r=>rFilter==="all"||(rFilter==="mine"?r.custom:r.m===rFilter));
+ if(!shown.length)h+=`<div class="empty">You haven't added any recipes yet. Use <b>Add your own recipe</b> to start.</div>`;
+ shown.forEach(r=>{
+  const al=new Set();r.i.forEach(([id])=>C[id]&&C[id].a.forEach(a=>al.add(a)));
+  const cost=r.i.reduce((s,[id,q])=>s+(C[id]?unitCost(id)*q:0),0);
+  const kind=r.m==="b"?"Breakfast":r.m==="l"?"Lunchbox":"Dinner";
+  h+=`<article class="recipe"><div class="label">${kind} · ${r.t} min · ≈ ${money(cost)} a serve</div><h3>${esc(r.n)}</h3>${r.custom?`<div class="tags"><span class="tag ok">Your recipe</span><button class="btn small" data-act="edit-recipe" data-id="${r.id}">Edit</button><button class="btn small" data-act="del-recipe" data-id="${r.id}">${pendingDel===r.id?"Tap again to delete":"Delete"}</button></div>`:""}
+  <div class="tags">${[...al].map(a=>`<span class="tag${a==="nuts"?" warn":""}">${ALLERGEN_LABEL[a]}</span>`).join("")||`<span class="tag ok">Free of common allergens</span>`}${PREG[r.id]?.avoid?`<span class="tag warn">Not in pregnancy plans</span>`:""}</div>
+  <ul>${r.i.filter(([id])=>C[id]).map(([id,q])=>`<li>${C[id].u==="ea"?(Math.round(q*100)/100)+" × ":fmtQ(q,C[id].u)+" "}${esc(C[id].n.replace(/ \(\d+\)| \d+(g|ml|L)$/,""))}</li>`).join("")}</ul>
+  ${r.st?`<p>${esc(r.st)}</p>`:""}${PREG[r.id]?`<p class="note"><span class="tag ${PREG[r.id].avoid?"warn":"preg"}">Pregnancy</span> ${esc(PREG[r.id].avoid||PREG[r.id].tip)}</p>`:""}</article>`;
+ });
+ el.innerHTML=h+`</div>`;
+}
+function renderStores(){
+ const el=$("#tab-stores");const pc=S.postcode.trim();
+ const q=encodeURIComponent((pc?pc+" ":"")+"supermarket");
+ el.innerHTML=`<div class="cols"><div class="panel">
+  <h2>Find your nearest stores</h2>
+  <p class="lead">Enter your postcode or suburb, then open each store finder. Opening hours and specials change weekly.</p>
+  <input type="text" id="pc" placeholder="Postcode or suburb, e.g. 4000" value="${esc(S.postcode)}" aria-label="Postcode or suburb">
+  <div class="stores">
+   <div class="tot"><div class="label">Coles</div><p class="note">Full range, weekly half-price specials.</p><a href="https://www.coles.com.au/find-stores" target="_blank" rel="noopener">Coles store finder</a></div>
+   <div class="tot"><div class="label">Woolworths</div><p class="note">Full range, good gluten-free and dairy-free aisles.</p><a href="https://www.woolworths.com.au/shop/storelocator" target="_blank" rel="noopener">Woolworths store finder</a></div>
+  </div>
+  <a href="https://www.google.com/maps/search/${q}" target="_blank" rel="noopener">Supermarkets near ${pc?esc(pc):"you"} on Google Maps</a>
+ </div>
+ <div class="panel rules"><h2>Packing a school lunch</h2>
+  <p class="lead">Common rules in Queensland state schools. Check your own school's newsletter or handbook for its exact policy.</p>
+  <ul>
+   <li><b>Allergy aware.</b> Most schools ask families not to send nuts or nut spreads. Some classes also ask for no egg when a child is allergic.</li>
+   <li><b>Crunch &amp; Sip.</b> A short mid-morning break for fresh fruit or veg and a bottle of water.</li>
+   <li><b>A full lunchbox.</b> Many schools expect a main, two fruits, two snacks and an extra such as a yoghurt pouch or jelly cup. The planner packs this each school day.</li>
+   <li><b>Two breaks.</b> Pack for "first break" and "second break", often called big lunch and little lunch.</li>
+   <li><b>No heating.</b> Assume food is eaten cold. Use an insulated bag and an ice brick, as Far North Queensland classrooms get hot.</li>
+   <li><b>Water, not sugary drinks.</b> Schools follow the Smart Choices healthy food guidelines.</li>
+   <li><b>Nude food days.</b> Many schools encourage reusable containers instead of wrappers.</li>
+  </ul></div></div>`;
+}
+function renderPreg(){
+ const el=$("#tab-preg");
+ const who=S.members.filter(m=>m.d.includes("preg"));
+ let mine="";
+ if(who.length&&S.plan){
+  const rows=[];
+  DAYS.forEach((dn,day)=>slotTypes(day).forEach(type=>{
+   const ms=eaters(type,day);if(!ms.some(m=>m.d.includes("preg")))return;
+   const id=S.plan[day]?.[type];if(id&&PREG[id]?.tip)rows.push(`<li><b>${dn} ${SLOTS[type].toLowerCase()}: ${esc(RBY[id].n)}</b>${esc(PREG[id].tip)}</li>`);
+  }));
+  mine=`<div class="panel"><h3>This week's plan for ${who.map(m=>esc(m.name)).join(", ")}</h3><p class="note">High-risk meals are already left out of everything ${who.length>1?"they eat":"this person eats"}, shared dinners included. These meals are in the plan and need a little care:</p>${rows.length?`<ul class="avoid">${rows.join("")}</ul>`:`<p class="note">Nothing in this week's plan needs special handling.</p>`}</div>`;
+ }else{
+  mine=`<div class="panel"><h3>Turn it on for someone</h3><p class="note">Under Household, tap <b>Pregnant</b> on the person who's expecting. Meals they eat will leave out high-risk foods, and this page will list safe-handling tips for their week.</p></div>`;
+ }
+ el.innerHTML=`<div class="bar"><div><h2>Pregnancy-safe eating</h2><p class="lead">Listeria and a few other bugs are more dangerous in pregnancy. This follows Australian food-safety advice from Queensland Health and the NSW Food Authority. It isn't medical advice, so check with your midwife or GP, especially about allergies or supplements.</p></div></div>
+ <div style="display:flex;flex-direction:column;gap:16px">${mine}
+ <div class="panel"><h3>Avoid</h3><ul class="avoid">
+  <li><b>Cold deli meats</b>Ham, salami, pre-cut cold meats. Fine cooked until steaming hot, like on a pizza.</li>
+  <li><b>Cold cooked chicken</b>In sandwiches, wraps and salads, including supermarket BBQ chicken eaten cold.</li>
+  <li><b>Soft and semi-soft cheese</b>Brie, camembert, ricotta, feta. Fine cooked until hot. Hard cheese like cheddar is fine.</li>
+  <li><b>Pre-made salads and pre-cut fruit</b>From supermarkets, buffets and salad bars. Wash and cut your own.</li>
+  <li><b>Hummus and tahini dips</b>Store-bought dips are on the high-risk list.</li>
+  <li><b>Raw or runny eggs</b>Including homemade mayonnaise, aioli and mousse.</li>
+  <li><b>Raw or smoked seafood</b>Sushi, sashimi, oysters, smoked salmon.</li>
+  <li><b>Raw or undercooked meat</b>Cook mince and chicken right through.</li>
+  <li><b>Pâté, soft serve and thick shakes</b>Also unpasteurised milk or juice, and raw sprouts.</li>
+  <li><b>Fermented drinks</b>Kombucha, kefir and home-brewed ginger beer can hold traces of alcohol.</li>
+ </ul></div>
+ <div class="panel"><h3>Safe habits</h3><ul class="avoid">
+  <li><b>Hot means steaming</b>Reheat leftovers until steaming all the way through, at least 75°C.</li>
+  <li><b>Eat it fresh</b>Cook, eat, and refrigerate leftovers within an hour or two. Use them within a day.</li>
+  <li><b>Fish twice or three times a week</b>Most fish is good for you. Limit shark (flake), swordfish and orange roughy.</li>
+  <li><b>Wash produce</b>Wash fruit, veg and salad leaves well just before eating.</li>
+ </ul></div></div>`;
+}
+function renderTotal(){
+ const list=shopping().filter(x=>!S.have[x.id]);
+ const split=list.reduce((s,x)=>s+x.prices[x.best],0);
+ $("#hdrTotal").innerHTML=list.length?`Week's groceries ≈ <b>${money(split)}</b>`:"";
+}
+function render(){renderWeek();renderHouse();renderShop();renderRecipes();renderPreg();renderStores();renderTotal()}
+
+/* Copy text: the Android app provides a native copy; elsewhere use the browser clipboard */
+function copyText(txt){
+ try{if(window.AndroidApp&&typeof AndroidApp.copy==="function"){AndroidApp.copy(txt);return Promise.resolve()}}catch(e){}
+ return navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject(new Error("no clipboard"));
+}
+/* ---------- Backup code for moving between devices ---------- */
+let bkPending=false,bkMsg="";
+let ghForm=null,ghFormMsg="";
+function backupCode(){const bytes=new TextEncoder().encode(JSON.stringify(sharedState()));let bin="";bytes.forEach(b=>bin+=String.fromCharCode(b));return "WOAP1:"+btoa(bin)}
+function readBackup(code){
+ code=code.trim().replace(/\s+/g,"");if(!code.startsWith("WOAP1:"))throw new Error("That doesn't look like a Week on a Plate backup code. It should start with WOAP1:");
+ const bin=atob(code.slice(6));const st=JSON.parse(new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0))));
+ if(!Array.isArray(st.members))throw new Error("The backup code is incomplete. Copy it again on the other device.");
+ return st;
+}
+
+/* ---------- Meal picker with search ---------- */
+let pk=null,pkReturn=null;
+function openPicker(day,type,from){
+ pk={day,type};pkReturn=from||null;
+ $("#pkTitle").textContent=`${DAYS[day]} · ${SLOTS[type]}`;
+ const ms=eaters(type,day);const nd=needs(ms,type);
+ const notes=[];if(type==="s")notes.push("Lunchbox-safe for your school rules");
+ if(ms.some(m=>m.d.length))notes.push("only meals that suit everyone eating");
+ $("#pkNote").textContent=notes.length?notes.join(", ")+".":"";
+ $("#pkSearch").value="";$("#pickerBg").hidden=false;renderPicker();
+ setTimeout(()=>$("#pkSearch").focus(),0);
+}
+function closePicker(){$("#pickerBg").hidden=true;pk=null;if(pkReturn&&document.body.contains(pkReturn))pkReturn.focus()}
+function renderPicker(){
+ if(!pk)return;const {day,type}=pk;
+ const ms=eaters(type,day);const f=ms.reduce((a,m)=>a+portion(m.age),0)||1;const nd=needs(ms,type);
+ const q=$("#pkSearch").value.trim().toLowerCase();const words=q.split(/\s+/).filter(Boolean);
+ const cur=S.plan?.[day]?.[type];
+ const rows=pool(type,ms).map(r=>{
+  const ing=resolve(r,nd).ing;const names=ing.map(([x])=>C[x].n.toLowerCase());
+  const hay=(r.n+" "+names.join(" ")).toLowerCase();
+  if(words.length&&!words.every(w=>hay.includes(w)))return null;
+  const nameHit=words.length&&words.every(w=>r.n.toLowerCase().includes(w));
+  const via=words.length&&!nameHit?ing.map(([x])=>C[x].n).filter(n=>words.some(w=>n.toLowerCase().includes(w))).slice(0,2):[];
+  const cost=ing.reduce((a,[x,qq])=>a+unitCost(x)*qq*f,0);
+  return {r,cost,nameHit,via};
+ }).filter(Boolean).sort((a,b)=>(b.nameHit-a.nameHit)||a.r.n.localeCompare(b.r.n));
+ const okIds=new Set(pool(type,ms).map(r=>r.id));
+ const others=R.filter(r=>!okIds.has(r.id)).filter(r=>{
+  if(words.length)return words.every(w=>(r.custom?r.n+" "+r.i.map(([x])=>C[x]?.n||"").join(" "):r.n).toLowerCase().includes(w));
+  return !!r.custom;
+ }).map(r=>({r,why:whyNot(r,day,type)})).sort((a,b)=>(b.r.custom?1:0)-(a.r.custom?1:0)||a.r.n.localeCompare(b.r.n));
+ $("#pkList").innerHTML=(rows.length||others.length?rows.map(({r,cost,via})=>`<li><button class="pk-item" data-choose="${r.id}"${r.id===cur?' aria-current="true"':""}><span>${esc(r.n)}${r.custom?' <span class="tag ok">Yours</span>':""}${via.length?`<span class="why">Has ${via.map(esc).join(", ")}</span>`:""}</span><small>${r.t} min · ≈ ${money(cost)}</small></button></li>`).join("")+(others.length?`<li class="pk-sep">${rows.length?"Doesn't suit everyone or is a different meal":"These match, but don't suit everyone or are a different meal"}</li>`+others.map(({r,why})=>`<li><button class="pk-item off" data-choose="${r.id}"${r.id===cur?' aria-current="true"':""}><span>${esc(r.n)}${r.custom?' <span class="tag ok">Yours</span>':""}<span class="why warnline">${why.map(esc).join(" · ")}</span></span><small>Pick anyway</small></button></li>`).join(""):""):`<li class="empty">No meals match "${esc(q)}". Try another word, or add your own recipe on the Recipes tab.</li>`);
+}
+$("#pkSearch").addEventListener("input",renderPicker);
+$("#pkSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){const b=$("#pkList .pk-item");if(b)b.click()}});
+$("#pkClose").addEventListener("click",closePicker);
+$("#pickerBg").addEventListener("click",e=>{
+ if(e.target.id==="pickerBg"){closePicker();return}
+ const b=e.target.closest("[data-choose]");if(!b||!pk)return;
+ const {day,type}=pk;S.plan[day][type]=b.dataset.choose;
+ const sel=`[data-pick="${day},${type}"]`;closePicker();save();render();$(sel)?.focus();
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&pk)closePicker()});
+
+/* ---------- Events ---------- */
+$("#tabs").addEventListener("click",e=>{
+ const b=e.target.closest("button[data-tab]");if(!b)return;
+ document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
+ document.querySelectorAll("main>section").forEach(s=>s.hidden=s.id!=="tab-"+b.dataset.tab);
+});
+document.addEventListener("click",e=>{
+ if(e.target.id==="boxNew"){pickBoxes();save();render();return}
+ if(e.target.id==="snackNew"){pickSnacks();save();render();return}
+ if(e.target.dataset.snackrr){const i=+e.target.dataset.snackrr;const ok=SNACKS.filter(x=>snackFits(x)&&x.id!==S.snacks[i]&&!S.snacks.includes(x.id));const alt=ok.length?ok:SNACKS.filter(x=>snackFits(x)&&x.id!==S.snacks[i]);if(alt.length)S.snacks[i]=alt[Math.floor(Math.random()*alt.length)].id;save();render();return}
+ const pb=e.target.closest("[data-pick]");if(pb){const[d,ty]=pb.dataset.pick.split(",");openPicker(+d,ty,pb);return}
+ if(e.target.id==="startShare"){sharedExists=true;push();return}
+ const a=e.target.closest("[data-act]");
+ if(a){
+  const act=a.dataset.act;formErr="";
+  if(act!=="del-recipe")pendingDel=null;
+  if(act==="new-recipe"){draft=blankDraft();niDraft=null;savedMsg="";renderRecipes();$("#dr-n")?.focus();return}
+  if(act==="add-row"){draft.rows.push({id:"",q:""});renderRecipes();$(`#dr-ing-${draft.rows.length-1}`)?.focus();return}
+  if(act==="del-row"){draft.rows.splice(+a.dataset.i,1);if(!draft.rows.length)draft.rows.push({id:"",q:""});renderRecipes();return}
+  if(act==="toggle-ni"){niDraft=niDraft?null:{n:"",u:"g",p:"",pr:["","",""],s:4,a:[]};renderRecipes();$("#ni-n")?.focus();return}
+  if(act==="save-ni"){formErr=saveIngredient();renderRecipes();return}
+  if(act==="cancel-recipe"){draft=null;niDraft=null;renderRecipes();return}
+  if(act==="save-recipe"){formErr=saveRecipe();if(!formErr){savedMsg=`${draft.n.trim()} is in your recipes and can now come up in plans. Pick it from any matching meal menu on This week.`;draft=null;niDraft=null;rFilter="mine";render()}else renderRecipes();return}
+  if(act==="edit-recipe"){const r=RBY[a.dataset.id];draft={id:r.id,n:r.n,m:r.m,t:r.t,serves:r.serves||1,rows:(r.raw||r.i).map(([id,q])=>({id,q:String(Math.round(q*100)/100)})),st:r.st||"",preg:!!r.preg};niDraft=null;savedMsg="";renderRecipes();window.scrollTo({top:0});return}
+  if(act==="del-recipe"){const id=a.dataset.id;if(pendingDel!==id){pendingDel=id;renderRecipes();return}
+   pendingDel=null;S.custom=S.custom.filter(r=>r.id!==id);syncCustom();
+   if(S.plan)DAYS.forEach((_,day)=>slotTypes(day).forEach(type=>{if(!S.plan[day][type]){const p=pool(type,eaters(type,day));if(p.length)S.plan[day][type]=p[Math.floor(Math.random()*p.length)].id}}));
+   savedMsg="";save();render();return}
+  return;
+ }
+ if(e.target.dataset.nia&&niDraft){const k=e.target.dataset.nia;const i=niDraft.a.indexOf(k);i<0?niDraft.a.push(k):niDraft.a.splice(i,1);e.target.setAttribute("aria-pressed",i<0);return}
+ const t=e.target;
+ if(t.id==="gen"){generate();save();render();return}
+ if(t.dataset.rr){const[d,ty]=t.dataset.rr.split(",");reroll(+d,ty);save();render();return}
+ if(t.id==="addM"){const id=Math.max(0,...S.members.map(m=>m.id))+1;S.members.push({id,name:"New person",age:30,school:false,d:[]});S.example=false;generate();save();render();return}
+ if(t.dataset.del){S.members=S.members.filter(m=>m.id!=t.dataset.del);S.example=false;generate();save();render();return}
+ if(t.dataset.diet){const m=S.members.find(m=>m.id==t.closest("[data-m]").dataset.m);const i=m.d.indexOf(t.dataset.diet);i<0?m.d.push(t.dataset.diet):m.d.splice(i,1);S.example=false;generate();save();render();return}
+ if(t.dataset.rf){rFilter=t.dataset.rf;renderRecipes();return}
+ if(t.id==="ghOn"){const o=$("#gh-owner").value,r=$("#gh-repo").value,k=$("#gh-token").value;ghForm={owner:o,repo:r,token:""};ghFormMsg="Connecting…";$("#ghMsg").textContent=ghFormMsg;
+  ghConnect(o,r,k).then(err=>{ghFormMsg=err||"Connected. Your other devices will pick up changes within a minute.";renderHouse();if(err){$("#gh-token").value=k}});return}
+ if(t.id==="ghNow"){ghFormMsg="";if(ghDirty)ghPush();else{ghSha=null;ghPull(true)}return}
+ if(t.id==="ghOff"){ghDisconnect();ghFormMsg="Disconnected. This device keeps its own copy.";renderHouse();return}
+ if(t.id==="bkCopy"){const code=backupCode();const box=$("#bkText");bkPending=false;
+  const done=m=>{bkMsg=m;const el=$("#bkMsg");if(el)el.textContent=m};
+  box.value=code;
+  copyText(code).then(()=>done("Backup code copied. Paste it on your other device.")).catch(()=>{box.focus();box.select();done("Backup code is in the box above and selected. Copy it, then paste it on your other device.")});
+  return}
+ if(t.id==="bkLoad"){const code=$("#bkText").value;
+  let st;try{st=readBackup(code)}catch(err){bkPending=false;bkMsg=code.trim()?(err.message.includes("WOAP1")||err.message.includes("incomplete")?err.message:"The backup code is damaged. Copy it again on the other device."):"Paste a backup code into the box first.";renderHouse();$("#bkText").value=code;return}
+  if(!bkPending){bkPending=true;bkMsg="This replaces the household on this device. Tap again to confirm.";renderHouse();$("#bkText").value=code;return}
+  bkPending=false;S=Object.assign(structuredClone(DEFAULT),S,st);S.custom=S.custom||[];S.customIng=S.customIng||{};S.have=S.have||{};
+  syncCustom();if(!S.plan)generate();save();if(ref&&canWrite){sharedExists=true;lastSent="";push()}
+  bkMsg="Backup loaded.";render();return}
+ if(t.id!=="bkLoad"&&t.id!=="bkText"&&bkPending){bkPending=false}
+ if(t.id==="reset"){const keep={custom:S.custom,customIng:S.customIng};S=Object.assign(structuredClone(DEFAULT),keep);generate();save();render();return}
+ if(t.id==="copy"){
+  const list=shopping().filter(x=>!S.have[x.id]);
+  const txt=list.map(x=>`${x.c.n} × ${x.packs}  (${STORES[x.best]} ${money(x.prices[x.best])})`).join("\n");
+  const msg=$("#copyMsg");
+  copyText(txt).then(()=>{msg.textContent="Copied to your clipboard."}).catch(()=>{msg.innerHTML=`<textarea readonly style="width:100%;height:160px">${esc(txt)}</textarea>`;msg.querySelector("textarea").select()});
+ }
+});
+document.addEventListener("input",e=>{
+ const t=e.target;
+ if(t.dataset.dr&&draft){
+  const f=t.dataset.dr,i=+t.dataset.i;
+  if(f==="ing"){draft.rows[i].id=t.value;const u=$(`#dr-u-${i}`);if(u)u.textContent=t.value&&C[t.value]?UNIT_LABEL[C[t.value].u]:""}
+  else if(f==="q")draft.rows[i].q=t.value;
+  else if(f==="preg")draft.preg=t.checked;
+  else draft[f]=t.value;
+ }
+ if(t.dataset.ni&&niDraft){const f=t.dataset.ni;if(f==="pr")niDraft.pr[+t.dataset.i]=t.value;else niDraft[f]=t.value}
+});
+document.addEventListener("change",e=>{
+ const t=e.target;
+ if(t.dataset.dr||t.dataset.ni){if(t.dataset.dr==="preg"&&draft)draft.preg=t.checked;if(t.dataset.dr==="ing"&&draft){draft.rows[+t.dataset.i].id=t.value;const u=$(`#dr-u-${t.dataset.i}`);if(u)u.textContent=t.value&&C[t.value]?UNIT_LABEL[C[t.value].u]:""}return}
+ if(t.dataset.sel){const[d,ty]=t.dataset.sel.split(",");S.plan[+d][ty]=t.value;save();render();return}
+ if(t.dataset.have){S.have[t.dataset.have]=t.checked;save();renderShop();renderTotal();return}
+ if(t.dataset.box){const[d,g,i]=t.dataset.box.split(",");S.box[+d][g][+i]=t.value;save();render();return}
+ if(t.dataset.snack){S.snacks[+t.dataset.snack]=t.value;save();render();return}
+ if(t.id==="r-snacks"){S.rules.snackCount=Math.max(0,Math.min(10,Math.round(+t.value||0)));pickSnacks();save();setTimeout(render,0);return}
+ if(t.dataset.rule){S.rules[t.dataset.rule]=t.checked;generate();save();render();return}
+ const row=t.closest("[data-m]");
+ if(row&&t.dataset.f){
+  const m=S.members.find(m=>m.id==row.dataset.m);
+  if(t.dataset.f==="name")m.name=t.value.trim()||"Unnamed";
+  if(t.dataset.f==="age"){m.age=Math.max(0,+t.value||0);if(m.age<4||m.age>18)m.school=false}
+  if(t.dataset.f==="school")m.school=t.checked;
+  S.example=false;generate();save();setTimeout(render,0);
+ }
+ if(t.id==="pc"){S.postcode=t.value;save();renderStores()}
+});
+syncCustom();
+render();
+connectShared();
+/* On GitHub Pages: allow "Install as app" in Edge/Chrome and work offline */
+if(location.hostname.endsWith(".github.io")){
+ try{const l=document.createElement("link");l.rel="manifest";l.href="manifest.webmanifest";document.head.appendChild(l)}catch(e){}
+ if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
