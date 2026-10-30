@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-10-30T02:09:05.464Z",
+ "updated": "2026-10-30T02:11:03.295Z",
  "state": {
   "members": [
    {
@@ -219,6 +219,18 @@
     "a": [
      "meat"
     ]
+   },
+   "x_mvuc5jj5": {
+    "n": "Pasta Sauce",
+    "u": "g",
+    "p": 500,
+    "pr": [
+     4.6,
+     4.6,
+     4.6
+    ],
+    "s": 4,
+    "a": []
    }
   },
   "example": false,
