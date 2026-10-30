@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-10-30T01:46:19.969Z",
+ "updated": "2026-10-30T02:09:05.464Z",
  "state": {
   "members": [
    {
@@ -205,6 +205,20 @@
     ],
     "s": 4,
     "a": []
+   },
+   "x_mvuc30lr": {
+    "n": "Rissoles",
+    "u": "g",
+    "p": 440,
+    "pr": [
+     7.5,
+     7.5,
+     7.5
+    ],
+    "s": 1,
+    "a": [
+     "meat"
+    ]
    }
   },
   "example": false,
