@@ -1,0 +1,285 @@
+{
+ "app": "week-on-a-plate",
+ "version": 1,
+ "updated": "2026-10-30T01:45:04.205Z",
+ "state": {
+  "members": [
+   {
+    "id": 1,
+    "name": "Dad",
+    "age": 29,
+    "school": false,
+    "d": []
+   },
+   {
+    "id": 2,
+    "name": "Mum",
+    "age": 26,
+    "school": false,
+    "d": [
+     "preg"
+    ]
+   },
+   {
+    "id": 3,
+    "name": "Theo",
+    "age": 5,
+    "school": true,
+    "d": []
+   },
+   {
+    "id": 4,
+    "name": "Leia",
+    "age": 4,
+    "school": true,
+    "d": []
+   }
+  ],
+  "rules": {
+   "nutFree": true,
+   "eggFree": true,
+   "crunch": true,
+   "adultLunch": true,
+   "snackCount": 4,
+   "lunchKit": true
+  },
+  "postcode": "",
+  "plan": [
+   {
+    "b": "bp",
+    "s": "lsu",
+    "a": "lac",
+    "d": "dcc"
+   },
+   {
+    "b": "bom",
+    "s": "lpu",
+    "a": "tr",
+    "d": "dmi"
+   },
+   {
+    "b": "bbr",
+    "s": "cs",
+    "a": "lbm",
+    "d": "lc"
+   },
+   {
+    "b": "bpo",
+    "s": "sb",
+    "a": "lpu",
+    "d": "ss"
+   },
+   {
+    "b": "bpb",
+    "s": "tr",
+    "a": "lqu",
+    "d": "sp"
+   },
+   {
+    "b": "bbm",
+    "a": "lqb",
+    "d": "sa"
+   },
+   {
+    "b": "at",
+    "a": "lpp",
+    "d": "dbc"
+   }
+  ],
+  "have": {},
+  "custom": [
+   {
+    "id": "u_mvu9uk9r",
+    "m": "d",
+    "n": "Butter Chicken Curry",
+    "t": 30,
+    "serves": 4,
+    "custom": true,
+    "preg": false,
+    "i": [
+     [
+      "rice",
+      37.5
+     ],
+     [
+      "onion",
+      25
+     ],
+     [
+      "x_mvu9td5v",
+      121.25
+     ],
+     [
+      "x_mvu9u3jv",
+      0.25
+     ]
+    ],
+    "st": "1. Wash rice and put onto cook  \n2. Cook Oninon\n3. Shred Chicken\n4. Combine sauce, chicken and onion and cook until simmering\n5. serve with rice",
+    "raw": [
+     [
+      "rice",
+      150
+     ],
+     [
+      "onion",
+      100
+     ],
+     [
+      "x_mvu9td5v",
+      485
+     ],
+     [
+      "x_mvu9u3jv",
+      1
+     ]
+    ]
+   },
+   {
+    "id": "u_mvu9wzpk",
+    "m": "b",
+    "n": "Vegemite Toast",
+    "t": 1,
+    "serves": 1,
+    "custom": true,
+    "preg": false,
+    "i": [
+     [
+      "bread",
+      32.5
+     ],
+     [
+      "x_mvu9wmlv",
+      2
+     ]
+    ],
+    "st": "1. Put bread in toaster\n2. put butter and vegimite on toast",
+    "raw": [
+     [
+      "bread",
+      32.5
+     ],
+     [
+      "x_mvu9wmlv",
+      2
+     ]
+    ]
+   }
+  ],
+  "customIng": {
+   "x_mvu9td5v": {
+    "n": "MasterFoods Butter Chicken Cooking Sauce",
+    "u": "g",
+    "p": 485,
+    "pr": [
+     4.9,
+     4.9,
+     4.9
+    ],
+    "s": 4,
+    "a": []
+   },
+   "x_mvu9u3jv": {
+    "n": "Roast Chicken",
+    "u": "ea",
+    "p": 1,
+    "pr": [
+     12.5,
+     12.5,
+     12.5
+    ],
+    "s": 1,
+    "a": [
+     "meat"
+    ]
+   },
+   "x_mvu9wmlv": {
+    "n": "Vegemite",
+    "u": "g",
+    "p": 150,
+    "pr": [
+     4.2,
+     4.2,
+     4.2
+    ],
+    "s": 4,
+    "a": []
+   }
+  },
+  "example": false,
+  "snacks": [
+   "dried",
+   "cheesecrack",
+   "bars",
+   "nachos"
+  ],
+  "box": [
+   {
+    "f": [
+     "apple",
+     "blue"
+    ],
+    "s": [
+     "strip",
+     "shapes"
+    ],
+    "x": [
+     "jelly"
+    ]
+   },
+   {
+    "f": [
+     "blue",
+     "grapes"
+    ],
+    "s": [
+     "shapes",
+     "cheesecrack"
+    ],
+    "x": [
+     "yog"
+    ]
+   },
+   {
+    "f": [
+     "grapes",
+     "pear"
+    ],
+    "s": [
+     "cheesecrack",
+     "strip"
+    ],
+    "x": [
+     "jelly"
+    ]
+   },
+   {
+    "f": [
+     "pear",
+     "apple"
+    ],
+    "s": [
+     "strip",
+     "shapes"
+    ],
+    "x": [
+     "yog"
+    ]
+   },
+   {
+    "f": [
+     "apple",
+     "blue"
+    ],
+    "s": [
+     "shapes",
+     "cheesecrack"
+    ],
+    "x": [
+     "jelly"
+    ]
+   },
+   null,
+   null
+  ]
+ }
+}
