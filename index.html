@@ -919,7 +919,7 @@ function renderWeek(){
  if(!S.members.length){el.innerHTML=`<div class="empty">Add the people you're feeding in <b>Household</b> to build a plan.</div>`;return}
  if(!S.plan)generate();
  const kids=S.members.filter(m=>m.school);
- let h=`<div class="bar"><div><h2>Meals for the week</h2><p class="lead">Every meal suits everyone eating it. School lunches follow your school's rules and need no heating. Tap any meal to search for a different one, or tap ↻ for a random pick.</p>${S.example?`<p class="note"><span class="tag ok">Example household</span> Edit it under Household.</p>`:""}</div><button class="btn primary" id="gen">New week's plan</button></div><div class="days">`;
+ let h=`<div class="bar"><div><h2>Meals for the week</h2><p class="lead">Every meal suits everyone eating it. School lunches follow your school's rules and need no heating. Tap any meal to search for a different one, or tap ↻ for a random pick.</p>${S.example?`<p class="note"><span class="tag ok">Example household</span> Edit it under Household.</p>`:""}</div><div class="frow"><button class="btn" id="printWeek">Print / Save PDF</button><button class="btn primary" id="gen">New week's plan</button></div></div><p class="note" id="printMsg" role="status" style="margin:-8px 0 12px"></p><div class="days">`;
  DAYS.forEach((dn,day)=>{
   const types=slotTypes(day);
   const dc=types.reduce((s,t)=>s+mealCost(day,t),0)+boxCost(day);
@@ -1191,6 +1191,77 @@ function renderPreg(){
   <li><b>Wash produce</b>Wash fruit, veg and salad leaves well just before eating.</li>
  </ul></div></div>`;
 }
+/* ---------- Printable week + shopping list ---------- */
+function printDoc(){
+ const e=esc;const today=new Date().toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+ const mealName=(d,t)=>{const id=S.plan?.[d]?.[t];return id&&RBY[id]?RBY[id].n:"–"};
+ const anyAdultLunch=DAYS.some((_,d)=>slotTypes(d).includes("a"));
+ const anySchool=DAYS.some((_,d)=>slotTypes(d).includes("s"));
+ const cols=[["b","Breakfast"]].concat(anySchool?[["s","School lunch"]]:[]).concat(anyAdultLunch?[["a","Lunch"]]:[]).concat([["d","Dinner"]]);
+ let rows="";
+ DAYS.forEach((dn,d)=>{
+  const types=slotTypes(d);
+  rows+=`<tr><th class="day">${dn}</th>`+cols.map(([t])=>{
+   if(!types.includes(t))return `<td class="none">–</td>`;
+   let cell=`<b>${e(mealName(d,t))}</b>`;
+   if(t==="s"&&boxOn()&&S.box?.[d]){const b=S.box[d];const nm=id=>BOXBY[id]?.n||"–";cell+=`<div class="box">${e(nm(b.f[0]))}, ${e(nm(b.f[1]))}<br>${e(nm(b.s[0]))}, ${e(nm(b.s[1]))}<br>${e(nm(b.x[0]))}</div>`}
+   return `<td>${cell}</td>`;
+  }).join("")+`</tr>`;
+ });
+ const snacks=(adults().length&&S.snacks&&S.snacks.length)?`<p class="snacks"><b>Adult snacks:</b> ${S.snacks.map(id=>e(SBY[id]?.n||"")).filter(Boolean).join(", ")}</p>`:"";
+ const who=S.members.map(m=>m.name.includes("("+m.age+")")?e(m.name):`${e(m.name)} (${m.age})`).join(", ");
+ const list=shopping().filter(x=>!S.have[x.id]);
+ const tots=STORES.map((_,i)=>list.reduce((t,x)=>t+x.prices[i],0));
+ const split=list.reduce((t,x)=>t+x.prices[x.best],0);
+ let shop="",sec=-1;
+ list.forEach(x=>{
+  if(x.c.s!==sec){sec=x.c.s;shop+=`<tr class="sec"><td colspan="5">${SECTIONS[sec]}</td></tr>`}
+  shop+=`<tr><td class="tick"><span></span></td><td>${e(x.c.n)}</td><td class="num">${x.packs}</td><td>${x.prices.every(v=>Math.abs(v-x.prices[0])<0.005)?"Either":STORES[x.best]}</td><td class="num">${money(x.prices[x.best])}</td></tr>`;
+ });
+ const css=`@page{size:A4;margin:14mm 12mm}
+ *{box-sizing:border-box}body{font:10.5pt/1.35 "Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#1c2a21;margin:0}
+ h1{font-size:20pt;margin:0 0 2px;color:#1c2a21}h1 span{color:#2d6a3e}
+ h2{font-size:13pt;margin:16px 0 6px;color:#2d6a3e;border-bottom:2px solid #2d6a3e;padding-bottom:3px}
+ .sub{color:#5a6a5f;font-size:9pt;margin:0 0 10px}
+ table{width:100%;border-collapse:collapse}
+ .week th,.week td{border:1px solid #c9d5c4;padding:5px 6px;vertical-align:top;text-align:left}
+ .week thead th{background:#e9eee6;font-size:8.5pt;text-transform:uppercase;letter-spacing:.05em}
+ .week th.day{width:42px;background:#f3f6f1}
+ .week td{font-size:9.5pt}.week td.none{color:#9aa79e;text-align:center}
+ .box{font-size:8pt;color:#5a6a5f;margin-top:3px}
+ .snacks{margin:8px 0 0;font-size:9.5pt}
+ .shop{page-break-before:always;break-before:page}
+ .shop table td{padding:3px 6px;border-bottom:1px dotted #c9d5c4;font-size:9.5pt}
+ .shop tr.sec td{background:#e9eee6;font-weight:600;border-bottom:1px solid #c9d5c4;padding-top:6px}
+ .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+ td.tick{width:18px}td.tick span{display:inline-block;width:11px;height:11px;border:1.3px solid #1c2a21;border-radius:2px;vertical-align:middle}
+ .totals{margin:10px 0 0;font-size:10pt}.totals b{font-variant-numeric:tabular-nums}
+ .foot{margin-top:10px;color:#5a6a5f;font-size:8pt}
+ tr{page-break-inside:avoid;break-inside:avoid}`;
+ return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Week on a Plate</title><style>${css}</style></head><body>
+ <h1>Week on a <span>Plate</span></h1>
+ <p class="sub">Printed ${e(today)} · ${who}</p>
+ <h2>Meals this week</h2>
+ <table class="week"><thead><tr><th></th>${cols.map(([,l])=>`<th>${l}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>
+ ${snacks}
+ <div class="shop"><h2>Shopping list</h2>
+ ${list.length?`<table><tbody>${shop}</tbody></table>
+ <p class="totals">${STORES.map((st,i)=>`All at ${st}: <b>${money(tots[i])}</b>`).join(" · ")} · Cheapest of each: <b>${money(split)}</b></p>`:`<p>Nothing to buy. Everything is ticked as already in the house.</p>`}
+ <p class="foot">Pack counts are whole packs for the week. Prices are rough estimates; check in store or online.</p></div>
+ </body></html>`;
+}
+function printWeek(){
+ const msg=t=>{const el=$("#printMsg");if(el)el.textContent=t};
+ const html=printDoc();
+ try{if(window.AndroidApp&&typeof AndroidApp.print==="function"){AndroidApp.print(html);msg("Choose Save as PDF to keep or email it, or pick a printer.");return}}catch(e){}
+ if(IN_CLAUDE){msg("Printing works in the PC and phone apps. Open Week on a Plate there to print or save a PDF.");return}
+ if(window.AndroidApp){msg("Update the phone app in Android Studio to turn on printing.");return}
+ let f=document.getElementById("printFrame");if(f)f.remove();
+ f=document.createElement("iframe");f.id="printFrame";f.setAttribute("aria-hidden","true");f.style.cssText="position:fixed;right:0;bottom:0;width:0;height:0;border:0";
+ document.body.appendChild(f);
+ const d=f.contentDocument;d.open();d.write(html);d.close();
+ setTimeout(()=>{try{f.contentWindow.focus();f.contentWindow.print();msg("In the print window, choose Save as PDF to keep or email it, or pick a printer.")}catch(e){msg("Printing isn't available here.")}},300);
+}
 function renderTotal(){
  const list=shopping().filter(x=>!S.have[x.id]);
  const split=list.reduce((s,x)=>s+x.prices[x.best],0);
@@ -1324,6 +1395,7 @@ $("#tabs").addEventListener("click",e=>{
  document.querySelectorAll("main>section").forEach(s=>s.hidden=s.id!=="tab-"+b.dataset.tab);
 });
 document.addEventListener("click",e=>{
+ if(e.target.id==="printWeek"){printWeek();return}
  if(e.target.id==="boxNew"){pickBoxes();save();render();return}
  if(e.target.id==="snackNew"){pickSnacks();save();render();return}
  if(e.target.dataset.snackrr){const i=+e.target.dataset.snackrr;const ok=SNACKS.filter(x=>snackFits(x)&&x.id!==S.snacks[i]&&!S.snacks.includes(x.id));const alt=ok.length?ok:SNACKS.filter(x=>snackFits(x)&&x.id!==S.snacks[i]);if(alt.length)S.snacks[i]=alt[Math.floor(Math.random()*alt.length)].id;save();render();return}
