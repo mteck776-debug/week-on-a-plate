@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-10-30T02:11:03.295Z",
+ "updated": "2026-10-30T02:12:35.603Z",
  "state": {
   "members": [
    {
@@ -231,6 +231,20 @@
     ],
     "s": 4,
     "a": []
+   },
+   "x_mvuc7ir7": {
+    "n": "Shredded Cheese",
+    "u": "g",
+    "p": 700,
+    "pr": [
+     10,
+     10,
+     10
+    ],
+    "s": 2,
+    "a": [
+     "dairy"
+    ]
    }
   },
   "example": false,
