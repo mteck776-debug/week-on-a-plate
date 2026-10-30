@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-10-30T02:13:00.204Z",
+ "updated": "2026-10-30T02:15:23.214Z",
  "state": {
   "members": [
    {
@@ -88,7 +88,9 @@
     "d": "dpc"
    }
   ],
-  "have": {},
+  "have": {
+   "wrap": false
+  },
   "custom": [
    {
     "id": "u_mvu9uk9r",
