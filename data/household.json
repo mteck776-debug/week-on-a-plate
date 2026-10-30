@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-10-30T01:45:04.205Z",
+ "updated": "2026-10-30T01:46:19.969Z",
  "state": {
   "members": [
    {
@@ -32,7 +32,9 @@
     "name": "Leia",
     "age": 4,
     "school": true,
-    "d": []
+    "d": [
+     "nofish"
+    ]
    }
   ],
   "rules": {
@@ -46,44 +48,44 @@
   "postcode": "",
   "plan": [
    {
-    "b": "bp",
-    "s": "lsu",
-    "a": "lac",
-    "d": "dcc"
+    "b": "at",
+    "s": "cs",
+    "a": "lcs",
+    "d": "dsc"
    },
    {
-    "b": "bom",
+    "b": "bct",
     "s": "lpu",
     "a": "tr",
-    "d": "dmi"
+    "d": "dbp"
    },
    {
-    "b": "bbr",
-    "s": "cs",
-    "a": "lbm",
-    "d": "lc"
+    "b": "u_mvu9wzpk",
+    "s": "hw",
+    "a": "lac",
+    "d": "sf"
    },
    {
-    "b": "bpo",
-    "s": "sb",
-    "a": "lpu",
-    "d": "ss"
+    "b": "oo",
+    "s": "lqb",
+    "a": "lfr",
+    "d": "dmc"
+   },
+   {
+    "b": "bft",
+    "s": "lpp",
+    "a": "lsp",
+    "d": "ch"
+   },
+   {
+    "b": "wb",
+    "a": "lpp",
+    "d": "dst"
    },
    {
     "b": "bpb",
-    "s": "tr",
-    "a": "lqu",
-    "d": "sp"
-   },
-   {
-    "b": "bbm",
-    "a": "lqb",
-    "d": "sa"
-   },
-   {
-    "b": "at",
-    "a": "lpp",
-    "d": "dbc"
+    "a": "lsr",
+    "d": "dpc"
    }
   ],
   "have": {},
@@ -207,20 +209,33 @@
   },
   "example": false,
   "snacks": [
-   "dried",
+   "pretz",
    "cheesecrack",
-   "bars",
-   "nachos"
+   "ricecake",
+   "jerky"
   ],
   "box": [
    {
     "f": [
-     "apple",
+     "straw",
+     "banana"
+    ],
+    "s": [
+     "cheesecrack",
+     "chips"
+    ],
+    "x": [
+     "coyog"
+    ]
+   },
+   {
+    "f": [
+     "banana",
      "blue"
     ],
     "s": [
-     "strip",
-     "shapes"
+     "chips",
+     "pop"
     ],
     "x": [
      "jelly"
@@ -229,53 +244,40 @@
    {
     "f": [
      "blue",
-     "grapes"
-    ],
-    "s": [
-     "shapes",
-     "cheesecrack"
-    ],
-    "x": [
-     "yog"
-    ]
-   },
-   {
-    "f": [
-     "grapes",
-     "pear"
-    ],
-    "s": [
-     "cheesecrack",
-     "strip"
-    ],
-    "x": [
-     "jelly"
-    ]
-   },
-   {
-    "f": [
-     "pear",
      "apple"
     ],
     "s": [
-     "strip",
-     "shapes"
+     "pop",
+     "cheesecrack"
     ],
     "x": [
-     "yog"
+     "coyog"
     ]
    },
    {
     "f": [
      "apple",
-     "blue"
+     "straw"
     ],
     "s": [
-     "shapes",
-     "cheesecrack"
+     "cheesecrack",
+     "chips"
     ],
     "x": [
      "jelly"
+    ]
+   },
+   {
+    "f": [
+     "straw",
+     "banana"
+    ],
+    "s": [
+     "chips",
+     "pop"
+    ],
+    "x": [
+     "coyog"
     ]
    },
    null,
