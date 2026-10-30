@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-10-30T02:12:35.603Z",
+ "updated": "2026-10-30T02:13:00.204Z",
  "state": {
   "members": [
    {
@@ -163,6 +163,52 @@
      [
       "x_mvu9wmlv",
       2
+     ]
+    ]
+   },
+   {
+    "id": "u_mvuc82fd",
+    "m": "d",
+    "n": "Risole Pasta",
+    "t": 30,
+    "serves": 4,
+    "custom": true,
+    "preg": false,
+    "i": [
+     [
+      "x_mvuc30lr",
+      55
+     ],
+     [
+      "pasta",
+      43
+     ],
+     [
+      "x_mvuc5jj5",
+      125
+     ],
+     [
+      "x_mvuc7ir7",
+      25
+     ]
+    ],
+    "st": "Break Rissoles up into small balls, put in air fryer for 8-10 minutes.\nCook Pasta.\nCombine and simmer for a few minutes and mix cheese in",
+    "raw": [
+     [
+      "x_mvuc30lr",
+      220
+     ],
+     [
+      "pasta",
+      172
+     ],
+     [
+      "x_mvuc5jj5",
+      500
+     ],
+     [
+      "x_mvuc7ir7",
+      100
      ]
     ]
    }
