@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-01T01:52:55.780Z",
+ "updated": "2026-11-01T01:54:45.753Z",
  "state": {
   "members": [
    {
@@ -444,6 +444,18 @@
      1.9
     ],
     "s": 4,
+    "a": []
+   },
+   "x_mvx6gakw": {
+    "n": "Frozen Stir Fry VegetablesFrozen Stir Fry VegetablesFrozen Stir Fry Vegetables",
+    "u": "g",
+    "p": 500,
+    "pr": [
+     2.5,
+     2.5,
+     2.5
+    ],
+    "s": 5,
     "a": []
    }
   },
