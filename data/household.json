@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-01T01:56:32.612Z",
+ "updated": "2026-11-01T23:48:50.226Z",
  "state": {
   "members": [
    {
@@ -41,7 +41,8 @@
    "crunch": true,
    "adultLunch": true,
    "snackCount": 4,
-   "lunchKit": true
+   "lunchKit": true,
+   "weeks": 4
   },
   "postcode": "4870",
   "plan": [
@@ -84,6 +85,126 @@
     "b": "oo",
     "a": "lqb",
     "d": "sa"
+   },
+   {
+    "b": "bbm",
+    "s": "lpp",
+    "a": "lpe",
+    "d": "dlg"
+   },
+   {
+    "b": "bgr",
+    "s": "lac",
+    "a": "vm",
+    "d": "dgn"
+   },
+   {
+    "b": "wb",
+    "s": "lcs",
+    "a": "lsp",
+    "d": "dmr"
+   },
+   {
+    "b": "oo",
+    "s": "hw",
+    "a": "lsr",
+    "d": "sf"
+   },
+   {
+    "b": "bbr",
+    "s": "lhv",
+    "a": "lsu",
+    "d": "pz"
+   },
+   {
+    "b": "bom",
+    "a": "lpu",
+    "d": "dmp"
+   },
+   {
+    "b": "bct",
+    "a": "ps",
+    "d": "dmc"
+   },
+   {
+    "b": "bbi",
+    "s": "tr",
+    "a": "lfr",
+    "d": "fr"
+   },
+   {
+    "b": "se",
+    "s": "lpu",
+    "a": "lcs",
+    "d": "dcs"
+   },
+   {
+    "b": "bbb",
+    "s": "lqb",
+    "a": "ltc",
+    "d": "fc"
+   },
+   {
+    "b": "bp",
+    "s": "lsu",
+    "a": "lpe",
+    "d": "dhs"
+   },
+   {
+    "b": "bpb",
+    "s": "lhr",
+    "a": "lsp",
+    "d": "dtd"
+   },
+   {
+    "b": "bft",
+    "a": "lpp",
+    "d": "dbb"
+   },
+   {
+    "b": "bft",
+    "a": "lfr",
+    "d": "dps"
+   },
+   {
+    "b": "oo",
+    "s": "ps",
+    "a": "lpu",
+    "d": "sa"
+   },
+   {
+    "b": "yb",
+    "s": "lhv",
+    "a": "lsr",
+    "d": "u_mvu9uk9r"
+   },
+   {
+    "b": "bsm",
+    "s": "ltc",
+    "a": "lbm",
+    "d": "dbc"
+   },
+   {
+    "b": "at",
+    "s": "lpp",
+    "a": "lqu",
+    "d": "dst"
+   },
+   {
+    "b": "bom",
+    "s": "lcs",
+    "a": "lsu",
+    "d": "dbp"
+   },
+   {
+    "b": "bbr",
+    "a": "lcs",
+    "d": "dmi"
+   },
+   {
+    "b": "u_mvx60kmo",
+    "a": "ltc",
+    "d": "dsa"
    }
   ],
   "have": {
@@ -510,7 +631,19 @@
    "choc",
    "bisc",
    "pretz",
-   "chips"
+   "chips",
+   "choc",
+   "darkchoc",
+   "dried",
+   "dipcrack",
+   "nachos",
+   "bars",
+   "nuts",
+   "darkchoc",
+   "choc",
+   "chips",
+   "pretz",
+   "ice"
   ],
   "box": [
    {
@@ -579,12 +712,215 @@
     ]
    },
    null,
+   null,
+   {
+    "f": [
+     "apple",
+     "banana"
+    ],
+    "s": [
+     "chips",
+     "bar"
+    ],
+    "x": [
+     "fruitcup"
+    ]
+   },
+   {
+    "f": [
+     "banana",
+     "grapes"
+    ],
+    "s": [
+     "bar",
+     "shapes"
+    ],
+    "x": [
+     "coyog"
+    ]
+   },
+   {
+    "f": [
+     "grapes",
+     "straw"
+    ],
+    "s": [
+     "shapes",
+     "chips"
+    ],
+    "x": [
+     "fruitcup"
+    ]
+   },
+   {
+    "f": [
+     "straw",
+     "apple"
+    ],
+    "s": [
+     "chips",
+     "bar"
+    ],
+    "x": [
+     "coyog"
+    ]
+   },
+   {
+    "f": [
+     "apple",
+     "banana"
+    ],
+    "s": [
+     "bar",
+     "shapes"
+    ],
+    "x": [
+     "fruitcup"
+    ]
+   },
+   null,
+   null,
+   {
+    "f": [
+     "pear",
+     "grapes"
+    ],
+    "s": [
+     "cheesecrack",
+     "rice"
+    ],
+    "x": [
+     "jelly"
+    ]
+   },
+   {
+    "f": [
+     "grapes",
+     "apple"
+    ],
+    "s": [
+     "rice",
+     "cream"
+    ],
+    "x": [
+     "puree"
+    ]
+   },
+   {
+    "f": [
+     "apple",
+     "mandarin"
+    ],
+    "s": [
+     "cream",
+     "cheesecrack"
+    ],
+    "x": [
+     "jelly"
+    ]
+   },
+   {
+    "f": [
+     "mandarin",
+     "pear"
+    ],
+    "s": [
+     "cheesecrack",
+     "rice"
+    ],
+    "x": [
+     "puree"
+    ]
+   },
+   {
+    "f": [
+     "pear",
+     "grapes"
+    ],
+    "s": [
+     "rice",
+     "cream"
+    ],
+    "x": [
+     "jelly"
+    ]
+   },
+   null,
+   null,
+   {
+    "f": [
+     "apple",
+     "mandarin"
+    ],
+    "s": [
+     "rice",
+     "strip"
+    ],
+    "x": [
+     "custard"
+    ]
+   },
+   {
+    "f": [
+     "mandarin",
+     "straw"
+    ],
+    "s": [
+     "strip",
+     "chips"
+    ],
+    "x": [
+     "cheesestick"
+    ]
+   },
+   {
+    "f": [
+     "straw",
+     "grapes"
+    ],
+    "s": [
+     "chips",
+     "rice"
+    ],
+    "x": [
+     "custard"
+    ]
+   },
+   {
+    "f": [
+     "grapes",
+     "apple"
+    ],
+    "s": [
+     "rice",
+     "strip"
+    ],
+    "x": [
+     "cheesestick"
+    ]
+   },
+   {
+    "f": [
+     "apple",
+     "mandarin"
+    ],
+    "s": [
+     "strip",
+     "chips"
+    ],
+    "x": [
+     "custard"
+    ]
+   },
+   null,
    null
   ],
   "ingEdits": {
    "rice": {
     "n": "White rice 1kg Bag"
    }
-  }
+  },
+  "recipeEdits": {},
+  "hiddenRecipes": []
  }
 }
