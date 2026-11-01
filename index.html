@@ -540,14 +540,21 @@ const BASE_R=[
  {id:"dpp",m:"d",n:"Pesto chicken pasta",t:25,i:[["pasta",100],["chicken_breast",120],["pesto",25],["spinach",15],["tomato",.5],["parmesan",8]],st:"Cook pasta. Pan-fry sliced chicken, toss with pasta, pesto, spinach and tomato. Top with parmesan. Contains nuts."},
 ];
 const BASE_C=Object.keys(C);
+const PREG_ORIG=JSON.parse(JSON.stringify(PREG));
 const BASE_ORIG=JSON.parse(JSON.stringify(C));
 let R=[],RBY={};
 function syncCustom(){
  Object.keys(C).forEach(k=>{if(!BASE_C.includes(k))delete C[k]});
  BASE_C.forEach(k=>{C[k]=Object.assign(JSON.parse(JSON.stringify(BASE_ORIG[k])),(S.ingEdits||{})[k]||{})});
  Object.entries(S.customIng||{}).forEach(([k,v])=>C[k]=v);
- R=BASE_R.concat(S.custom||[]);RBY=Object.fromEntries(R.map(r=>[r.id,r]));
- (S.custom||[]).forEach(r=>{if(r.preg)PREG[r.id]={avoid:"You marked this as containing a pregnancy high-risk food."};else delete PREG[r.id]});
+ const edits=S.recipeEdits||{},hidden=new Set(S.hiddenRecipes||[]);
+ Object.keys(PREG).forEach(k=>delete PREG[k]);Object.assign(PREG,JSON.parse(JSON.stringify(PREG_ORIG)));
+ const base=BASE_R.filter(r=>!hidden.has(r.id)).map(r=>edits[r.id]?Object.assign({},edits[r.id],{id:r.id,edited:true,custom:false}):r);
+ R=base.concat((S.custom||[]).filter(r=>!hidden.has(r.id)));RBY=Object.fromEntries(R.map(r=>[r.id,r]));
+ R.filter(r=>r.custom||r.edited).forEach(r=>{
+  if(r.preg)PREG[r.id]={avoid:"Marked as containing a pregnancy high-risk food."};
+  else if(PREG[r.id]?.avoid)delete PREG[r.id];
+ });
  if(S.plan)S.plan.forEach(d=>Object.keys(d).forEach(k=>{if(d[k]&&!RBY[d[k]])d[k]=null}));
  fixSnacks();
  fixBoxes();
@@ -635,6 +642,8 @@ const DEFAULT={
  box:null,
  snacks:null,
  ingEdits:{},
+ recipeEdits:{},
+ hiddenRecipes:[],
  postcode:"",
  plan:null,
  have:{},
@@ -645,7 +654,7 @@ if(!S)S=structuredClone(DEFAULT);
 S.custom=S.custom||[];S.customIng=S.customIng||{};
 /* Shared household: one document both of you read and write; this browser keeps a copy too */
 let firstSnap=true,ref=null,lastSent="",writing=false,again=false,canWrite=true,pushTimer=null,sharedExists=false;
-function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{}}}
+function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[]}}
 function setSync(kind){
  const el=document.getElementById("sync");if(!el)return;el.className="sync";
  if(kind==="ok"){el.classList.add("ok");el.innerHTML=`<span class="dot"></span>Shared · up to date`}
@@ -1082,7 +1091,7 @@ function ingOptions(sel){
 function formHTML(){
  const d=draft;
  let h=`<form class="panel" id="rform" style="margin-bottom:16px" novalidate>
- <h2>${d.id?"Edit your recipe":"Add your own recipe"}</h2>
+ <h2>${d.id?"Edit recipe":"Add your own recipe"}</h2>
  <p class="lead">Enter amounts for the whole recipe as you normally make it. The app works out a single serving and scales it for your household.</p>
  <div class="fgrid">
   <label class="fld wide"><span class="label">Recipe name</span><input type="text" id="dr-n" data-dr="n" value="${esc(d.n)}" placeholder="e.g. Nan's shepherd's pie"></label>
@@ -1132,22 +1141,24 @@ function saveRecipe(){
  if(!name)return "Give your recipe a name.";
  if(!rows.length)return "Add at least one ingredient with an amount.";
  if(d.rows.some(r=>r.id&&!(+r.q>0)))return "Every chosen ingredient needs an amount above 0.";
- const rec={id:d.id||"u_"+Date.now().toString(36),m:d.m,n:name,t:Math.max(1,+d.t||30),serves,custom:true,preg:!!d.preg,
+ const builtin=!!d.id&&BASE_R.some(r=>r.id===d.id);
+ const rec={id:d.id||"u_"+Date.now().toString(36),m:d.m,n:name,t:Math.max(1,+d.t||30),serves,custom:!builtin,preg:!!d.preg,
   i:rows.map(r=>[r.id,+r.q/serves]),st:d.st.trim(),raw:rows.map(r=>[r.id,+r.q])};
- const ix=S.custom.findIndex(r=>r.id===rec.id);if(ix<0)S.custom.push(rec);else S.custom[ix]=rec;
+ if(builtin){S.recipeEdits=S.recipeEdits||{};S.recipeEdits[rec.id]=rec}
+ else{const ix=S.custom.findIndex(r=>r.id===rec.id);if(ix<0)S.custom.push(rec);else S.custom[ix]=rec}
  syncCustom();save();return "";
 }
 function renderRecipes(){
  const el=$("#tab-recipes");
  const fl=[["all","All"],["b","Breakfast"],["l","Lunchbox"],["d","Dinner"],["mine","Your recipes"]];
- let h=`<div class="bar"><div><h2>Recipes</h2><p class="lead">Amounts below are for one adult serving. Open a recipe to set how many servings you're cooking and get the full amounts to follow. Lunchbox recipes are all eaten cold.</p></div><div class="filters"><button class="btn primary" data-act="new-recipe">Add your own recipe</button>${fl.map(([k,l])=>`<button class="chip" data-rf="${k}" aria-pressed="${rFilter===k}">${l}</button>`).join("")}</div></div>${draft?formHTML():""}${savedMsg?`<p class="note" role="status" style="margin-bottom:12px"><span class="tag ok">Saved</span> ${esc(savedMsg)}</p>`:""}<div class="recipes">`;
+ let h=`<div class="bar"><div><h2>Recipes</h2><p class="lead">Amounts below are for one adult serving. Open a recipe to set how many servings you're cooking. Every recipe can be edited or deleted, and changes reach your other devices.</p></div><div class="filters"><button class="btn primary" data-act="new-recipe">Add your own recipe</button>${fl.map(([k,l])=>`<button class="chip" data-rf="${k}" aria-pressed="${rFilter===k}">${l}</button>`).join("")}</div></div>${(S.hiddenRecipes||[]).length?`<p class="note" style="margin:-6px 0 12px">${S.hiddenRecipes.length} built-in ${S.hiddenRecipes.length===1?"recipe is":"recipes are"} deleted. <button class="btn small" data-act="restore-recipes">Bring them back</button></p>`:""}${draft?formHTML():""}${savedMsg?`<p class="note" role="status" style="margin-bottom:12px"><span class="tag ok">Saved</span> ${esc(savedMsg)}</p>`:""}<div class="recipes">`;
  const shown=R.filter(r=>rFilter==="all"||(rFilter==="mine"?r.custom:r.m===rFilter));
  if(!shown.length)h+=`<div class="empty">You haven't added any recipes yet. Use <b>Add your own recipe</b> to start.</div>`;
  shown.forEach(r=>{
   const al=new Set();r.i.forEach(([id])=>C[id]&&C[id].a.forEach(a=>al.add(a)));
   const cost=r.i.reduce((s,[id,q])=>s+(C[id]?unitCost(id)*q:0),0);
   const kind=r.m==="b"?"Breakfast":r.m==="l"?"Lunchbox":"Dinner";
-  h+=`<article class="recipe"><div class="label">${kind} · ${r.t} min · ≈ ${money(cost)} a serve</div><h3>${esc(r.n)}</h3><div class="frow"><button class="btn small primary" data-viewrecipe="${r.id}">Open recipe &amp; choose servings</button></div>${r.custom?`<div class="tags"><span class="tag ok">Your recipe</span><button class="btn small" data-act="edit-recipe" data-id="${r.id}">Edit</button><button class="btn small" data-act="del-recipe" data-id="${r.id}">${pendingDel===r.id?"Tap again to delete":"Delete"}</button></div>`:""}
+  h+=`<article class="recipe"><div class="label">${kind} · ${r.t} min · ≈ ${money(cost)} a serve</div><h3>${esc(r.n)}</h3><div class="frow"><button class="btn small primary" data-viewrecipe="${r.id}">Open recipe &amp; choose servings</button></div><div class="tags">${r.custom?`<span class="tag ok">Your recipe</span>`:r.edited?`<span class="tag preg">Edited</span>`:""}<button class="btn small" data-act="edit-recipe" data-id="${r.id}">Edit</button>${r.edited?`<button class="btn small" data-act="undo-recipe" data-id="${r.id}">Undo my changes</button>`:""}<button class="btn small" data-act="del-recipe" data-id="${r.id}">${pendingDel===r.id?"Tap again to delete":"Delete"}</button></div>
   <div class="tags">${[...al].map(a=>`<span class="tag${a==="nuts"?" warn":""}">${ALLERGEN_LABEL[a]}</span>`).join("")||`<span class="tag ok">Free of common allergens</span>`}${PREG[r.id]?.avoid?`<span class="tag warn">Not in pregnancy plans</span>`:""}</div>
   <ul>${r.i.filter(([id])=>C[id]).map(([id,q])=>`<li>${C[id].u==="ea"?(Math.round(q*100)/100)+" × ":fmtQ(q,C[id].u)+" "}${esc(C[id].n.replace(/ \(\d+\)| \d+(g|ml|L)$/,""))}</li>`).join("")}</ul>
   ${r.st?`<p>${esc(r.st)}</p>`:""}${PREG[r.id]?`<p class="note"><span class="tag ${PREG[r.id].avoid?"warn":"preg"}">Pregnancy</span> ${esc(PREG[r.id].avoid||PREG[r.id].tip)}</p>`:""}</article>`;
@@ -1528,11 +1539,17 @@ document.addEventListener("click",e=>{
   if(act==="save-ni"){formErr=saveIngredient();renderRecipes();return}
   if(act==="cancel-recipe"){draft=null;niDraft=null;renderRecipes();return}
   if(act==="save-recipe"){formErr=saveRecipe();if(!formErr){savedMsg=`${draft.n.trim()} is in your recipes and can now come up in plans. Pick it from any matching meal menu on This week.`;draft=null;niDraft=null;rFilter="mine";render()}else renderRecipes();return}
-  if(act==="edit-recipe"){const r=RBY[a.dataset.id];draft={id:r.id,n:r.n,m:r.m,t:r.t,serves:r.serves||1,rows:(r.raw||r.i).map(([id,q])=>({id,q:String(Math.round(q*100)/100)})),st:r.st||"",preg:!!r.preg};niDraft=null;savedMsg="";renderRecipes();window.scrollTo({top:0});return}
+  if(act==="edit-recipe"){const r=RBY[a.dataset.id];const sv=r.raw?(r.serves||1):4;
+   draft={id:r.id,n:r.n,m:r.m,t:r.t,serves:sv,rows:(r.raw||r.i.map(([id,q])=>[id,q*sv])).map(([id,q])=>({id,q:String(Math.round(q*100)/100)})),st:r.st||"",preg:r.custom||r.edited?!!r.preg:!!PREG[r.id]?.avoid};niDraft=null;savedMsg="";renderRecipes();window.scrollTo({top:0});return}
   if(act==="del-recipe"){const id=a.dataset.id;if(pendingDel!==id){pendingDel=id;renderRecipes();return}
-   pendingDel=null;S.custom=S.custom.filter(r=>r.id!==id);syncCustom();
+   pendingDel=null;const nm=RBY[id]?.n||"Recipe";
+   if(BASE_R.some(r=>r.id===id)){S.hiddenRecipes=(S.hiddenRecipes||[]).filter(x=>x!==id).concat([id]);if(S.recipeEdits)delete S.recipeEdits[id]}
+   else S.custom=S.custom.filter(r=>r.id!==id);
+   syncCustom();if(draft&&draft.id===id)draft=null;
    if(S.plan)DAYS.forEach((_,day)=>slotTypes(day).forEach(type=>{if(!S.plan[day][type]){const p=pool(type,eaters(type,day));if(p.length)S.plan[day][type]=p[Math.floor(Math.random()*p.length)].id}}));
-   savedMsg="";save();render();return}
+   savedMsg=`${nm} deleted.`;save();render();return}
+  if(act==="undo-recipe"){const id=a.dataset.id;if(S.recipeEdits)delete S.recipeEdits[id];syncCustom();savedMsg=`${RBY[id]?.n||"Recipe"} is back to the original.`;save();render();return}
+  if(act==="restore-recipes"){const n=(S.hiddenRecipes||[]).length;S.hiddenRecipes=[];syncCustom();savedMsg=`${n} deleted ${n===1?"recipe is":"recipes are"} back.`;save();render();return}
   return;
  }
  if(e.target.dataset.nia&&niDraft){const k=e.target.dataset.nia;const i=niDraft.a.indexOf(k);i<0?niDraft.a.push(k):niDraft.a.splice(i,1);e.target.setAttribute("aria-pressed",i<0);return}
