@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-01T23:51:29.215Z",
+ "updated": "2026-11-01T23:54:07.977Z",
  "state": {
   "members": [
    {
@@ -921,6 +921,16 @@
    }
   },
   "recipeEdits": {},
-  "hiddenRecipes": []
+  "hiddenRecipes": [],
+  "leftovers": [
+   {
+    "id": "mvyhl0jw",
+    "name": "Spaghetti bolognese",
+    "serves": 3,
+    "useBy": "2026-11-04",
+    "notes": "Middle of fridge",
+    "added": "2026-11-02"
+   }
+  ]
  }
 }
