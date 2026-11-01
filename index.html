@@ -133,6 +133,13 @@ details.note li{margin-bottom:4px}
 .snack .meta{font:400 .78rem var(--f-mono);color:var(--muted)}
 .snackrow{align-items:center}
 .snackrow input{width:70px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--surface);margin-bottom:14px}
+.segbtn{border:0;background:none;color:var(--muted);font:600 .9rem var(--f-body);padding:7px 18px;border-radius:999px;cursor:pointer}
+.segbtn[aria-pressed="true"]{background:var(--leaf);color:var(--leaf-ink)}
+.segbtn:focus-visible{outline:2px solid var(--leaf);outline-offset:2px}
+.wktabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
+.wktabs .chip{padding:6px 12px;font-size:.85rem}
+.wkc{font:400 .75rem var(--f-mono);opacity:.85}
 .ing-tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .ing-tools input{flex:1 1 220px;font:500 1rem var(--f-body);padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);min-width:0}
 .ing-tools select{font:500 .95rem var(--f-body);padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
@@ -556,6 +563,7 @@ function syncCustom(){
   else if(PREG[r.id]?.avoid)delete PREG[r.id];
  });
  if(S.plan)S.plan.forEach(d=>Object.keys(d).forEach(k=>{if(d[k]&&!RBY[d[k]])d[k]=null}));
+ if(S.plan&&S.plan.length!==nDays()){const want=nWeeks();S.rules.weeks=want===4?4:1;setWeeks(want)}
  fixSnacks();
  fixBoxes();
 }
@@ -585,12 +593,12 @@ function snackPacks(){return Math.max(1,Math.ceil(adults().length/2))}
 function snackCost(sn){return sn.i.reduce((t,[x,q])=>t+Math.min(...storePrices(C[x]))*Math.ceil(q*snackPacks()/C[x].p-1e-6),0)}
 function pickSnacks(){
  const n=adults().length?Math.max(0,Math.min(10,+S.rules.snackCount||0)):0;
- const ok=SNACKS.filter(snackFits);const bag=shuffle(ok);
- S.snacks=Array.from({length:n},(_,i)=>bag.length?bag[i%bag.length].id:null);
+ const ok=SNACKS.filter(snackFits);
+ S.snacks=[];for(let w=0;w<nWeeks();w++){const bag=shuffle(ok);for(let i=0;i<n;i++)S.snacks.push(bag.length?bag[i%bag.length].id:null)}
 }
 function fixSnacks(){
  if(S.rules.snackCount==null)S.rules.snackCount=4;
- const n=adults().length?+S.rules.snackCount:0;
+ const n=adults().length?+S.rules.snackCount*nWeeks():0;
  if(!Array.isArray(S.snacks)||S.snacks.length!==n)pickSnacks();
 }
 /* School lunchbox kit: per child, per school day */
@@ -608,14 +616,15 @@ function pickBoxes(){
  if(!boxOn()){S.box=null;return}
  /* A small set each week so multipacks get used up: 4 fruits, 3 snacks, 2 extras, rotated */
  const set=(k,n)=>shuffle(BOX[k].filter(boxFits)).slice(0,n).map(x=>x.id);
- const F=set("f",4),SN=set("s",3),X=set("x",2);
  const at=(arr,i)=>arr.length?arr[i%arr.length]:null;
- S.box=DAYS.map((_,d)=>d>4?null:{f:[at(F,d),at(F,d+1)],s:[at(SN,d),at(SN,d+1)],x:[at(X,d)]});
+ S.box=[];
+ for(let w=0;w<nWeeks();w++){const F=set("f",4),SN=set("s",3),X=set("x",2);
+  for(let i=0;i<7;i++)S.box.push(i>4?null:{f:[at(F,i),at(F,i+1)],s:[at(SN,i),at(SN,i+1)],x:[at(X,i)]})}
 }
 function fixBoxes(){
  if(S.rules.lunchKit==null)S.rules.lunchKit=true;
  if(!boxOn()){S.box=null;return}
- if(!Array.isArray(S.box)||S.box.length!==7||!S.box[0])pickBoxes();
+ if(!Array.isArray(S.box)||S.box.length!==nDays()||!S.box[0])pickBoxes();
 }
 function boxCost(day){
  const b=S.box?.[day];if(!b||!boxOn())return 0;const k=schoolKids().length;
@@ -626,6 +635,14 @@ function boxSummary(day){
  return `<div class="boxline"><span class="label">In the lunchbox</span> ${esc(nm(b.f[0]))}, ${esc(nm(b.f[1]))} · ${esc(nm(b.s[0]))}, ${esc(nm(b.s[1]))} · ${esc(nm(b.x[0]))}</div>`;
 }
 const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+/* Plan length: one week, or a month of four weeks. Days are numbered 0..27; d%7 is the weekday. */
+const nWeeks=()=>S.rules&&+S.rules.weeks===4?4:1;
+const nDays=()=>7*nWeeks();
+const allDays=()=>Array.from({length:nDays()},(_,i)=>i);
+const weekDays=w=>Array.from({length:7},(_,i)=>w*7+i);
+const isSchoolDay=d=>d%7<5;
+const dayLabel=d=>nWeeks()>1?`Week ${Math.floor(d/7)+1} ${DAYS[d%7]}`:DAYS[d%7];
+let viewWeek=0,shopRange="all";
 const SLOTS={b:"Breakfast",s:"School lunch",a:"Lunch",d:"Dinner"};
 
 /* ---------- State ---------- */
@@ -841,13 +858,13 @@ async function connectShared(){
 function portion(age){age=+age||0;if(age<4)return .4;if(age<9)return .6;if(age<14)return .85;if(age<19)return 1.1;if(age<65)return 1;return .9}
 function eaters(type,day){
  const ms=S.members;
- if(type==="s")return day<5?ms.filter(m=>m.school):[];
- if(type==="a")return S.rules.adultLunch?(day<5?ms.filter(m=>!m.school):ms):[];
+ if(type==="s")return isSchoolDay(day)?ms.filter(m=>m.school):[];
+ if(type==="a")return S.rules.adultLunch?(isSchoolDay(day)?ms.filter(m=>!m.school):ms):[];
  return ms;
 }
 function slotTypes(day){
  const t=["b"];
- if(day<5&&S.members.some(m=>m.school))t.push("s");
+ if(isSchoolDay(day)&&S.members.some(m=>m.school))t.push("s");
  if(S.rules.adultLunch&&eaters("a",day).length)t.push("a");
  t.push("d");return t;
 }
@@ -885,10 +902,10 @@ function pool(type,ms){
 }
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function generate(){
- const plan=DAYS.map(()=>({}));
+ const plan=allDays().map(()=>({}));
  ["b","s","a","d"].forEach(type=>{
   let bag=[];
-  DAYS.forEach((_,day)=>{
+  allDays().forEach(day=>{
    if(!slotTypes(day).includes(type))return;
    const p=pool(type,eaters(type,day));if(!p.length){plan[day][type]=null;return}
    if(!bag.length)bag=shuffle(p);
@@ -898,6 +915,24 @@ function generate(){
  S.plan=plan;
  pickSnacks();
  pickBoxes();
+}
+/* Make a fresh plan for one week of a month, keeping the other weeks */
+function regenWeek(w){
+ const keep={plan:S.plan,box:S.box,snacks:S.snacks};
+ generate();
+ const n=+S.rules.snackCount||0;
+ weekDays(w).forEach(d=>{keep.plan[d]=S.plan[d];if(keep.box&&S.box)keep.box[d]=S.box[d]});
+ if(keep.snacks&&S.snacks)for(let i=w*n;i<w*n+n;i++)keep.snacks[i]=S.snacks[i];
+ S.plan=keep.plan;S.box=keep.box||S.box;S.snacks=keep.snacks||S.snacks;
+}
+/* Switch between a week and a month, keeping what's already planned */
+function setWeeks(n){
+ const old={plan:S.plan||[],box:S.box||[],snacks:S.snacks||[]};const per=+S.rules.snackCount||0;
+ S.rules.weeks=n;generate();
+ old.plan.slice(0,nDays()).forEach((p,d)=>{if(p&&Object.keys(p).length)S.plan[d]=p});
+ if(S.box)old.box.slice(0,nDays()).forEach((b,d)=>{if(b)S.box[d]=b});
+ if(S.snacks)old.snacks.slice(0,per*nWeeks()).forEach((x,i)=>{if(x)S.snacks[i]=x});
+ viewWeek=Math.min(viewWeek,nWeeks()-1);if(shopRange!=="all"&&+shopRange>=nWeeks())shopRange="all";
 }
 function reroll(day,type){
  const p=pool(type,eaters(type,day)).filter(r=>r.id!==S.plan[day][type]);
@@ -909,18 +944,22 @@ function mealCost(day,type){
  const ms=eaters(type,day);const nd=needs(ms,type);const f=ms.reduce((s,m)=>s+portion(m.age),0);
  return resolve(RBY[id],nd).ing.reduce((s,[x,q])=>s+unitCost(x)*q*f,0);
 }
-function shopping(){
+function rangeDays(r){return r==null||r==="all"?allDays():weekDays(+r)}
+function shopping(range){
+ const days=rangeDays(range==null?shopRange:range);const inR=new Set(days);
+ const weeksIn=range==null&&shopRange==="all"||range==="all"?nWeeks():1;
  const tot={};
  const add=(id,q,why)=>{tot[id]=tot[id]||{q:0,why:new Set()};tot[id].q+=q;if(why)tot[id].why.add(why)};
  if(!S.plan)return [];
- DAYS.forEach((_,day)=>slotTypes(day).forEach(type=>{
+ days.forEach(day=>slotTypes(day).forEach(type=>{
   const id=S.plan[day]?.[type];if(!id||!RBY[id])return;
   const ms=eaters(type,day);const nd=needs(ms,type);const f=ms.reduce((s,m)=>s+portion(m.age),0);
   resolve(RBY[id],nd).ing.forEach(([x,q])=>add(x,q*f,RBY[id].n));
  }));
- const sp=snackPacks();(S.snacks||[]).forEach(id=>{const sn=SBY[id];if(sn)sn.i.forEach(([x,q])=>add(x,q*sp,"Adult snacks: "+sn.n))});
- if(boxOn()&&S.box){const k=schoolKids().length;S.box.forEach((b,d)=>{if(!b)return;BOX_PARTS.forEach(([g,i])=>{const it=BOXBY[b[g][i]];if(it)it.i.forEach(([x,q])=>add(x,q*k,"Lunchbox: "+it.n))})})}
- if(S.rules.crunch&&!boxOn()){const k=S.members.filter(m=>m.school).length;if(k){add("apple",k*3,"Crunch & Sip fruit");add("banana",k*2,"Crunch & Sip fruit")}}
+ const per=+S.rules.snackCount||0;const wks=[...new Set(days.map(d=>Math.floor(d/7)))];
+ const sp=snackPacks();(S.snacks||[]).filter((_,i)=>per&&wks.includes(Math.floor(i/per))).forEach(id=>{const sn=SBY[id];if(sn)sn.i.forEach(([x,q])=>add(x,q*sp,"Adult snacks: "+sn.n))});
+ if(boxOn()&&S.box){const k=schoolKids().length;S.box.forEach((b,d)=>{if(!b||!inR.has(d))return;BOX_PARTS.forEach(([g,i])=>{const it=BOXBY[b[g][i]];if(it)it.i.forEach(([x,q])=>add(x,q*k,"Lunchbox: "+it.n))})})}
+ if(S.rules.crunch&&!boxOn()){const k=S.members.filter(m=>m.school).length;if(k){add("apple",k*3*wks.length,"Crunch & Sip fruit");add("banana",k*2*wks.length,"Crunch & Sip fruit")}}
  return Object.entries(tot).map(([id,v])=>{
   const c=C[id];const packs=Math.max(1,Math.ceil(v.q/c.p-1e-6));
   const prices=storePrices(c).map(p=>p*packs);const best=prices.indexOf(Math.min(...prices));
@@ -945,8 +984,12 @@ function renderWeek(){
  if(!S.members.length){el.innerHTML=`<div class="empty">Add the people you're feeding in <b>Household</b> to build a plan.</div>`;return}
  if(!S.plan)generate();
  const kids=S.members.filter(m=>m.school);
- let h=`<div class="bar"><div><h2>Meals for the week</h2><p class="lead">Every meal suits everyone eating it. School lunches follow your school's rules and need no heating. Tap any meal to search for a different one, or tap ↻ for a random pick.</p>${S.example?`<p class="note"><span class="tag ok">Example household</span> Edit it under Household.</p>`:""}</div><div class="frow"><button class="btn" id="printWeek">Print / Save PDF</button><button class="btn primary" id="gen">New week's plan</button></div></div><p class="note" id="printMsg" role="status" style="margin:-8px 0 12px"></p><div class="days">`;
- DAYS.forEach((dn,day)=>{
+ const M=nWeeks()>1;if(viewWeek>=nWeeks())viewWeek=0;
+ const tb=document.querySelector('[data-tab="week"]');if(tb)tb.textContent=M?"This month":"This week";
+ const seg=`<div class="seg" role="group" aria-label="Plan length"><button class="segbtn" data-plen="1" aria-pressed="${!M}">Week</button><button class="segbtn" data-plen="4" aria-pressed="${M}">Month</button></div>`;
+ const wkTabs=M?`<p class="note" style="margin:-4px 0 6px">Week totals are the cost of the food you'll eat. The shopping list rounds up to whole packs, so it's higher.</p><div class="wktabs" role="tablist" aria-label="Weeks">${[0,1,2,3].map(w=>`<button class="chip" role="tab" data-vweek="${w}" aria-pressed="${viewWeek===w}">Week ${w+1} <span class="wkc">≈ ${money(weekDays(w).reduce((t,d)=>t+slotTypes(d).reduce((a,ty)=>a+mealCost(d,ty),0)+boxCost(d),0))}</span></button>`).join("")}</div>`:"";
+ let h=`${seg}<div class="bar"><div><h2>${M?"Meals for the month":"Meals for the week"}</h2><p class="lead">Every meal suits everyone eating it. School lunches follow your school's rules and need no heating. Tap any meal to search for a different one, or tap ↻ for a random pick.</p>${S.example?`<p class="note"><span class="tag ok">Example household</span> Edit it under Household.</p>`:""}</div><div class="frow"><button class="btn" id="printWeek">Print / Save PDF</button>${M?`<button class="btn" id="genWeek">New plan for week ${viewWeek+1}</button>`:""}<button class="btn primary" id="gen">${M?"New month's plan":"New week's plan"}</button></div></div><p class="note" id="printMsg" role="status" style="margin:-8px 0 12px"></p>${wkTabs}<div class="days">`;
+ weekDays(M?viewWeek:0).forEach(day=>{const dn=DAYS[day%7];
   const types=slotTypes(day);
   const dc=types.reduce((s,t)=>s+mealCost(day,t),0)+boxCost(day);
   h+=`<article class="day"><header><span class="d">${dn}</span><span class="c">≈ ${money(dc)}</span></header>`;
@@ -969,11 +1012,11 @@ function renderWeek(){
  });
  h+=`</div>`;
  if(boxOn()&&S.box){
-  const k=schoolKids().length;const tot=[0,1,2,3,4].reduce((t,d)=>t+boxCost(d),0);
-  h+=`<section class="lunchbox"><div class="bar" style="margin:20px 0 10px"><div><h2>School lunchboxes</h2><p class="lead">Each lunchbox has one main, two fruits, two snacks and one extra, for ${k===1?"1 child":k+" children"}. Extras and snacks for the week cost about ${money(tot)}. Everything follows your school rules and allergies.</p></div><button class="btn" id="boxNew">New lunchbox picks</button></div><div class="box-grid">`;
-  [0,1,2,3,4].forEach(d=>{
+  const k=schoolKids().length;const sd=weekDays(M?viewWeek:0).filter(isSchoolDay);const tot=sd.reduce((t,d)=>t+boxCost(d),0);
+  h+=`<section class="lunchbox"><div class="bar" style="margin:20px 0 10px"><div><h2>School lunchboxes${M?` · week ${viewWeek+1}`:""}</h2><p class="lead">Each lunchbox has one main, two fruits, two snacks and one extra, for ${k===1?"1 child":k+" children"}. Extras and snacks for the week cost about ${money(tot)}. Everything follows your school rules and allergies.</p></div><button class="btn" id="boxNew">New lunchbox picks</button></div><div class="box-grid">`;
+  sd.forEach(d=>{
    const b=S.box[d];if(!b)return;const main=S.plan?.[d]?.s;
-   h+=`<div class="boxday"><div class="top"><span class="d">${DAYS[d]}</span><span class="c">≈ ${money(boxCost(d)+mealCost(d,"s"))}</span></div>
+   h+=`<div class="boxday"><div class="top"><span class="d">${DAYS[d%7]}</span><span class="c">≈ ${money(boxCost(d)+mealCost(d,"s"))}</span></div>
    <div class="boxrow"><span class="label">Main</span><span class="mainname">${main&&RBY[main]?esc(RBY[main].n):"Choose above"}</span></div>`;
    BOX_PARTS.forEach(([g,i,lab])=>{
     const cur=b[g][i];const opts=BOX[g].filter(x=>boxFits(x)||x.id===cur);
@@ -983,12 +1026,13 @@ function renderWeek(){
   });
   h+=`</div>${S.rules.crunch?`<p class="note" style="margin-top:8px">Crunch &amp; Sip: pack one of the two fruits for the morning fruit break.</p>`:""}</section>`;
  }
- if(adults().length&&S.snacks&&S.snacks.length){
-  const tot=S.snacks.reduce((t,id)=>t+(SBY[id]?snackCost(SBY[id]):0),0);
-  h+=`<section class="snacks"><div class="bar" style="margin:20px 0 10px"><div><h2>Adult snacks this week</h2><p class="lead">${S.snacks.length} treats for the adults, about ${money(tot)}. Change how many under Household.</p></div><button class="btn" id="snackNew">New snacks</button></div><div class="snack-grid">`;
-  S.snacks.forEach((id,i)=>{
+ const per=+S.rules.snackCount||0;const w0=(M?viewWeek:0)*per;const wkSn=(S.snacks||[]).slice(w0,w0+per);
+ if(adults().length&&wkSn.length){
+  const tot=wkSn.reduce((t,id)=>t+(SBY[id]?snackCost(SBY[id]):0),0);
+  h+=`<section class="snacks"><div class="bar" style="margin:20px 0 10px"><div><h2>Adult snacks ${M?`· week ${viewWeek+1}`:"this week"}</h2><p class="lead">${wkSn.length} treats for the adults, about ${money(tot)}. Change how many under Household.</p></div><button class="btn" id="snackNew">New snacks</button></div><div class="snack-grid">`;
+  wkSn.forEach((id,j)=>{const i=w0+j;
    const opts=SNACKS.filter(x=>snackFits(x)||x.id===id);
-   h+=`<div class="snack"><div class="top"><span class="label">Snack ${i+1}</span><button class="reroll" data-snackrr="${i}" aria-label="Pick another snack ${i+1}">↻</button></div>
+   h+=`<div class="snack"><div class="top"><span class="label">Snack ${j+1}</span><button class="reroll" data-snackrr="${i}" aria-label="Pick another snack ${i+1}">↻</button></div>
    <select id="snack-${i}" data-snack="${i}" aria-label="Snack ${i+1}">${opts.map(x=>`<option value="${x.id}"${x.id===id?" selected":""}>${esc(x.n)}</option>`).join("")}</select>
    <div class="meta">≈ ${SBY[id]?money(snackCost(SBY[id])):"–"}</div></div>`;
   });
@@ -1049,12 +1093,14 @@ function renderHouse(){
 }
 function renderShop(){
  const el=$("#tab-shop");const list=shopping();
- if(!list.length){el.innerHTML=`<div class="empty">Your plan is empty, so there's nothing to buy yet.</div>`;return}
+ const M=nWeeks()>1;
+ const rangeChips=M?`<div class="wktabs" role="group" aria-label="Shopping for"><button class="chip" data-shoprange="all" aria-pressed="${shopRange==="all"}">Whole month</button>${[0,1,2,3].map(w=>`<button class="chip" data-shoprange="${w}" aria-pressed="${shopRange===String(w)}">Week ${w+1}</button>`).join("")}</div>`:"";
+ if(!list.length){el.innerHTML=rangeChips+`<div class="empty">Your plan is empty, so there's nothing to buy yet.</div>`;return}
  const live=list.filter(x=>!S.have[x.id]);
  const tots=STORES.map((_,i)=>live.reduce((s,x)=>s+x.prices[i],0));
  const split=live.reduce((s,x)=>s+x.prices[x.best],0);
  const bestStore=tots.indexOf(Math.min(...tots));
- let h=`<div class="bar"><div><h2>Shopping list</h2><p class="lead">Quantities cover the whole week, rounded up to whole packs. Prices are rough Queensland estimates, so check in store or online before you shop. Tick anything you already have. To shop online, sign in to Coles or Woolworths first, then tap <b>Coles</b> or <b>Woolies</b> on an item to open that store's search for it, ready to add to your trolley.</p></div><button class="btn" id="copy">Copy list</button></div>
+ let h=`${rangeChips}<div class="bar"><div><h2>Shopping list${M?(shopRange==="all"?" · whole month":` · week ${+shopRange+1}`):""}</h2><p class="lead">${M?(shopRange==="all"?"Quantities cover the whole month (four weeks), rounded up to whole packs. Fresh fruit, veg, meat and bread keep better bought weekly: pick a week above for that.":`Quantities cover week ${+shopRange+1}, rounded up to whole packs.`):"Quantities cover the whole week, rounded up to whole packs."} Prices are rough Queensland estimates, so check in store or online before you shop. Tick anything you already have. To shop online, sign in to Coles or Woolworths first, then tap <b>Coles</b> or <b>Woolies</b> on an item to open that store's search for it, ready to add to your trolley.</p></div><button class="btn" id="copy">Copy list</button></div>
  <div class="totals">${STORES.map((s,i)=>`<div class="tot${i===bestStore?" win":""}"><div class="label">All at ${s}</div><div class="v">${money(tots[i])}</div></div>`).join("")}
  <div class="tot"><div class="label">Split shop, cheapest each</div><div class="v">${money(split)}</div></div></div>
  <div class="tablewrap"><table><thead><tr><th>Have</th><th>Item</th><th class="num">Need</th><th class="num">Packs</th>${STORES.map(s=>`<th class="num">${s}</th>`).join("")}<th>Best at</th><th>Add online</th></tr></thead><tbody>`;
@@ -1196,10 +1242,10 @@ function renderPreg(){
  let mine="";
  if(who.length&&S.plan){
   const rows=[];
-  DAYS.forEach((dn,day)=>slotTypes(day).forEach(type=>{
+  allDays().forEach(day=>{const dn=dayLabel(day);slotTypes(day).forEach(type=>{
    const ms=eaters(type,day);if(!ms.some(m=>m.d.includes("preg")))return;
    const id=S.plan[day]?.[type];if(id&&PREG[id]?.tip)rows.push(`<li><b>${dn} ${SLOTS[type].toLowerCase()}: ${esc(RBY[id].n)}</b>${esc(PREG[id].tip)}</li>`);
-  }));
+  })});
   mine=`<div class="panel"><h3>This week's plan for ${who.map(m=>esc(m.name)).join(", ")}</h3><p class="note">High-risk meals are already left out of everything ${who.length>1?"they eat":"this person eats"}, shared dinners included. These meals are in the plan and need a little care:</p>${rows.length?`<ul class="avoid">${rows.join("")}</ul>`:`<p class="note">Nothing in this week's plan needs special handling.</p>`}</div>`;
  }else{
   mine=`<div class="panel"><h3>Turn it on for someone</h3><p class="note">Under Household, tap <b>Pregnant</b> on the person who's expecting. Meals they eat will leave out high-risk foods, and this page will list safe-handling tips for their week.</p></div>`;
@@ -1229,11 +1275,12 @@ function renderPreg(){
 function printDoc(){
  const e=esc;const today=new Date().toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
  const mealName=(d,t)=>{const id=S.plan?.[d]?.[t];return id&&RBY[id]?RBY[id].n:"–"};
- const anyAdultLunch=DAYS.some((_,d)=>slotTypes(d).includes("a"));
- const anySchool=DAYS.some((_,d)=>slotTypes(d).includes("s"));
+ const anyAdultLunch=allDays().some(d=>slotTypes(d).includes("a"));
+ const anySchool=allDays().some(d=>slotTypes(d).includes("s"));
+ const M=nWeeks()>1;const per=+S.rules.snackCount||0;
  const cols=[["b","Breakfast"]].concat(anySchool?[["s","School lunch"]]:[]).concat(anyAdultLunch?[["a","Lunch"]]:[]).concat([["d","Dinner"]]);
- let rows="";
- DAYS.forEach((dn,d)=>{
+ const weekRows=w=>{let rows="";
+ weekDays(w).forEach(d=>{const dn=DAYS[d%7];
   const types=slotTypes(d);
   rows+=`<tr><th class="day">${dn}</th>`+cols.map(([t])=>{
    if(!types.includes(t))return `<td class="none">–</td>`;
@@ -1241,10 +1288,13 @@ function printDoc(){
    if(t==="s"&&boxOn()&&S.box?.[d]){const b=S.box[d];const nm=id=>BOXBY[id]?.n||"–";cell+=`<div class="box">${e(nm(b.f[0]))}, ${e(nm(b.f[1]))}<br>${e(nm(b.s[0]))}, ${e(nm(b.s[1]))}<br>${e(nm(b.x[0]))}</div>`}
    return `<td>${cell}</td>`;
   }).join("")+`</tr>`;
- });
- const snacks=(adults().length&&S.snacks&&S.snacks.length)?`<p class="snacks"><b>Adult snacks:</b> ${S.snacks.map(id=>e(SBY[id]?.n||"")).filter(Boolean).join(", ")}</p>`:"";
+ });return rows};
+ const snackLine=w=>{const sn=(S.snacks||[]).slice(w*per,w*per+per);return adults().length&&sn.length?`<p class="snacks"><b>Adult snacks:</b> ${sn.map(id=>e(SBY[id]?.n||"")).filter(Boolean).join(", ")}</p>`:""};
+ const head=`<thead><tr><th></th>${cols.map(([,l])=>`<th>${l}</th>`).join("")}</tr></thead>`;
+ const weeksHtml=Array.from({length:nWeeks()},(_,w)=>`<div class="wk">${M?`<h2>Week ${w+1}</h2>`:`<h2>Meals this week</h2>`}<table class="week">${head}<tbody>${weekRows(w)}</tbody></table>${snackLine(w)}</div>`).join("");
+ const pr=M?shopRange:"all";
  const who=S.members.map(m=>m.name.includes("("+m.age+")")?e(m.name):`${e(m.name)} (${m.age})`).join(", ");
- const list=shopping().filter(x=>!S.have[x.id]);
+ const list=shopping(pr).filter(x=>!S.have[x.id]);
  const tots=STORES.map((_,i)=>list.reduce((t,x)=>t+x.prices[i],0));
  const split=list.reduce((t,x)=>t+x.prices[x.best],0);
  let shop="",sec=-1;
@@ -1265,6 +1315,7 @@ function printDoc(){
  .box{font-size:8pt;color:#5a6a5f;margin-top:3px}
  .snacks{margin:8px 0 0;font-size:9.5pt}
  .shop{page-break-before:always;break-before:page}
+ .wk+.wk{page-break-before:always;break-before:page}
  .shop table td{padding:3px 6px;border-bottom:1px dotted #c9d5c4;font-size:9.5pt}
  .shop tr.sec td{background:#e9eee6;font-weight:600;border-bottom:1px solid #c9d5c4;padding-top:6px}
  .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -1275,13 +1326,11 @@ function printDoc(){
  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Week on a Plate</title><style>${css}</style></head><body>
  <h1>Week on a <span>Plate</span></h1>
  <p class="sub">Printed ${e(today)} · ${who}</p>
- <h2>Meals this week</h2>
- <table class="week"><thead><tr><th></th>${cols.map(([,l])=>`<th>${l}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>
- ${snacks}
- <div class="shop"><h2>Shopping list</h2>
+ ${weeksHtml}
+ <div class="shop"><h2>Shopping list${M?(pr==="all"?" · whole month":` · week ${+pr+1}`):""}</h2>
  ${list.length?`<table><tbody>${shop}</tbody></table>
  <p class="totals">${STORES.map((st,i)=>`All at ${st}: <b>${money(tots[i])}</b>`).join(" · ")} · Cheapest of each: <b>${money(split)}</b></p>`:`<p>Nothing to buy. Everything is ticked as already in the house.</p>`}
- <p class="foot">Pack counts are whole packs for the week. Prices are rough estimates; check in store or online.</p></div>
+ <p class="foot">Pack counts are whole packs for ${M&&pr==="all"?"the month":"the week"}. Prices are rough estimates; check in store or online.</p></div>
  </body></html>`;
 }
 function printWeek(){
@@ -1299,7 +1348,8 @@ function printWeek(){
 function renderTotal(){
  const list=shopping().filter(x=>!S.have[x.id]);
  const split=list.reduce((s,x)=>s+x.prices[x.best],0);
- $("#hdrTotal").innerHTML=list.length?`Week's groceries ≈ <b>${money(split)}</b>`:"";
+ const lst=shopping("all").filter(x=>!S.have[x.id]);const tot=lst.reduce((s,x)=>s+x.prices[x.best],0);
+ $("#hdrTotal").innerHTML=lst.length?`${nWeeks()>1?"Month's":"Week's"} groceries ≈ <b>${money(tot)}</b>`:"";
 }
 /* ---------- Ingredients: see and edit pack sizes and prices ---------- */
 let ingQ="",ingSec="all",ie=null,ieMsg="";
@@ -1467,7 +1517,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&rv)closeRecipe()});
 let pk=null,pkReturn=null;
 function openPicker(day,type,from){
  pk={day,type};pkReturn=from||null;
- $("#pkTitle").textContent=`${DAYS[day]} · ${SLOTS[type]}`;
+ $("#pkTitle").textContent=`${dayLabel(day)} · ${SLOTS[type]}`;
  const ms=eaters(type,day);const nd=needs(ms,type);
  const notes=[];if(type==="s")notes.push("Lunchbox-safe for your school rules");
  if(ms.some(m=>m.d.length))notes.push("only meals that suit everyone eating");
@@ -1519,13 +1569,17 @@ document.addEventListener("click",e=>{
  if(t0.id==="ingAdd"){openIng(null,t0);return}
  const ied=t0.closest&&t0.closest("[data-ingedit]");if(ied){openIng(ied.dataset.ingedit,ied);return}
  if(e.target.id==="printWeek"){printWeek();return}
+ const pl=e.target.closest("[data-plen]");if(pl){const n=+pl.dataset.plen;if(n!==nWeeks()){setWeeks(n);save();render()}return}
+ const vw=e.target.closest("[data-vweek]");if(vw){viewWeek=+vw.dataset.vweek;renderWeek();$(`[data-vweek="${viewWeek}"]`)?.focus();return}
+ const sr=e.target.closest("[data-shoprange]");if(sr){shopRange=sr.dataset.shoprange;renderShop();$(`[data-shoprange="${shopRange}"]`)?.focus();return}
+ if(e.target.id==="genWeek"){regenWeek(viewWeek);save();render();return}
  if(e.target.id==="boxNew"){pickBoxes();save();render();return}
  if(e.target.id==="snackNew"){pickSnacks();save();render();return}
  if(e.target.dataset.snackrr){const i=+e.target.dataset.snackrr;const ok=SNACKS.filter(x=>snackFits(x)&&x.id!==S.snacks[i]&&!S.snacks.includes(x.id));const alt=ok.length?ok:SNACKS.filter(x=>snackFits(x)&&x.id!==S.snacks[i]);if(alt.length)S.snacks[i]=alt[Math.floor(Math.random()*alt.length)].id;save();render();return}
  const vr=e.target.closest("[data-viewrecipe]");if(vr){openRecipe(vr.dataset.viewrecipe,{},vr);return}
  const vs=e.target.closest("[data-viewslot]");if(vs){const[d,ty]=vs.dataset.viewslot.split(",");const day=+d;const id=S.plan?.[day]?.[ty];if(id){const ms=eaters(ty,day);const portions=ms.reduce((a,m)=>a+portion(m.age),0);
    const serves=Math.max(1,Math.ceil(portions-0.1));
-   openRecipe(id,{serves,nd:needs(ms,ty),ctx:`${DAYS[day]} ${SLOTS[ty].toLowerCase()} for ${ms.map(m=>m.name).join(", ")}. Set to ${serves} adult ${serves===1?"serving":"servings"} to cover everyone's ages. Change it if you're cooking extra.`},vs)}return}
+   openRecipe(id,{serves,nd:needs(ms,ty),ctx:`${dayLabel(day)} ${SLOTS[ty].toLowerCase()} for ${ms.map(m=>m.name).join(", ")}. Set to ${serves} adult ${serves===1?"serving":"servings"} to cover everyone's ages. Change it if you're cooking extra.`},vs)}return}
  const pb=e.target.closest("[data-pick]");if(pb){const[d,ty]=pb.dataset.pick.split(",");openPicker(+d,ty,pb);return}
  if(e.target.id==="startShare"){sharedExists=true;push();return}
  const a=e.target.closest("[data-act]");
@@ -1546,7 +1600,7 @@ document.addEventListener("click",e=>{
    if(BASE_R.some(r=>r.id===id)){S.hiddenRecipes=(S.hiddenRecipes||[]).filter(x=>x!==id).concat([id]);if(S.recipeEdits)delete S.recipeEdits[id]}
    else S.custom=S.custom.filter(r=>r.id!==id);
    syncCustom();if(draft&&draft.id===id)draft=null;
-   if(S.plan)DAYS.forEach((_,day)=>slotTypes(day).forEach(type=>{if(!S.plan[day][type]){const p=pool(type,eaters(type,day));if(p.length)S.plan[day][type]=p[Math.floor(Math.random()*p.length)].id}}));
+   if(S.plan)allDays().forEach(day=>slotTypes(day).forEach(type=>{if(!S.plan[day][type]){const p=pool(type,eaters(type,day));if(p.length)S.plan[day][type]=p[Math.floor(Math.random()*p.length)].id}}));
    savedMsg=`${nm} deleted.`;save();render();return}
   if(act==="undo-recipe"){const id=a.dataset.id;if(S.recipeEdits)delete S.recipeEdits[id];syncCustom();savedMsg=`${RBY[id]?.n||"Recipe"} is back to the original.`;save();render();return}
   if(act==="restore-recipes"){const n=(S.hiddenRecipes||[]).length;S.hiddenRecipes=[];syncCustom();savedMsg=`${n} deleted ${n===1?"recipe is":"recipes are"} back.`;save();render();return}
