@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-01T01:45:23.396Z",
+ "updated": "2026-11-01T01:46:32.285Z",
  "state": {
   "members": [
    {
@@ -88,7 +88,8 @@
   ],
   "have": {
    "wrap": false,
-   "spinach": false
+   "spinach": false,
+   "apple": true
   },
   "custom": [
    {
