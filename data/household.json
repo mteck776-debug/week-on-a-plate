@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-01T01:42:32.281Z",
+ "updated": "2026-11-01T01:44:37.261Z",
  "state": {
   "members": [
    {
@@ -32,9 +32,7 @@
     "name": "Leia",
     "age": 4,
     "school": true,
-    "d": [
-     "nofish"
-    ]
+    "d": []
    }
   ],
   "rules": {
@@ -48,44 +46,44 @@
   "postcode": "4870",
   "plan": [
    {
-    "b": "at",
-    "s": "cs",
-    "a": "lcs",
-    "d": "dsc"
-   },
-   {
-    "b": "bct",
-    "s": "lpu",
-    "a": "tr",
-    "d": "dbp"
-   },
-   {
-    "b": "u_mvu9wzpk",
+    "b": "bft",
     "s": "hw",
-    "a": "lac",
-    "d": "sf"
+    "a": "vm",
+    "d": "dmi"
    },
    {
     "b": "oo",
-    "s": "lqb",
-    "a": "lfr",
-    "d": "dmc"
+    "s": "lpu",
+    "a": "lqu",
+    "d": "rc"
    },
    {
-    "b": "bft",
-    "s": "lpp",
+    "b": "bmu",
+    "s": "ltc",
+    "a": "es",
+    "d": "dcs"
+   },
+   {
+    "b": "yb",
+    "s": "lhr",
     "a": "lsp",
-    "d": "ch"
+    "d": "dpp"
    },
    {
-    "b": "wb",
-    "a": "lpp",
-    "d": "dst"
+    "b": "at",
+    "s": "sb",
+    "a": "lqb",
+    "d": "dna"
+   },
+   {
+    "b": "bbr",
+    "a": "lpe",
+    "d": "dbp"
    },
    {
     "b": "bpb",
-    "a": "lsr",
-    "d": "dpc"
+    "a": "lpp",
+    "d": "dmr"
    }
   ],
   "have": {
@@ -425,20 +423,20 @@
   },
   "example": false,
   "snacks": [
-   "pretz",
-   "cheesecrack",
-   "ricecake",
-   "jerky"
+   "nachos",
+   "darkchoc",
+   "bars",
+   "bisc"
   ],
   "box": [
    {
     "f": [
-     "straw",
+     "grapes",
      "banana"
     ],
     "s": [
-     "cheesecrack",
-     "chips"
+     "bar",
+     "sultana"
     ],
     "x": [
      "coyog"
@@ -447,27 +445,14 @@
    {
     "f": [
      "banana",
-     "blue"
-    ],
-    "s": [
-     "chips",
-     "pop"
-    ],
-    "x": [
-     "jelly"
-    ]
-   },
-   {
-    "f": [
-     "blue",
      "apple"
     ],
     "s": [
-     "pop",
-     "cheesecrack"
+     "sultana",
+     "rice"
     ],
     "x": [
-     "coyog"
+     "jelly"
     ]
    },
    {
@@ -476,8 +461,21 @@
      "straw"
     ],
     "s": [
-     "cheesecrack",
-     "chips"
+     "rice",
+     "bar"
+    ],
+    "x": [
+     "coyog"
+    ]
+   },
+   {
+    "f": [
+     "straw",
+     "grapes"
+    ],
+    "s": [
+     "bar",
+     "sultana"
     ],
     "x": [
      "jelly"
@@ -485,12 +483,12 @@
    },
    {
     "f": [
-     "straw",
+     "grapes",
      "banana"
     ],
     "s": [
-     "chips",
-     "pop"
+     "sultana",
+     "rice"
     ],
     "x": [
      "coyog"
