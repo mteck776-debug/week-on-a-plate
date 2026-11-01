@@ -79,7 +79,7 @@ h3{font-family:var(--f-display);font-weight:600;font-size:1.05rem;margin:0}
 .member:first-of-type{border-top:0}
 .member .chips{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
 .member .sub{grid-column:1/-1;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
-input[type=text],input[type=number]{font:500 .95rem var(--f-body);padding:7px 9px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);width:100%;min-width:0}
+input[type=text],input[type=number],input[type=date]{font:500 .95rem var(--f-body);padding:7px 9px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);width:100%;min-width:0}
 label.check{display:flex;gap:8px;align-items:flex-start;font-size:.9rem;cursor:pointer}
 label.check input{margin-top:3px;accent-color:var(--leaf)}
 .note{font-size:.82rem;color:var(--muted);max-width:65ch}
@@ -133,6 +133,13 @@ details.note li{margin-bottom:4px}
 .snack .meta{font:400 .78rem var(--f-mono);color:var(--muted)}
 .snackrow{align-items:center}
 .snackrow input{width:70px}
+.lo{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.lo:first-of-type{border-top:0;padding-top:0}
+.lo-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.lo select{font:500 .88rem var(--f-body);padding:6px 8px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);min-width:0;flex:1 1 180px}
+.stepper.sm button{width:32px;height:32px;font-size:1rem}
+.stepper.sm output{font-size:1.1rem}
+b.neg{color:var(--tomato)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--surface);margin-bottom:14px}
 .segbtn{border:0;background:none;color:var(--muted);font:600 .9rem var(--f-body);padding:7px 18px;border-radius:999px;cursor:pointer}
 .segbtn[aria-pressed="true"]{background:var(--leaf);color:var(--leaf-ink)}
@@ -202,6 +209,7 @@ textarea{font:500 .92rem var(--f-body);padding:8px 9px;border-radius:6px;border:
     </div>
     <nav class="tabs" role="tablist" id="tabs">
       <button role="tab" data-tab="week" aria-selected="true">This week</button>
+      <button role="tab" data-tab="left" aria-selected="false">Leftovers</button>
       <button role="tab" data-tab="house" aria-selected="false">Household</button>
       <button role="tab" data-tab="shop" aria-selected="false">Shopping list</button>
       <button role="tab" data-tab="recipes" aria-selected="false">Recipes</button>
@@ -214,6 +222,7 @@ textarea{font:500 .92rem var(--f-body);padding:8px 9px;border-radius:6px;border:
 
 <main class="wrap">
   <section id="tab-week"></section>
+  <section id="tab-left" hidden></section>
   <section id="tab-house" hidden></section>
   <section id="tab-shop" hidden></section>
   <section id="tab-recipes" hidden></section>
@@ -557,7 +566,9 @@ function syncCustom(){
  const edits=S.recipeEdits||{},hidden=new Set(S.hiddenRecipes||[]);
  Object.keys(PREG).forEach(k=>delete PREG[k]);Object.assign(PREG,JSON.parse(JSON.stringify(PREG_ORIG)));
  const base=BASE_R.filter(r=>!hidden.has(r.id)).map(r=>edits[r.id]?Object.assign({},edits[r.id],{id:r.id,edited:true,custom:false}):r);
- R=base.concat((S.custom||[]).filter(r=>!hidden.has(r.id)));RBY=Object.fromEntries(R.map(r=>[r.id,r]));
+ const lo=(S.leftovers||[]).map(l=>({id:"lo:"+l.id,m:"any",n:"Leftovers: "+l.name,t:5,i:[],st:l.notes||"",leftover:true,lid:l.id}));
+ R=base.concat((S.custom||[]).filter(r=>!hidden.has(r.id)),lo);RBY=Object.fromEntries(R.map(r=>[r.id,r]));
+ lo.forEach(r=>{PREG[r.id]={tip:"Reheat until steaming hot all the way through. Eat leftovers within a day of cooking."}});
  R.filter(r=>r.custom||r.edited).forEach(r=>{
   if(r.preg)PREG[r.id]={avoid:"Marked as containing a pregnancy high-risk food."};
   else if(PREG[r.id]?.avoid)delete PREG[r.id];
@@ -661,6 +672,7 @@ const DEFAULT={
  ingEdits:{},
  recipeEdits:{},
  hiddenRecipes:[],
+ leftovers:[],
  postcode:"",
  plan:null,
  have:{},
@@ -668,10 +680,11 @@ const DEFAULT={
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY))||null}catch(e){S=null}
 if(!S)S=structuredClone(DEFAULT);
+S.leftovers=S.leftovers||[];
 S.custom=S.custom||[];S.customIng=S.customIng||{};
 /* Shared household: one document both of you read and write; this browser keeps a copy too */
 let firstSnap=true,ref=null,lastSent="",writing=false,again=false,canWrite=true,pushTimer=null,sharedExists=false;
-function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[]}}
+function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[],leftovers:S.leftovers||[]}}
 function setSync(kind){
  const el=document.getElementById("sync");if(!el)return;el.className="sync";
  if(kind==="ok"){el.classList.add("ok");el.innerHTML=`<span class="dot"></span>Shared · up to date`}
@@ -757,6 +770,8 @@ function unionExtras(into,from){
  const ids=new Set((into.custom||[]).map(r=>r.id));
  (from.custom||[]).forEach(r=>{if(!ids.has(r.id)){into.custom=(into.custom||[]).concat([r]);added=true}});
  Object.entries(from.customIng||{}).forEach(([k,v])=>{into.customIng=into.customIng||{};if(!into.customIng[k]){into.customIng[k]=v;added=true}});
+ const lids=new Set((into.leftovers||[]).map(l=>l.id));
+ (from.leftovers||[]).forEach(l=>{if(!lids.has(l.id)){into.leftovers=(into.leftovers||[]).concat([l]);added=true}});
  return added;
 }
 function busyEditing(){const a=document.activeElement;return !!(a&&a.closest&&a.closest("main,.sheet")&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||!!draft||!!pk}
@@ -882,6 +897,7 @@ function resolve(r,nd){
 }
 const MEAL_WORD={b:"breakfast",l:"lunch",d:"dinner"};
 function whyNot(r,day,type){
+ if(r.leftover){const st=loStatus(r.lid);return st&&st.left<0?[`Not enough leftovers: ${st.used} servings planned, ${st.l.serves} saved`]:[]}
  const want=type==="b"?"b":type==="d"?"d":"l";const out=[];
  if(r.m!==want)out.push(`Saved as a ${MEAL_WORD[r.m]} recipe`);
  const ms=eaters(type,day);
@@ -912,6 +928,8 @@ function generate(){
    plan[day][type]=bag.pop().id;
   });
  });
+ /* keep leftovers you've already put on meals */
+ if(Array.isArray(S.plan))S.plan.forEach((p,d)=>{if(p&&plan[d])Object.entries(p).forEach(([t,id])=>{if(id&&String(id).startsWith("lo:")&&RBY[id]&&slotTypes(d).includes(t))plan[d][t]=id})});
  S.plan=plan;
  pickSnacks();
  pickBoxes();
@@ -1000,7 +1018,8 @@ function renderWeek(){
    h+=`<div class="slot${type==="s"?" school":""}"><div class="top"><span class="label">${SLOTS[type]}${type==="s"&&S.rules.crunch?" · Crunch & Sip":""}</span><button class="reroll" data-rr="${day},${type}" aria-label="Pick another ${SLOTS[type]} for ${dn}">↻</button></div>`;
    if(!p.length)h+=`<div class="meta">No recipe fits everyone's needs here yet.</div>`;
    else h+=`<button class="pick" data-pick="${day},${type}" aria-haspopup="dialog"><span>${cur&&RBY[cur]?esc(RBY[cur].n):"Choose a meal"}</span><span aria-hidden="true">⌕</span></button>`;
-   if(cur&&RBY[cur])h+=`<button class="view-recipe" data-viewslot="${day},${type}">View recipe</button>`;
+   if(cur&&RBY[cur]&&!RBY[cur].leftover)h+=`<button class="view-recipe" data-viewslot="${day},${type}">View recipe</button>`;
+   if(cur&&RBY[cur]?.leftover){const st=loStatus(RBY[cur].lid);h+=`<div class="meta"><span class="tag ok">$0</span> Uses ${slotServes(day,type)} ${slotServes(day,type)===1?"serving":"servings"}${st?` · ${Math.max(0,st.left)} free after planned meals`:""}</div>`}
    const meta=[];if(who)meta.push(esc(who));if(sw.length)meta.push("Swap: "+sw.map(esc).join(", "));
    if(cur&&RBY[cur]){const wn=whyNot(RBY[cur],day,type);if(wn.length)meta.push(`<span class="tag warn">Check</span> ${wn.map(esc).join(" · ")}`)}
    if(cur&&nd.preg&&PREG[cur]?.tip)meta.push(`<span class="tag preg">Pregnancy</span> ${esc(PREG[cur].tip)}`);
@@ -1198,7 +1217,7 @@ function renderRecipes(){
  const el=$("#tab-recipes");
  const fl=[["all","All"],["b","Breakfast"],["l","Lunchbox"],["d","Dinner"],["mine","Your recipes"]];
  let h=`<div class="bar"><div><h2>Recipes</h2><p class="lead">Amounts below are for one adult serving. Open a recipe to set how many servings you're cooking. Every recipe can be edited or deleted, and changes reach your other devices.</p></div><div class="filters"><button class="btn primary" data-act="new-recipe">Add your own recipe</button>${fl.map(([k,l])=>`<button class="chip" data-rf="${k}" aria-pressed="${rFilter===k}">${l}</button>`).join("")}</div></div>${(S.hiddenRecipes||[]).length?`<p class="note" style="margin:-6px 0 12px">${S.hiddenRecipes.length} built-in ${S.hiddenRecipes.length===1?"recipe is":"recipes are"} deleted. <button class="btn small" data-act="restore-recipes">Bring them back</button></p>`:""}${draft?formHTML():""}${savedMsg?`<p class="note" role="status" style="margin-bottom:12px"><span class="tag ok">Saved</span> ${esc(savedMsg)}</p>`:""}<div class="recipes">`;
- const shown=R.filter(r=>rFilter==="all"||(rFilter==="mine"?r.custom:r.m===rFilter));
+ const shown=R.filter(r=>!r.leftover&&(rFilter==="all"||(rFilter==="mine"?r.custom:r.m===rFilter)));
  if(!shown.length)h+=`<div class="empty">You haven't added any recipes yet. Use <b>Add your own recipe</b> to start.</div>`;
  shown.forEach(r=>{
   const al=new Set();r.i.forEach(([id])=>C[id]&&C[id].a.forEach(a=>al.add(a)));
@@ -1351,6 +1370,54 @@ function renderTotal(){
  const lst=shopping("all").filter(x=>!S.have[x.id]);const tot=lst.reduce((s,x)=>s+x.prices[x.best],0);
  $("#hdrTotal").innerHTML=lst.length?`${nWeeks()>1?"Month's":"Week's"} groceries ≈ <b>${money(tot)}</b>`:"";
 }
+/* ---------- Leftovers: food already made, zero cost ---------- */
+let loMsg="",loPending=null;
+const slotServes=(day,type)=>{const ms=eaters(type,day);return Math.max(1,Math.ceil(ms.reduce((a,m)=>a+portion(m.age),0)-0.1))};
+function loSlots(lid){const out=[];if(!S.plan)return out;allDays().forEach(d=>slotTypes(d).forEach(t=>{if(S.plan[d]?.[t]==="lo:"+lid)out.push([d,t])}));return out}
+function loStatus(lid){const l=(S.leftovers||[]).find(x=>x.id===lid);if(!l)return null;const sl=loSlots(lid);const used=sl.reduce((a,[d,t])=>a+slotServes(d,t),0);return {l,sl,used,left:l.serves-used}}
+function todayISO(){const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
+function fmtDate(iso){if(!iso)return "";const [y,m,d]=iso.split("-").map(Number);return new Date(y,m-1,d).toLocaleDateString("en-AU",{weekday:"short",day:"numeric",month:"short"})}
+function freeSlots(){const out=[];if(!S.plan)return out;allDays().forEach(d=>slotTypes(d).forEach(t=>{const id=S.plan[d]?.[t];if(!(id&&RBY[id]?.leftover))out.push([d,t])}));return out}
+function refillSlots(){if(S.plan)allDays().forEach(day=>slotTypes(day).forEach(type=>{if(!S.plan[day][type]){const p=pool(type,eaters(type,day));if(p.length)S.plan[day][type]=p[Math.floor(Math.random()*p.length)].id}}))}
+function renderLeft(){
+ const el=$("#tab-left");if(!el)return;
+ const today=todayISO();
+ const recs=[...new Set(R.filter(r=>!r.leftover).map(r=>r.n))].sort();
+ let h=`<div class="bar"><div><h2>Leftovers</h2><p class="lead">Add food that's already cooked and how many servings are left. Put it on any meal and that meal costs nothing and adds nothing to the shopping list.</p></div></div>
+ <div class="cols"><form class="panel" id="loForm" novalidate>
+  <h3>Add leftovers</h3>
+  <div class="fgrid">
+   <label class="fld wide"><span class="label">What is it?</span><input type="text" id="lo-name" list="lo-recipes" placeholder="e.g. Spaghetti bolognese" autocomplete="off"></label>
+   <label class="fld"><span class="label">Servings left</span><input type="number" id="lo-serves" min="1" max="40" value="2"></label>
+   <label class="fld"><span class="label">Use by (optional)</span><input type="date" id="lo-useby" min="${today}"></label>
+   <label class="fld wide"><span class="label">Note (optional)</span><input type="text" id="lo-notes" placeholder="e.g. In the freezer, top shelf"></label>
+  </div>
+  <datalist id="lo-recipes">${recs.map(n=>`<option value="${esc(n)}"></option>`).join("")}</datalist>
+  <div class="frow"><button type="submit" class="btn primary">Add leftovers</button></div>
+  <p class="note" role="status" id="loMsg">${esc(loMsg)}</p>
+ </form>
+ <div class="panel"><h3>Saved leftovers</h3>`;
+ const list=(S.leftovers||[]);
+ if(!list.length)h+=`<div class="empty">Nothing saved yet. Add leftovers on the left, then put them on a meal here or from any meal's search on ${nWeeks()>1?"This month":"This week"}.</div>`;
+ else{
+  const slots=freeSlots();
+  list.forEach(l=>{
+   const st=loStatus(l.id);const past=l.useBy&&l.useBy<today;
+   h+=`<div class="lo">
+    <div class="lo-top"><div><b>${esc(l.name)}</b>${l.useBy?` <span class="tag ${past?"warn":"preg"}">${past?"Past use-by":"Use by"} ${fmtDate(l.useBy)}</span>`:""}${l.notes?`<div class="note" style="margin:2px 0 0">${esc(l.notes)}</div>`:""}</div>
+     <div class="stepper sm"><button data-loinc="${l.id}" data-d="-1" aria-label="One less serving"${l.serves<=1?" disabled":""}>−</button><output>${l.serves}</output><button data-loinc="${l.id}" data-d="1" aria-label="One more serving">+</button></div></div>
+    <div class="note" style="margin:0">${st.sl.length?`Planned for ${st.sl.map(([d,t])=>`${dayLabel(d)} ${SLOTS[t].toLowerCase()} (${slotServes(d,t)})`).join(", ")}. `:""}<b class="${st.left<0?"neg":""}">${st.left<0?`${-st.left} ${-st.left===1?"serving":"servings"} short`:`${st.left} of ${l.serves} ${l.serves===1?"serving":"servings"} still free`}</b></div>
+    <div class="frow">
+     ${slots.length?`<select id="lo-slot-${l.id}" aria-label="Meal to put ${esc(l.name)} on">${slots.map(([d,t],k)=>`<option value="${d},${t}"${k===slots.findIndex(([,tt])=>tt==="d")?" selected":""}>${dayLabel(d)} · ${SLOTS[t]} (${slotServes(d,t)} ${slotServes(d,t)===1?"serving":"servings"})</option>`).join("")}</select><button class="btn small primary" data-loput="${l.id}">Put on this meal</button>`:""}
+     ${st.sl.length?`<button class="btn small" data-loclear="${l.id}">Take off all meals</button>`:""}
+     <button class="btn small" data-lodel="${l.id}">${loPending===l.id?"Tap again to remove":"Used up / remove"}</button>
+    </div></div>`;
+  });
+ }
+ h+=`</div></div>`;
+ el.innerHTML=h;
+}
+
 /* ---------- Ingredients: see and edit pack sizes and prices ---------- */
 let ingQ="",ingSec="all",ie=null,ieMsg="";
 function usedIn(id){
@@ -1426,7 +1493,7 @@ function saveIe(){
  } else S.customIng[ie.id]=Object.assign({},S.customIng[ie.id],rec);
  syncCustom();save();render();return "";
 }
-function render(){renderWeek();renderHouse();renderShop();renderRecipes();renderIng();renderPreg();renderStores();renderTotal()}
+function render(){renderWeek();renderLeft();renderHouse();renderShop();renderRecipes();renderIng();renderPreg();renderStores();renderTotal()}
 
 /* Copy text: the Android app provides a native copy; elsewhere use the browser clipboard */
 function copyText(txt){
@@ -1541,11 +1608,14 @@ function renderPicker(){
   return {r,cost,nameHit,via};
  }).filter(Boolean).sort((a,b)=>(b.nameHit-a.nameHit)||a.r.n.localeCompare(b.r.n));
  const okIds=new Set(pool(type,ms).map(r=>r.id));
- const others=R.filter(r=>!okIds.has(r.id)).filter(r=>{
+ const need=slotServes(day,type);
+ const los=(S.leftovers||[]).filter(l=>!words.length||words.every(w=>l.name.toLowerCase().includes(w)||"leftovers".includes(w))).map(l=>{const st=loStatus(l.id);const mine=cur==="lo:"+l.id?need:0;return {l,free:st.left+mine}});
+ const loHtml=los.length?`<li class="pk-sep">Leftovers · $0</li>`+los.map(({l,free})=>`<li><button class="pk-item${free<need?" off":""}" data-choose="lo:${l.id}"${cur==="lo:"+l.id?' aria-current="true"':""}><span>${esc(l.name)}<span class="why${free<need?" warnline":""}">${free} ${free===1?"serving":"servings"} free · this meal needs ${need}</span></span><small>$0</small></button></li>`).join("")+`<li class="pk-sep">Recipes</li>`:"";
+ const others=R.filter(r=>!okIds.has(r.id)&&!r.leftover).filter(r=>{
   if(words.length)return words.every(w=>(r.custom?r.n+" "+r.i.map(([x])=>C[x]?.n||"").join(" "):r.n).toLowerCase().includes(w));
   return !!r.custom;
  }).map(r=>({r,why:whyNot(r,day,type)})).sort((a,b)=>(b.r.custom?1:0)-(a.r.custom?1:0)||a.r.n.localeCompare(b.r.n));
- $("#pkList").innerHTML=(rows.length||others.length?rows.map(({r,cost,via})=>`<li><button class="pk-item" data-choose="${r.id}"${r.id===cur?' aria-current="true"':""}><span>${esc(r.n)}${r.custom?' <span class="tag ok">Yours</span>':""}${via.length?`<span class="why">Has ${via.map(esc).join(", ")}</span>`:""}</span><small>${r.t} min · ≈ ${money(cost)}</small></button></li>`).join("")+(others.length?`<li class="pk-sep">${rows.length?"Doesn't suit everyone or is a different meal":"These match, but don't suit everyone or are a different meal"}</li>`+others.map(({r,why})=>`<li><button class="pk-item off" data-choose="${r.id}"${r.id===cur?' aria-current="true"':""}><span>${esc(r.n)}${r.custom?' <span class="tag ok">Yours</span>':""}<span class="why warnline">${why.map(esc).join(" · ")}</span></span><small>Pick anyway</small></button></li>`).join(""):""):`<li class="empty">No meals match "${esc(q)}". Try another word, or add your own recipe on the Recipes tab.</li>`);
+ $("#pkList").innerHTML=loHtml+(rows.length||others.length?rows.map(({r,cost,via})=>`<li><button class="pk-item" data-choose="${r.id}"${r.id===cur?' aria-current="true"':""}><span>${esc(r.n)}${r.custom?' <span class="tag ok">Yours</span>':""}${via.length?`<span class="why">Has ${via.map(esc).join(", ")}</span>`:""}</span><small>${r.t} min · ≈ ${money(cost)}</small></button></li>`).join("")+(others.length?`<li class="pk-sep">${rows.length?"Doesn't suit everyone or is a different meal":"These match, but don't suit everyone or are a different meal"}</li>`+others.map(({r,why})=>`<li><button class="pk-item off" data-choose="${r.id}"${r.id===cur?' aria-current="true"':""}><span>${esc(r.n)}${r.custom?' <span class="tag ok">Yours</span>':""}<span class="why warnline">${why.map(esc).join(" · ")}</span></span><small>Pick anyway</small></button></li>`).join(""):""):`<li class="empty">No meals match "${esc(q)}". Try another word, or add your own recipe on the Recipes tab.</li>`);
 }
 $("#pkSearch").addEventListener("input",renderPicker);
 $("#pkSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){const b=$("#pkList .pk-item");if(b)b.click()}});
@@ -1569,6 +1639,12 @@ document.addEventListener("click",e=>{
  if(t0.id==="ingAdd"){openIng(null,t0);return}
  const ied=t0.closest&&t0.closest("[data-ingedit]");if(ied){openIng(ied.dataset.ingedit,ied);return}
  if(e.target.id==="printWeek"){printWeek();return}
+ const li=e.target.closest("[data-loinc]");if(li){const l=S.leftovers.find(x=>x.id===li.dataset.loinc);if(l){l.serves=Math.max(1,Math.min(40,l.serves+(+li.dataset.d)));save();render();$(`[data-loinc="${l.id}"][data-d="${li.dataset.d}"]`)?.focus()}return}
+ const lp=e.target.closest("[data-loput]");if(lp){const id=lp.dataset.loput;const v=$("#lo-slot-"+id)?.value;if(v){const[d,t]=v.split(",");S.plan[+d][t]="lo:"+id;const l=S.leftovers.find(x=>x.id===id);loMsg=`${l.name} is on ${dayLabel(+d)} ${SLOTS[t].toLowerCase()}.`;save();render();$("#loMsg").textContent=loMsg}return}
+ const lc=e.target.closest("[data-loclear]");if(lc){loSlots(lc.dataset.loclear).forEach(([d,t])=>{S.plan[d][t]=null});refillSlots();save();render();return}
+ const ld=e.target.closest("[data-lodel]");if(ld){const id=ld.dataset.lodel;if(loPending!==id){loPending=id;renderLeft();return}
+  loPending=null;const l=S.leftovers.find(x=>x.id===id);S.leftovers=S.leftovers.filter(x=>x.id!==id);syncCustom();refillSlots();loMsg=l?`${l.name} removed.`:"";save();render();return}
+ if(loPending&&!e.target.closest("[data-lodel]")){loPending=null}
  const pl=e.target.closest("[data-plen]");if(pl){const n=+pl.dataset.plen;if(n!==nWeeks()){setWeeks(n);save();render()}return}
  const vw=e.target.closest("[data-vweek]");if(vw){viewWeek=+vw.dataset.vweek;renderWeek();$(`[data-vweek="${viewWeek}"]`)?.focus();return}
  const sr=e.target.closest("[data-shoprange]");if(sr){shopRange=sr.dataset.shoprange;renderShop();$(`[data-shoprange="${shopRange}"]`)?.focus();return}
@@ -1577,7 +1653,7 @@ document.addEventListener("click",e=>{
  if(e.target.id==="snackNew"){pickSnacks();save();render();return}
  if(e.target.dataset.snackrr){const i=+e.target.dataset.snackrr;const ok=SNACKS.filter(x=>snackFits(x)&&x.id!==S.snacks[i]&&!S.snacks.includes(x.id));const alt=ok.length?ok:SNACKS.filter(x=>snackFits(x)&&x.id!==S.snacks[i]);if(alt.length)S.snacks[i]=alt[Math.floor(Math.random()*alt.length)].id;save();render();return}
  const vr=e.target.closest("[data-viewrecipe]");if(vr){openRecipe(vr.dataset.viewrecipe,{},vr);return}
- const vs=e.target.closest("[data-viewslot]");if(vs){const[d,ty]=vs.dataset.viewslot.split(",");const day=+d;const id=S.plan?.[day]?.[ty];if(id){const ms=eaters(ty,day);const portions=ms.reduce((a,m)=>a+portion(m.age),0);
+ const vs=e.target.closest("[data-viewslot]");if(vs){const[d,ty]=vs.dataset.viewslot.split(",");const day=+d;const id=S.plan?.[day]?.[ty];if(id&&!RBY[id]?.leftover){const ms=eaters(ty,day);const portions=ms.reduce((a,m)=>a+portion(m.age),0);
    const serves=Math.max(1,Math.ceil(portions-0.1));
    openRecipe(id,{serves,nd:needs(ms,ty),ctx:`${dayLabel(day)} ${SLOTS[ty].toLowerCase()} for ${ms.map(m=>m.name).join(", ")}. Set to ${serves} adult ${serves===1?"serving":"servings"} to cover everyone's ages. Change it if you're cooking extra.`},vs)}return}
  const pb=e.target.closest("[data-pick]");if(pb){const[d,ty]=pb.dataset.pick.split(",");openPicker(+d,ty,pb);return}
@@ -1637,6 +1713,14 @@ document.addEventListener("click",e=>{
   const msg=$("#copyMsg");
   copyText(txt).then(()=>{msg.textContent="Copied to your clipboard."}).catch(()=>{msg.innerHTML=`<textarea readonly style="width:100%;height:160px">${esc(txt)}</textarea>`;msg.querySelector("textarea").select()});
  }
+});
+document.addEventListener("submit",e=>{
+ if(e.target.id!=="loForm")return;e.preventDefault();
+ const name=$("#lo-name").value.trim(),serves=Math.round(+$("#lo-serves").value),useBy=$("#lo-useby").value,notes=$("#lo-notes").value.trim();
+ if(!name){loMsg="Say what the leftovers are.";$("#loMsg").textContent=loMsg;$("#lo-name").focus();return}
+ if(!(serves>=1)){loMsg="Enter how many servings are left, 1 or more.";$("#loMsg").textContent=loMsg;$("#lo-serves").focus();return}
+ S.leftovers=(S.leftovers||[]).concat([{id:Date.now().toString(36),name,serves:Math.min(40,serves),useBy,notes,added:todayISO()}]);
+ loMsg=`${name} saved with ${serves} ${serves===1?"serving":"servings"}. Put it on a meal below.`;syncCustom();save();render();
 });
 document.addEventListener("input",e=>{
  const t=e.target;
