@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-01T23:48:50.226Z",
+ "updated": "2026-11-01T23:49:50.421Z",
  "state": {
   "members": [
    {
@@ -87,124 +87,124 @@
     "d": "sa"
    },
    {
-    "b": "bbm",
-    "s": "lpp",
-    "a": "lpe",
-    "d": "dlg"
-   },
-   {
-    "b": "bgr",
-    "s": "lac",
-    "a": "vm",
-    "d": "dgn"
-   },
-   {
-    "b": "wb",
-    "s": "lcs",
-    "a": "lsp",
-    "d": "dmr"
-   },
-   {
-    "b": "oo",
-    "s": "hw",
-    "a": "lsr",
-    "d": "sf"
-   },
-   {
-    "b": "bbr",
+    "b": "bmu",
     "s": "lhv",
-    "a": "lsu",
-    "d": "pz"
-   },
-   {
-    "b": "bom",
-    "a": "lpu",
-    "d": "dmp"
-   },
-   {
-    "b": "bct",
-    "a": "ps",
-    "d": "dmc"
-   },
-   {
-    "b": "bbi",
-    "s": "tr",
-    "a": "lfr",
-    "d": "fr"
-   },
-   {
-    "b": "se",
-    "s": "lpu",
-    "a": "lcs",
-    "d": "dcs"
-   },
-   {
-    "b": "bbb",
-    "s": "lqb",
-    "a": "ltc",
-    "d": "fc"
-   },
-   {
-    "b": "bp",
-    "s": "lsu",
-    "a": "lpe",
+    "a": "tr",
     "d": "dhs"
    },
    {
-    "b": "bpb",
-    "s": "lhr",
-    "a": "lsp",
-    "d": "dtd"
+    "b": "u_mvu9wzpk",
+    "s": "ltc",
+    "a": "lcs",
+    "d": "dna"
+   },
+   {
+    "b": "bom",
+    "s": "lcs",
+    "a": "lpu",
+    "d": "dlg"
+   },
+   {
+    "b": "bct",
+    "s": "sb",
+    "a": "lqb",
+    "d": "dft"
+   },
+   {
+    "b": "se",
+    "s": "hw",
+    "a": "ltc",
+    "d": "dbu"
+   },
+   {
+    "b": "yb",
+    "a": "lfr",
+    "d": "dmr"
+   },
+   {
+    "b": "at",
+    "a": "lqu",
+    "d": "sp"
    },
    {
     "b": "bft",
+    "s": "ca",
+    "a": "lsr",
+    "d": "ss"
+   },
+   {
+    "b": "wb",
+    "s": "tr",
+    "a": "vm",
+    "d": "dbc"
+   },
+   {
+    "b": "bbi",
+    "s": "lsu",
+    "a": "lsu",
+    "d": "tc"
+   },
+   {
+    "b": "bp",
+    "s": "lpp",
+    "a": "vm",
+    "d": "dsc"
+   },
+   {
+    "b": "bbr",
+    "s": "lac",
+    "a": "tr",
+    "d": "dst"
+   },
+   {
+    "b": "oo",
+    "a": "lfr",
+    "d": "dmi"
+   },
+   {
+    "b": "bct",
+    "a": "es",
+    "d": "sa"
+   },
+   {
+    "b": "bbr",
+    "s": "lpu",
+    "a": "lpe",
+    "d": "dtd"
+   },
+   {
+    "b": "bpo",
+    "s": "tr",
+    "a": "lbm",
+    "d": "dsa"
+   },
+   {
+    "b": "bsm",
+    "s": "lpu",
+    "a": "ps",
+    "d": "dpp"
+   },
+   {
+    "b": "se",
+    "s": "lqb",
+    "a": "lqu",
+    "d": "fc"
+   },
+   {
+    "b": "bom",
+    "s": "ltc",
     "a": "lpp",
     "d": "dbb"
    },
    {
-    "b": "bft",
-    "a": "lfr",
-    "d": "dps"
+    "b": "bpb",
+    "a": "lsp",
+    "d": "dmp"
    },
    {
-    "b": "oo",
-    "s": "ps",
-    "a": "lpu",
-    "d": "sa"
-   },
-   {
-    "b": "yb",
-    "s": "lhv",
-    "a": "lsr",
-    "d": "u_mvu9uk9r"
-   },
-   {
-    "b": "bsm",
-    "s": "ltc",
-    "a": "lbm",
-    "d": "dbc"
-   },
-   {
-    "b": "at",
-    "s": "lpp",
-    "a": "lqu",
-    "d": "dst"
-   },
-   {
-    "b": "bom",
-    "s": "lcs",
+    "b": "bbb",
     "a": "lsu",
-    "d": "dbp"
-   },
-   {
-    "b": "bbr",
-    "a": "lcs",
-    "d": "dmi"
-   },
-   {
-    "b": "u_mvx60kmo",
-    "a": "ltc",
-    "d": "dsa"
+    "d": "dcc"
    }
   ],
   "have": {
@@ -632,18 +632,18 @@
    "bisc",
    "pretz",
    "chips",
-   "choc",
-   "darkchoc",
-   "dried",
+   "ice",
+   "cheesecrack",
+   "pop",
+   "bisc",
+   "pop",
+   "ice",
+   "cheesecrack",
    "dipcrack",
-   "nachos",
-   "bars",
-   "nuts",
-   "darkchoc",
-   "choc",
-   "chips",
-   "pretz",
-   "ice"
+   "jerky",
+   "pop",
+   "dipcrack",
+   "nuts"
   ],
   "box": [
    {
@@ -715,24 +715,11 @@
    null,
    {
     "f": [
-     "apple",
-     "banana"
-    ],
-    "s": [
-     "chips",
-     "bar"
-    ],
-    "x": [
-     "fruitcup"
-    ]
-   },
-   {
-    "f": [
-     "banana",
+     "straw",
      "grapes"
     ],
     "s": [
-     "bar",
+     "sultana",
      "shapes"
     ],
     "x": [
@@ -742,52 +729,11 @@
    {
     "f": [
      "grapes",
-     "straw"
+     "kiwi"
     ],
     "s": [
      "shapes",
-     "chips"
-    ],
-    "x": [
-     "fruitcup"
-    ]
-   },
-   {
-    "f": [
-     "straw",
-     "apple"
-    ],
-    "s": [
-     "chips",
-     "bar"
-    ],
-    "x": [
-     "coyog"
-    ]
-   },
-   {
-    "f": [
-     "apple",
-     "banana"
-    ],
-    "s": [
-     "bar",
-     "shapes"
-    ],
-    "x": [
-     "fruitcup"
-    ]
-   },
-   null,
-   null,
-   {
-    "f": [
-     "pear",
-     "grapes"
-    ],
-    "s": [
-     "cheesecrack",
-     "rice"
+     "cream"
     ],
     "x": [
      "jelly"
@@ -795,15 +741,56 @@
    },
    {
     "f": [
-     "grapes",
+     "kiwi",
      "apple"
     ],
     "s": [
-     "rice",
+     "cream",
+     "sultana"
+    ],
+    "x": [
+     "coyog"
+    ]
+   },
+   {
+    "f": [
+     "apple",
+     "straw"
+    ],
+    "s": [
+     "sultana",
+     "shapes"
+    ],
+    "x": [
+     "jelly"
+    ]
+   },
+   {
+    "f": [
+     "straw",
+     "grapes"
+    ],
+    "s": [
+     "shapes",
      "cream"
     ],
     "x": [
-     "puree"
+     "coyog"
+    ]
+   },
+   null,
+   null,
+   {
+    "f": [
+     "banana",
+     "apple"
+    ],
+    "s": [
+     "pop",
+     "shapes"
+    ],
+    "x": [
+     "jelly"
     ]
    },
    {
@@ -812,7 +799,87 @@
      "mandarin"
     ],
     "s": [
-     "cream",
+     "shapes",
+     "rice"
+    ],
+    "x": [
+     "custard"
+    ]
+   },
+   {
+    "f": [
+     "mandarin",
+     "blue"
+    ],
+    "s": [
+     "rice",
+     "pop"
+    ],
+    "x": [
+     "jelly"
+    ]
+   },
+   {
+    "f": [
+     "blue",
+     "banana"
+    ],
+    "s": [
+     "pop",
+     "shapes"
+    ],
+    "x": [
+     "custard"
+    ]
+   },
+   {
+    "f": [
+     "banana",
+     "apple"
+    ],
+    "s": [
+     "shapes",
+     "rice"
+    ],
+    "x": [
+     "jelly"
+    ]
+   },
+   null,
+   null,
+   {
+    "f": [
+     "grapes",
+     "apple"
+    ],
+    "s": [
+     "cheesecrack",
+     "strip"
+    ],
+    "x": [
+     "jelly"
+    ]
+   },
+   {
+    "f": [
+     "apple",
+     "kiwi"
+    ],
+    "s": [
+     "strip",
+     "shapes"
+    ],
+    "x": [
+     "cheesestick"
+    ]
+   },
+   {
+    "f": [
+     "kiwi",
+     "banana"
+    ],
+    "s": [
+     "shapes",
      "cheesecrack"
     ],
     "x": [
@@ -821,69 +888,15 @@
    },
    {
     "f": [
-     "mandarin",
-     "pear"
+     "banana",
+     "grapes"
     ],
     "s": [
      "cheesecrack",
-     "rice"
-    ],
-    "x": [
-     "puree"
-    ]
-   },
-   {
-    "f": [
-     "pear",
-     "grapes"
-    ],
-    "s": [
-     "rice",
-     "cream"
-    ],
-    "x": [
-     "jelly"
-    ]
-   },
-   null,
-   null,
-   {
-    "f": [
-     "apple",
-     "mandarin"
-    ],
-    "s": [
-     "rice",
      "strip"
     ],
     "x": [
-     "custard"
-    ]
-   },
-   {
-    "f": [
-     "mandarin",
-     "straw"
-    ],
-    "s": [
-     "strip",
-     "chips"
-    ],
-    "x": [
      "cheesestick"
-    ]
-   },
-   {
-    "f": [
-     "straw",
-     "grapes"
-    ],
-    "s": [
-     "chips",
-     "rice"
-    ],
-    "x": [
-     "custard"
     ]
    },
    {
@@ -892,24 +905,11 @@
      "apple"
     ],
     "s": [
-     "rice",
-     "strip"
-    ],
-    "x": [
-     "cheesestick"
-    ]
-   },
-   {
-    "f": [
-     "apple",
-     "mandarin"
-    ],
-    "s": [
      "strip",
-     "chips"
+     "shapes"
     ],
     "x": [
-     "custard"
+     "jelly"
     ]
    },
    null,
