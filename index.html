@@ -133,6 +133,27 @@ details.note li{margin-bottom:4px}
 .snack .meta{font:400 .78rem var(--f-mono);color:var(--muted)}
 .snackrow{align-items:center}
 .snackrow input{width:70px}
+.ess-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px;align-items:start}
+.ess-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.switch{display:flex;gap:6px;align-items:center;font-size:.85rem;font-weight:600;white-space:nowrap;cursor:pointer}
+.switch input{accent-color:var(--leaf);width:18px;height:18px}
+.ess-total{font:500 .9rem var(--f-mono);color:var(--leaf)}
+.ess-list{display:flex;flex-direction:column}
+.dim{opacity:.45}
+.ess-row{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"name name" "qty cost" "act act";gap:4px 10px;padding:9px 0;border-top:1px dashed var(--line)}
+.ess-name{grid-area:name;display:flex;gap:8px;align-items:flex-start;cursor:pointer;min-width:0}
+.ess-name input{accent-color:var(--leaf);margin-top:3px;width:17px;height:17px;flex:none}
+.ess-name small{display:block;color:var(--muted);font-size:.78rem}
+.ess-qty{grid-area:qty;display:flex;gap:6px;align-items:center;font-size:.82rem;color:var(--muted)}
+.ess-qty input{width:76px}
+.ess-cost{grid-area:cost;font:400 .82rem var(--f-mono);color:var(--muted);align-self:center;text-align:right}
+.ess-act{grid-area:act;display:flex;gap:12px}
+.linkbtn{border:0;background:none;color:var(--leaf);font:600 .8rem var(--f-body);padding:0;cursor:pointer}
+.linkbtn:hover{text-decoration:underline}
+.dogbox{background:var(--sunk);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.dogrow{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:.92rem}
+.ess-add summary{cursor:pointer;color:var(--leaf);font-weight:600;font-size:.88rem;padding-top:6px}
+.ess-add form{margin-top:8px}
 .lo{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
 .lo:first-of-type{border-top:0;padding-top:0}
 .lo-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
@@ -210,6 +231,7 @@ textarea{font:500 .92rem var(--f-body);padding:8px 9px;border-radius:6px;border:
     <nav class="tabs" role="tablist" id="tabs">
       <button role="tab" data-tab="week" aria-selected="true">This week</button>
       <button role="tab" data-tab="left" aria-selected="false">Leftovers</button>
+      <button role="tab" data-tab="ess" aria-selected="false">Essentials</button>
       <button role="tab" data-tab="house" aria-selected="false">Household</button>
       <button role="tab" data-tab="shop" aria-selected="false">Shopping list</button>
       <button role="tab" data-tab="recipes" aria-selected="false">Recipes</button>
@@ -223,6 +245,7 @@ textarea{font:500 .92rem var(--f-body);padding:8px 9px;border-radius:6px;border:
 <main class="wrap">
   <section id="tab-week"></section>
   <section id="tab-left" hidden></section>
+  <section id="tab-ess" hidden></section>
   <section id="tab-house" hidden></section>
   <section id="tab-shop" hidden></section>
   <section id="tab-recipes" hidden></section>
@@ -257,7 +280,7 @@ const ALL_STORES=["Aldi","Coles","Woolworths"];
 const ACTIVE=[1,2]; /* Aldi left out: no Aldi in Cairns. Add 0 back to use it. */
 const STORES=ACTIVE.map(i=>ALL_STORES[i]);
 const storePrices=c=>ACTIVE.map(i=>c.pr[i]);
-const SECTIONS=["Fruit & veg","Meat & seafood","Dairy & eggs","Bakery","Pantry","Frozen","Snacks & treats"];
+const SECTIONS=["Fruit & veg","Meat & seafood","Dairy & eggs","Bakery","Pantry","Frozen","Snacks & treats","Household","Baby","Pets"];
 const C={
  bread:{n:"Wholemeal bread",u:"g",p:700,pr:[2.49,3.60,3.60],s:3,a:["gluten"]},
  bread_gf:{n:"Gluten-free bread",u:"g",p:500,pr:[4.99,6.50,6.50],s:3,a:[]},
@@ -390,6 +413,35 @@ const C={
  lb_custard:{n:"Custard cups (4)",q:"custard cups",u:"ea",p:4,pr:[0,4.00,4.00],s:2,a:["dairy"]},
  lb_puree:{n:"Fruit puree pouches (6)",q:"fruit pouch kids",u:"ea",p:6,pr:[0,5.00,5.00],s:6,a:[]},
  lb_coyog:{n:"Dairy-free yoghurt pouches (4)",q:"dairy free yoghurt pouch",u:"ea",p:4,pr:[0,5.50,5.50],s:2,a:[]},
+ hh_tp:{n:"Toilet paper (24 rolls)",q:"toilet paper 24 pack",u:"ea",un:"rolls",p:24,pr:[0,14.00,14.00],s:7,a:[]},
+ hh_towel:{n:"Paper towel (2 rolls)",q:"paper towel",u:"ea",un:"rolls",p:2,pr:[0,4.50,4.50],s:7,a:[]},
+ hh_dish:{n:"Dishwashing liquid 900ml",q:"dishwashing liquid",u:"ea",un:"bottles",p:1,pr:[0,4.50,4.50],s:7,a:[]},
+ hh_dishtab:{n:"Dishwasher tablets (60)",q:"dishwasher tablets",u:"ea",un:"tablets",p:60,pr:[0,18.00,18.00],s:7,a:[]},
+ hh_laundry:{n:"Laundry liquid 2L (40 washes)",q:"laundry liquid 2L",u:"ea",un:"washes",p:40,pr:[0,15.00,15.00],s:7,a:[]},
+ hh_bin:{n:"Kitchen bin bags (50)",q:"kitchen tidy bags",u:"ea",un:"bags",p:50,pr:[0,6.50,6.50],s:7,a:[]},
+ hh_spray:{n:"Surface spray 500ml",q:"multipurpose spray",u:"ea",un:"bottles",p:1,pr:[0,5.00,5.00],s:7,a:[]},
+ hh_handwash:{n:"Hand wash 250ml",q:"hand wash",u:"ea",un:"bottles",p:1,pr:[0,3.50,3.50],s:7,a:[]},
+ hh_zip:{n:"Sandwich bags (50)",q:"sandwich bags",u:"ea",un:"bags",p:50,pr:[0,4.00,4.00],s:7,a:[]},
+ hh_wrap:{n:"Cling wrap 30m",q:"cling wrap",u:"ea",un:"rolls",p:1,pr:[0,3.50,3.50],s:7,a:[]},
+ hh_foil:{n:"Aluminium foil 10m",q:"aluminium foil",u:"ea",un:"rolls",p:1,pr:[0,4.00,4.00],s:7,a:[]},
+ hh_tissue:{n:"Tissues (box of 200)",q:"tissues",u:"ea",un:"boxes",p:1,pr:[0,3.00,3.00],s:7,a:[]},
+ hh_paste:{n:"Toothpaste 110g",q:"toothpaste",u:"ea",un:"tubes",p:1,pr:[0,3.50,3.50],s:7,a:[]},
+ hh_shampoo:{n:"Shampoo 400ml",q:"shampoo",u:"ea",un:"bottles",p:1,pr:[0,6.00,6.00],s:7,a:[]},
+ hh_bodywash:{n:"Body wash 1L",q:"body wash",u:"ea",un:"bottles",p:1,pr:[0,8.00,8.00],s:7,a:[]},
+ hh_sponge:{n:"Sponges (5)",q:"kitchen sponges",u:"ea",un:"sponges",p:5,pr:[0,3.50,3.50],s:7,a:[]},
+ bb_nappies:{n:"Nappies jumbo (72)",q:"nappies jumbo",u:"ea",un:"nappies",p:72,pr:[0,42.00,42.00],s:8,a:[]},
+ bb_wipes:{n:"Baby wipes (240)",q:"baby wipes 240",u:"ea",un:"wipes",p:240,pr:[0,9.00,9.00],s:8,a:[]},
+ bb_bags:{n:"Nappy bags (200)",q:"nappy bags",u:"ea",un:"bags",p:200,pr:[0,4.00,4.00],s:8,a:[]},
+ bb_cream:{n:"Nappy cream 100g",q:"nappy rash cream",u:"ea",un:"tubes",p:1,pr:[0,8.00,8.00],s:8,a:[]},
+ bb_wash:{n:"Baby wash 500ml",q:"baby wash",u:"ea",un:"bottles",p:1,pr:[0,9.00,9.00],s:8,a:[]},
+ bb_formula:{n:"Infant formula 800g",q:"infant formula",u:"ea",un:"tins",p:1,pr:[0,25.00,25.00],s:8,a:["dairy"]},
+ bb_pouch:{n:"Baby food pouches 120g",q:"baby food pouch",u:"ea",un:"pouches",p:1,pr:[0,2.00,2.00],s:8,a:[]},
+ bb_wipesens:{n:"Sensitive baby wipes (80)",q:"sensitive baby wipes",u:"ea",un:"wipes",p:80,pr:[0,4.00,4.00],s:8,a:[]},
+ dg_can:{n:"Dog food can 700g",q:"dog food can 700g",u:"ea",un:"cans",p:1,pr:[0,3.80,3.80],s:9,a:[]},
+ dg_treats:{n:"Dog treats",q:"dog treats",u:"ea",un:"packs",p:1,pr:[0,6.00,6.00],s:9,a:[]},
+ dg_bags:{n:"Dog poo bags (120)",q:"dog poo bags",u:"ea",un:"bags",p:120,pr:[0,6.00,6.00],s:9,a:[]},
+ dg_dry:{n:"Dry dog food 8kg",q:"dry dog food 8kg",u:"ea",un:"bags",p:1,pr:[0,38.00,38.00],s:9,a:[]},
+ dg_chews:{n:"Dental chews (7)",q:"dog dental chews",u:"ea",un:"chews",p:7,pr:[0,8.00,8.00],s:9,a:[]},
  sn_chips:{n:"Potato chips 175g",q:"potato chips",u:"ea",p:1,pr:[0,3.50,3.50],s:6,a:[]},
  sn_choc:{n:"Chocolate block 180g",q:"chocolate block",u:"ea",p:1,pr:[0,5.00,5.00],s:6,a:["dairy"]},
  sn_bisc:{n:"Chocolate biscuits 200g",q:"chocolate biscuits",u:"ea",p:1,pr:[0,4.00,4.00],s:6,a:["gluten","dairy"]},
@@ -673,6 +725,7 @@ const DEFAULT={
  recipeEdits:{},
  hiddenRecipes:[],
  leftovers:[],
+ ess:null,
  postcode:"",
  plan:null,
  have:{},
@@ -684,7 +737,7 @@ S.leftovers=S.leftovers||[];
 S.custom=S.custom||[];S.customIng=S.customIng||{};
 /* Shared household: one document both of you read and write; this browser keeps a copy too */
 let firstSnap=true,ref=null,lastSent="",writing=false,again=false,canWrite=true,pushTimer=null,sharedExists=false;
-function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[],leftovers:S.leftovers||[]}}
+function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[],leftovers:S.leftovers||[],ess:S.ess||null}}
 function setSync(kind){
  const el=document.getElementById("sync");if(!el)return;el.className="sync";
  if(kind==="ok"){el.classList.add("ok");el.innerHTML=`<span class="dot"></span>Shared · up to date`}
@@ -978,6 +1031,7 @@ function shopping(range){
  const sp=snackPacks();(S.snacks||[]).filter((_,i)=>per&&wks.includes(Math.floor(i/per))).forEach(id=>{const sn=SBY[id];if(sn)sn.i.forEach(([x,q])=>add(x,q*sp,"Adult snacks: "+sn.n))});
  if(boxOn()&&S.box){const k=schoolKids().length;S.box.forEach((b,d)=>{if(!b||!inR.has(d))return;BOX_PARTS.forEach(([g,i])=>{const it=BOXBY[b[g][i]];if(it)it.i.forEach(([x,q])=>add(x,q*k,"Lunchbox: "+it.n))})})}
  if(S.rules.crunch&&!boxOn()){const k=S.members.filter(m=>m.school).length;if(k){add("apple",k*3*wks.length,"Crunch & Sip fruit");add("banana",k*2*wks.length,"Crunch & Sip fruit")}}
+ essAdd(add,wks.length);
  return Object.entries(tot).map(([id,v])=>{
   const c=C[id];const packs=Math.max(1,Math.ceil(v.q/c.p-1e-6));
   const prices=storePrices(c).map(p=>p*packs);const best=prices.indexOf(Math.min(...prices));
@@ -1129,7 +1183,7 @@ function renderShop(){
   const have=!!S.have[x.id];
   h+=`<tr class="${have?"have":""}"><td><input type="checkbox" id="h-${x.id}" data-have="${x.id}" aria-label="Already have ${esc(x.c.n)}"${have?" checked":""}></td>
   <td><div>${esc(x.c.n)}</div><div class="note">${esc(x.why.slice(0,3).join(", "))}${x.why.length>3?` +${x.why.length-3} more`:""}</div></td>
-  <td class="num">${fmtQ(x.q,x.c.u)}</td><td class="num">${x.packs}</td>
+  <td class="num">${x.c.un?`${Math.round(x.q*10)/10} ${esc(x.c.un)}`:fmtQ(x.q,x.c.u)}</td><td class="num">${x.packs}</td>
   ${x.prices.map((p,i)=>`<td class="num${i===x.best&&!have?" best":""}">${money(p)}</td>`).join("")}
   <td>${STORES[x.best]}</td><td>${have?"":shopLinks(x.c)}</td></tr>`;
  });
@@ -1370,6 +1424,70 @@ function renderTotal(){
  const lst=shopping("all").filter(x=>!S.have[x.id]);const tot=lst.reduce((s,x)=>s+x.prices[x.best],0);
  $("#hdrTotal").innerHTML=lst.length?`${nWeeks()>1?"Month's":"Week's"} groceries ≈ <b>${money(tot)}</b>`:"";
 }
+/* ---------- Essentials: household, baby and dog supplies bought every week ---------- */
+const ESS_SECS=[{k:"hh",s:7,t:"Household",lead:"Cleaning, paper and bathroom things you go through every week."},{k:"bb",s:8,t:"Baby",lead:"Nappies, wipes and other baby essentials."},{k:"dg",s:9,t:"Dogs",lead:"Dog food and extras."}];
+const ESS_DEF={hh_tp:[8,1],hh_towel:[1,1],hh_dish:[0.25,1],hh_dishtab:[7,1],hh_laundry:[6,1],hh_bin:[4,1],hh_spray:[0.25,1],hh_handwash:[0.5,1],hh_zip:[10,1],hh_wrap:[0.1,0],hh_foil:[0.1,0],hh_tissue:[0.25,0],hh_paste:[0.25,1],hh_shampoo:[0.25,1],hh_bodywash:[0.25,1],hh_sponge:[1,0],
+ bb_nappies:[42,1],bb_wipes:[70,1],bb_bags:[42,1],bb_cream:[0.1,1],bb_wash:[0.1,1],bb_formula:[1.5,0],bb_pouch:[7,0],bb_wipesens:[0,0],
+ dg_treats:[0.5,1],dg_bags:[14,1],dg_dry:[0,0],dg_chews:[7,0]};
+function essInit(){
+ const e=S.ess=S.ess||{};e.on=Object.assign({hh:true,bb:true,dg:true},e.on||{});e.items=e.items||{};
+ if(e.dogs==null)e.dogs=2;if(e.cans==null)e.cans=1;
+ Object.entries(ESS_DEF).forEach(([id,[wk,on]])=>{if(!e.items[id])e.items[id]={wk,on:!!on}});
+ return e;
+}
+function essSec(id){const c=C[id];return c?ESS_SECS.find(x=>x.s===c.s):null}
+function essItems(sec){const e=essInit();return Object.keys(e.items).filter(id=>C[id]&&C[id].s===sec.s&&id!=="dg_can")}
+function essWeekCost(id,wk){const c=C[id];return c?Math.min(...storePrices(c))/c.p*wk:0}
+function essAdd(add,weeks){
+ const e=essInit();
+ ESS_SECS.forEach(sec=>{if(!e.on[sec.k])return;
+  essItems(sec).forEach(id=>{const it=e.items[id];if(it.on&&+it.wk>0)add(id,+it.wk*weeks,{hh:"Household",bb:"Baby",dg:"Dog"}[sec.k]+" essentials")});
+  if(sec.k==="dg"&&e.dogs>0&&e.cans>0&&C.dg_can)add("dg_can",e.dogs*e.cans*7*weeks,"Dog food: "+e.dogs+" "+(e.dogs===1?"dog":"dogs")+" × "+e.cans+" a day");
+ });
+}
+let essMsg={};
+function unitWord(c){return c.un||"items"}
+function renderEss(){
+ const el=$("#tab-ess");if(!el)return;const e=essInit();
+ const W=nWeeks();
+ let h=`<div class="bar"><div><h2>Essentials</h2><p class="lead">Things you buy every week that aren't food for meals. Set how much you use a week; they're added to the shopping list for ${W>1?"each week or the whole month":"the week"}. Tap Edit to change a pack size or price.</p></div></div><div class="ess-grid">`;
+ ESS_SECS.forEach(sec=>{
+  const ids=essItems(sec);
+  const wkTot=(e.on[sec.k]?ids.filter(id=>e.items[id].on).reduce((t,id)=>t+essWeekCost(id,+e.items[id].wk||0),0):0)+(sec.k==="dg"&&e.on.dg?essWeekCost("dg_can",e.dogs*e.cans*7):0);
+  h+=`<section class="panel ess"><div class="ess-head"><div><h3>${sec.t}</h3><p class="note" style="margin:2px 0 0">${sec.lead}</p></div>
+   <label class="switch"><input type="checkbox" id="ess-on-${sec.k}" data-esson="${sec.k}"${e.on[sec.k]?" checked":""}> On the list</label></div>
+   <div class="ess-total">≈ ${money(wkTot)} a week${W>1?` · ${money(wkTot*W)} a month`:""}</div>`;
+  if(sec.k==="dg"){
+   const cans=e.dogs*e.cans*7;
+   h+=`<div class="dogbox${e.on.dg?"":" dim"}">
+    <div class="dogrow"><span>Dogs</span><div class="stepper sm"><button data-dogs="-1" aria-label="One less dog"${e.dogs<=0?" disabled":""}>−</button><output>${e.dogs}</output><button data-dogs="1" aria-label="One more dog">+</button></div></div>
+    <div class="dogrow"><span>Cans each a day</span><div class="stepper sm"><button data-cans="-0.5" aria-label="Half a can less"${e.cans<=0?" disabled":""}>−</button><output>${String(e.cans).replace(".5","½").replace(/^0½/,"½")}</output><button data-cans="0.5" aria-label="Half a can more">+</button></div></div>
+    <p class="note" style="margin:0">${cans} cans a week of ${esc(C.dg_can.n)} (${STORES.map((st,i)=>`${st} ${money(storePrices(C.dg_can)[i])}`).join(", ")} a can) <button class="linkbtn" data-ingedit="dg_can">Edit</button></p></div>`;
+  }
+  h+=`<div class="ess-list${e.on[sec.k]?"":" dim"}">`;
+  ids.forEach(id=>{const c=C[id],it=e.items[id];const mine=!BASE_C.includes(id);
+   h+=`<div class="ess-row">
+    <label class="ess-name"><input type="checkbox" id="ess-i-${id}" data-essitem="${id}"${it.on?" checked":""}><span><b>${esc(c.n)}</b><small>${packText(c)} · from ${money(Math.min(...storePrices(c)))}</small></span></label>
+    <label class="ess-qty"><input type="number" id="ess-w-${id}" data-esswk="${id}" min="0" step="any" value="${+it.wk}" aria-label="${esc(unitWord(c))} a week for ${esc(c.n)}"><span>${esc(unitWord(c))} a week</span></label>
+    <span class="ess-cost">≈ ${money(essWeekCost(id,+it.wk||0))}</span>
+    <span class="ess-act"><button class="linkbtn" data-ingedit="${id}">Edit</button>${mine?`<button class="linkbtn" data-essdel="${id}">Remove</button>`:""}</span>
+   </div>`;
+  });
+  h+=`</div>
+  <details class="ess-add"><summary>Add something to ${sec.t.toLowerCase()}</summary>
+   <form class="fgrid" data-essadd="${sec.k}" novalidate>
+    <label class="fld wide"><span class="label">Name</span><input type="text" id="ea-n-${sec.k}" placeholder="${sec.k==="hh"?"e.g. Fabric softener":sec.k==="bb"?"e.g. Teething gel":"e.g. Flea treatment"}"></label>
+    <label class="fld"><span class="label">Items per pack</span><input type="number" id="ea-p-${sec.k}" min="1" step="any" value="1"></label>
+    <label class="fld"><span class="label">Called</span><input type="text" id="ea-u-${sec.k}" placeholder="e.g. bottles" value="items"></label>
+    <label class="fld"><span class="label">Used a week</span><input type="number" id="ea-w-${sec.k}" min="0" step="any" value="1"></label>
+    ${ACTIVE.map(i=>`<label class="fld"><span class="label">${ALL_STORES[i]} price $</span><input type="number" id="ea-pr${i}-${sec.k}" min="0" step="0.01"></label>`).join("")}
+    <div class="fld wide"><button type="submit" class="btn primary">Add</button><p class="note" role="status" style="margin:6px 0 0">${esc(essMsg[sec.k]||"")}</p></div>
+   </form></details>
+  </section>`;
+ });
+ el.innerHTML=h+`</div>`;
+}
+
 /* ---------- Leftovers: food already made, zero cost ---------- */
 let loMsg="",loPending=null;
 const slotServes=(day,type)=>{const ms=eaters(type,day);return Math.max(1,Math.ceil(ms.reduce((a,m)=>a+portion(m.age),0)-0.1))};
@@ -1493,7 +1611,7 @@ function saveIe(){
  } else S.customIng[ie.id]=Object.assign({},S.customIng[ie.id],rec);
  syncCustom();save();render();return "";
 }
-function render(){renderWeek();renderLeft();renderHouse();renderShop();renderRecipes();renderIng();renderPreg();renderStores();renderTotal()}
+function render(){renderWeek();renderLeft();renderEss();renderHouse();renderShop();renderRecipes();renderIng();renderPreg();renderStores();renderTotal()}
 
 /* Copy text: the Android app provides a native copy; elsewhere use the browser clipboard */
 function copyText(txt){
@@ -1639,6 +1757,9 @@ document.addEventListener("click",e=>{
  if(t0.id==="ingAdd"){openIng(null,t0);return}
  const ied=t0.closest&&t0.closest("[data-ingedit]");if(ied){openIng(ied.dataset.ingedit,ied);return}
  if(e.target.id==="printWeek"){printWeek();return}
+ const dg=e.target.closest("[data-dogs]");if(dg){const es=essInit();es.dogs=Math.max(0,Math.min(10,es.dogs+(+dg.dataset.dogs)));save();render();$(`[data-dogs="${dg.dataset.dogs}"]`)?.focus();return}
+ const cn=e.target.closest("[data-cans]");if(cn){const es=essInit();es.cans=Math.max(0,Math.min(5,es.cans+(+cn.dataset.cans)));save();render();$(`[data-cans="${cn.dataset.cans}"]`)?.focus();return}
+ const edl=e.target.closest("[data-essdel]");if(edl){const id=edl.dataset.essdel;delete essInit().items[id];delete S.customIng[id];syncCustom();save();render();return}
  const li=e.target.closest("[data-loinc]");if(li){const l=S.leftovers.find(x=>x.id===li.dataset.loinc);if(l){l.serves=Math.max(1,Math.min(40,l.serves+(+li.dataset.d)));save();render();$(`[data-loinc="${l.id}"][data-d="${li.dataset.d}"]`)?.focus()}return}
  const lp=e.target.closest("[data-loput]");if(lp){const id=lp.dataset.loput;const v=$("#lo-slot-"+id)?.value;if(v){const[d,t]=v.split(",");S.plan[+d][t]="lo:"+id;const l=S.leftovers.find(x=>x.id===id);loMsg=`${l.name} is on ${dayLabel(+d)} ${SLOTS[t].toLowerCase()}.`;save();render();$("#loMsg").textContent=loMsg}return}
  const lc=e.target.closest("[data-loclear]");if(lc){loSlots(lc.dataset.loclear).forEach(([d,t])=>{S.plan[d][t]=null});refillSlots();save();render();return}
@@ -1715,6 +1836,14 @@ document.addEventListener("click",e=>{
  }
 });
 document.addEventListener("submit",e=>{
+ if(e.target.dataset.essadd){e.preventDefault();const k=e.target.dataset.essadd;const sec=ESS_SECS.find(x=>x.k===k);const g=id=>document.getElementById(id);
+  const name=g("ea-n-"+k).value.trim(),pack=+g("ea-p-"+k).value,un=g("ea-u-"+k).value.trim()||"items",wk=+g("ea-w-"+k).value;
+  const prs=[0,0,0];ACTIVE.forEach(i=>{prs[i]=+g(`ea-pr${i}-${k}`).value||0});const known=ACTIVE.map(i=>prs[i]).filter(v=>v>0);
+  const fail=m=>{essMsg[k]=m;renderEss();document.querySelector(`[data-essadd="${k}"]`).closest("details").open=true};
+  if(!name)return fail("Give it a name.");if(!(pack>0))return fail("Enter how many come in a pack.");if(!known.length)return fail("Enter a price for at least one store.");
+  ACTIVE.forEach(i=>{if(!(prs[i]>0))prs[i]=Math.min(...known)});
+  const id="x_"+Date.now().toString(36);S.customIng[id]={n:name,q:name,u:"ea",un,p:pack,pr:prs,s:sec.s,a:[]};essInit().items[id]={wk:Math.max(0,wk||0),on:true};
+  essMsg[k]=`${name} added.`;syncCustom();save();render();return}
  if(e.target.id!=="loForm")return;e.preventDefault();
  const name=$("#lo-name").value.trim(),serves=Math.round(+$("#lo-serves").value),useBy=$("#lo-useby").value,notes=$("#lo-notes").value.trim();
  if(!name){loMsg="Say what the leftovers are.";$("#loMsg").textContent=loMsg;$("#lo-name").focus();return}
@@ -1737,6 +1866,9 @@ document.addEventListener("input",e=>{
 document.addEventListener("change",e=>{
  const t=e.target;
  if(t.id==="ingSec"){ingSec=t.value;renderIng();return}
+ if(t.dataset.esson){essInit().on[t.dataset.esson]=t.checked;save();render();return}
+ if(t.dataset.essitem){essInit().items[t.dataset.essitem].on=t.checked;save();render();return}
+ if(t.dataset.esswk){const v=Math.max(0,+t.value||0);essInit().items[t.dataset.esswk].wk=v;save();setTimeout(render,0);return}
  if(t.id==="ie-u"&&ie){readIe();renderIe();return}
  if(t.dataset.dr||t.dataset.ni){if(t.dataset.dr==="preg"&&draft)draft.preg=t.checked;if(t.dataset.dr==="ing"&&draft){draft.rows[+t.dataset.i].id=t.value;const u=$(`#dr-u-${t.dataset.i}`);if(u)u.textContent=t.value&&C[t.value]?UNIT_LABEL[C[t.value].u]:"";const hh=$(`#dr-h-${t.dataset.i}`);if(hh)hh.textContent=t.value?ingHint(t.value):""}return}
  if(t.dataset.sel){const[d,ty]=t.dataset.sel.split(",");S.plan[+d][ty]=t.value;save();render();return}
