@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-01T01:49:47.099Z",
+ "updated": "2026-11-01T01:52:07.827Z",
  "state": {
   "members": [
    {
@@ -418,6 +418,18 @@
      5.4,
      5.4,
      5.4
+    ],
+    "s": 4,
+    "a": []
+   },
+   "x_mvx6cwq8": {
+    "n": "MasterFoods Soy Honey & Garlic Marinade",
+    "u": "g",
+    "p": 375,
+    "pr": [
+     4,
+     4,
+     4
     ],
     "s": 4,
     "a": []
