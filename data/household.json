@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-01T01:33:58.285Z",
+ "updated": "2026-11-01T01:36:24.929Z",
  "state": {
   "members": [
    {
@@ -319,6 +319,20 @@
     ],
     "s": 3,
     "a": []
+   },
+   "x_mvx5sp6s": {
+    "n": "Short Cut Bacon",
+    "u": "g",
+    "p": 200,
+    "pr": [
+     4.4,
+     4.4,
+     4.4
+    ],
+    "s": 1,
+    "a": [
+     "meat"
+    ]
    }
   },
   "example": false,
