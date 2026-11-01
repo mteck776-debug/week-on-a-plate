@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-01T01:54:45.753Z",
+ "updated": "2026-11-01T01:55:58.747Z",
  "state": {
   "members": [
    {
@@ -273,6 +273,52 @@
      [
       "x_mvx5ypva",
       30
+     ]
+    ]
+   },
+   {
+    "id": "u_mvx6huwm",
+    "m": "d",
+    "n": "Noodle Stir Fry",
+    "t": 30,
+    "serves": 4,
+    "custom": true,
+    "preg": false,
+    "i": [
+     [
+      "x_mvx6cwq8",
+      37.5
+     ],
+     [
+      "x_mvx6dxq6",
+      1.25
+     ],
+     [
+      "x_mvx6gakw",
+      125
+     ],
+     [
+      "chicken_breast",
+      62.5
+     ]
+    ],
+    "st": "1. cook noodles and frozen veg\n2. cook chicken with honey soy\n3. combine and simmer\n4. serve",
+    "raw": [
+     [
+      "x_mvx6cwq8",
+      150
+     ],
+     [
+      "x_mvx6dxq6",
+      5
+     ],
+     [
+      "x_mvx6gakw",
+      500
+     ],
+     [
+      "chicken_breast",
+      250
      ]
     ]
    }
