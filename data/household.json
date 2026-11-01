@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-01T01:55:58.747Z",
+ "updated": "2026-11-01T01:56:32.612Z",
  "state": {
   "members": [
    {
@@ -46,44 +46,44 @@
   "postcode": "4870",
   "plan": [
    {
-    "b": "u_mvu9wzpk",
-    "s": "hw",
-    "a": "vm",
+    "b": "bft",
+    "s": "tr",
+    "a": "lbm",
+    "d": "dps"
+   },
+   {
+    "b": "bsm",
+    "s": "ca",
+    "a": "lsp",
+    "d": "dpt"
+   },
+   {
+    "b": "bbb",
+    "s": "lsu",
+    "a": "lsu",
     "d": "dmi"
    },
    {
-    "b": "oo",
-    "s": "lpu",
-    "a": "lqu",
-    "d": "rc"
-   },
-   {
-    "b": "bmu",
-    "s": "ltc",
-    "a": "es",
-    "d": "dcs"
-   },
-   {
-    "b": "yb",
-    "s": "lhr",
-    "a": "lsp",
-    "d": "dpp"
-   },
-   {
-    "b": "at",
-    "s": "sb",
-    "a": "lqb",
-    "d": "dna"
+    "b": "bgr",
+    "s": "lac",
+    "a": "lpe",
+    "d": "dmc"
    },
    {
     "b": "bbr",
-    "a": "lpe",
-    "d": "dbp"
+    "s": "lqb",
+    "a": "ltc",
+    "d": "ch"
    },
    {
     "b": "bpb",
-    "a": "lpp",
-    "d": "dmr"
+    "a": "es",
+    "d": "sp"
+   },
+   {
+    "b": "oo",
+    "a": "lqb",
+    "d": "sa"
    }
   ],
   "have": {
@@ -507,20 +507,20 @@
   },
   "example": false,
   "snacks": [
-   "nachos",
-   "darkchoc",
-   "bars",
-   "bisc"
+   "choc",
+   "bisc",
+   "pretz",
+   "chips"
   ],
   "box": [
    {
     "f": [
-     "grapes",
-     "banana"
+     "mandarin",
+     "pear"
     ],
     "s": [
-     "bar",
-     "sultana"
+     "cheesecrack",
+     "strip"
     ],
     "x": [
      "coyog"
@@ -528,51 +528,51 @@
    },
    {
     "f": [
-     "banana",
-     "apple"
-    ],
-    "s": [
-     "sultana",
-     "rice"
-    ],
-    "x": [
-     "jelly"
-    ]
-   },
-   {
-    "f": [
-     "apple",
+     "pear",
      "straw"
     ],
     "s": [
-     "rice",
-     "bar"
+     "strip",
+     "teddy"
     ],
     "x": [
-     "coyog"
+     "fruitcup"
     ]
    },
    {
     "f": [
      "straw",
-     "grapes"
+     "blue"
     ],
     "s": [
-     "bar",
-     "sultana"
+     "teddy",
+     "cheesecrack"
     ],
     "x": [
-     "jelly"
+     "coyog"
     ]
    },
    {
     "f": [
-     "grapes",
-     "banana"
+     "blue",
+     "mandarin"
     ],
     "s": [
-     "sultana",
-     "rice"
+     "cheesecrack",
+     "strip"
+    ],
+    "x": [
+     "fruitcup"
+    ]
+   },
+   {
+    "f": [
+     "mandarin",
+     "pear"
+    ],
+    "s": [
+     "strip",
+     "teddy"
     ],
     "x": [
      "coyog"
