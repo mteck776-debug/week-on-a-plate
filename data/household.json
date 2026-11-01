@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-01T01:41:06.165Z",
+ "updated": "2026-11-01T01:42:32.281Z",
  "state": {
   "members": [
    {
@@ -211,6 +211,68 @@
      [
       "x_mvuc7ir7",
       100
+     ]
+    ]
+   },
+   {
+    "id": "u_mvx60kmo",
+    "m": "b",
+    "n": "Egg and Bacon Breakfast Wraps",
+    "t": 5,
+    "serves": 1,
+    "custom": true,
+    "preg": false,
+    "i": [
+     [
+      "x_mvx5mxd8",
+      1
+     ],
+     [
+      "eggs",
+      1
+     ],
+     [
+      "x_mvx5pk1c",
+      1
+     ],
+     [
+      "x_mvx5sp6s",
+      30
+     ],
+     [
+      "x_mvx5va6y",
+      2
+     ],
+     [
+      "x_mvx5ypva",
+      30
+     ]
+    ],
+    "st": "1. cook, bacon, hashbrown and meat\n2. put all in wrap and place cheese on top.\n3. add what sauce you would like.\n4. cook wrap then either serve or keep in freezer.",
+    "raw": [
+     [
+      "x_mvx5mxd8",
+      1
+     ],
+     [
+      "eggs",
+      1
+     ],
+     [
+      "x_mvx5pk1c",
+      1
+     ],
+     [
+      "x_mvx5sp6s",
+      30
+     ],
+     [
+      "x_mvx5va6y",
+      2
+     ],
+     [
+      "x_mvx5ypva",
+      30
      ]
     ]
    }
