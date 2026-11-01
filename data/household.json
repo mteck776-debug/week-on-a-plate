@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-01T01:31:55.593Z",
+ "updated": "2026-11-01T01:33:58.285Z",
  "state": {
   "members": [
    {
@@ -307,6 +307,18 @@
     "a": [
      "meat"
     ]
+   },
+   "x_mvx5pk1c": {
+    "n": "Large Jumbo Wraps 8 Pack",
+    "u": "ea",
+    "p": 8,
+    "pr": [
+     5,
+     5,
+     5
+    ],
+    "s": 3,
+    "a": []
    }
   },
   "example": false,
