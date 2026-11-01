@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-01T01:36:24.929Z",
+ "updated": "2026-11-01T01:38:25.466Z",
  "state": {
   "members": [
    {
@@ -332,6 +332,20 @@
     "s": 1,
     "a": [
      "meat"
+    ]
+   },
+   "x_mvx5va6y": {
+    "n": "Cheese Slices 84 Pack",
+    "u": "ea",
+    "p": 84,
+    "pr": [
+     13.15,
+     13.15,
+     14
+    ],
+    "s": 2,
+    "a": [
+     "dairy"
     ]
    }
   },
