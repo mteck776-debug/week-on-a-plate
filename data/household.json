@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-01T01:52:07.827Z",
+ "updated": "2026-11-01T01:52:55.780Z",
  "state": {
   "members": [
    {
@@ -430,6 +430,18 @@
      4,
      4,
      4
+    ],
+    "s": 4,
+    "a": []
+   },
+   "x_mvx6dxq6": {
+    "n": "Chicken Flavoured Instant Noodles",
+    "u": "ea",
+    "p": 5,
+    "pr": [
+     1.9,
+     1.9,
+     1.9
     ],
     "s": 4,
     "a": []
