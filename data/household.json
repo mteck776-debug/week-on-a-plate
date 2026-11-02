@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-02T00:04:11.621Z",
+ "updated": "2026-11-02T00:04:15.623Z",
  "state": {
   "members": [
    {
@@ -949,7 +949,7 @@
   ],
   "ess": {
    "on": {
-    "hh": true,
+    "hh": false,
     "bb": true,
     "dg": true
    },
