@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-02T00:04:23.536Z",
+ "updated": "2026-11-02T00:05:02.689Z",
  "state": {
   "members": [
    {
@@ -47,44 +47,44 @@
   "postcode": "4870",
   "plan": [
    {
-    "b": "bft",
-    "s": "tr",
-    "a": "lbm",
-    "d": "dps"
-   },
-   {
     "b": "bsm",
-    "s": "ca",
-    "a": "lsp",
-    "d": "dpt"
-   },
-   {
-    "b": "bbb",
-    "s": "lsu",
-    "a": "lsu",
-    "d": "dmi"
-   },
-   {
-    "b": "bgr",
-    "s": "lac",
-    "a": "lpe",
-    "d": "dmc"
-   },
-   {
-    "b": "bbr",
-    "s": "lqb",
-    "a": "ltc",
-    "d": "ch"
-   },
-   {
-    "b": "bpb",
-    "a": "es",
-    "d": "sp"
+    "s": "lpw",
+    "a": "lqu",
+    "d": "lc"
    },
    {
     "b": "oo",
+    "s": "ltc",
+    "a": "es",
+    "d": "dna"
+   },
+   {
+    "b": "bft",
+    "s": "lhv",
+    "a": "lac",
+    "d": "sp"
+   },
+   {
+    "b": "yb",
+    "s": "cs",
+    "a": "lsr",
+    "d": "dft"
+   },
+   {
+    "b": "se",
+    "s": "lpu",
+    "a": "lsu",
+    "d": "dmr"
+   },
+   {
+    "b": "bmu",
+    "a": "lpu",
+    "d": "dsb"
+   },
+   {
+    "b": "bbm",
     "a": "lqb",
-    "d": "sa"
+    "d": "dbb"
    },
    {
     "b": "bp",
@@ -628,10 +628,10 @@
   },
   "example": false,
   "snacks": [
-   "choc",
-   "bisc",
+   "dipcrack",
+   "darkchoc",
    "pretz",
-   "chips",
+   "cheesecrack",
    "bisc",
    "dried",
    "bars",
@@ -648,67 +648,67 @@
   "box": [
    {
     "f": [
-     "mandarin",
-     "pear"
+     "blue",
+     "kiwi"
     ],
     "s": [
-     "cheesecrack",
-     "strip"
+     "bar",
+     "shapes"
     ],
     "x": [
-     "coyog"
+     "puree"
     ]
    },
    {
     "f": [
-     "pear",
-     "straw"
+     "kiwi",
+     "grapes"
     ],
     "s": [
-     "strip",
-     "teddy"
-    ],
-    "x": [
-     "fruitcup"
-    ]
-   },
-   {
-    "f": [
-     "straw",
-     "blue"
-    ],
-    "s": [
-     "teddy",
+     "shapes",
      "cheesecrack"
     ],
     "x": [
-     "coyog"
+     "cheesestick"
+    ]
+   },
+   {
+    "f": [
+     "grapes",
+     "mandarin"
+    ],
+    "s": [
+     "cheesecrack",
+     "bar"
+    ],
+    "x": [
+     "puree"
+    ]
+   },
+   {
+    "f": [
+     "mandarin",
+     "blue"
+    ],
+    "s": [
+     "bar",
+     "shapes"
+    ],
+    "x": [
+     "cheesestick"
     ]
    },
    {
     "f": [
      "blue",
-     "mandarin"
+     "kiwi"
     ],
     "s": [
-     "cheesecrack",
-     "strip"
+     "shapes",
+     "cheesecrack"
     ],
     "x": [
-     "fruitcup"
-    ]
-   },
-   {
-    "f": [
-     "mandarin",
-     "pear"
-    ],
-    "s": [
-     "strip",
-     "teddy"
-    ],
-    "x": [
-     "coyog"
+     "puree"
     ]
    },
    null,
