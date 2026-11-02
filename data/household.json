@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-02T00:10:10.267Z",
+ "updated": "2026-11-02T00:10:27.738Z",
  "state": {
   "members": [
    {
@@ -56,8 +56,9 @@
    {
     "b": "u_mvx60kmo",
     "s": "lo:mvyhlgcm",
-    "a": "lpe",
-    "d": "dcs"
+    "d": "dcs",
+    "a:1": "lpe",
+    "a:2": "lpe"
    },
    {
     "b": "bbr",
@@ -1077,7 +1078,8 @@
    "order": []
   },
   "split": {
-   "0": true
+   "0": true,
+   "1": true
   }
  }
 }
