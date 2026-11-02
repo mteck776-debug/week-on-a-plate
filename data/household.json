@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-02T00:09:33.591Z",
+ "updated": "2026-11-02T00:10:05.928Z",
  "state": {
   "members": [
    {
@@ -49,8 +49,9 @@
    {
     "b": "bpo",
     "s": "lo:mvyhlgcm",
-    "a": "lcs",
-    "d": "dbu"
+    "d": "dbu",
+    "a:1": "lcs",
+    "a:2": "lcs"
    },
    {
     "b": "u_mvx60kmo",
@@ -1074,6 +1075,9 @@
    "names": {},
    "custom": [],
    "order": []
+  },
+  "split": {
+   "0": true
   }
  }
 }
