@@ -168,6 +168,18 @@ b.neg{color:var(--tomato)}
 .wktabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
 .wktabs .chip{padding:6px 12px;font-size:.85rem}
 .wkc{font:400 .75rem var(--f-mono);opacity:.85}
+.aisles{margin-bottom:14px}
+.aisles summary{cursor:pointer;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.aisles summary .note{margin:0}
+.aisle-list{margin:10px 0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+.aisle-list li{display:grid;grid-template-columns:minmax(0,280px) auto auto;gap:8px;align-items:center}
+.aisle-list li input{width:100%;min-width:0}
+@media (max-width:480px){.aisle-list li{grid-template-columns:minmax(0,1fr) auto}.aisle-list li .note{display:none}}
+.aisle-list li .note{margin:0;min-width:5em}
+.aisle-btns{display:flex;gap:6px;align-items:center}
+.iconbtn{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;font-size:.95rem}
+.iconbtn:disabled{opacity:.35;cursor:default}
+#aisleAdd input{flex:1 1 200px;min-width:0}
 .ing-tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .ing-tools input{flex:1 1 220px;font:500 1rem var(--f-body);padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);min-width:0}
 .ing-tools select{font:500 .95rem var(--f-body);padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
@@ -281,6 +293,16 @@ const ACTIVE=[1,2]; /* Aldi left out: no Aldi in Cairns. Add 0 back to use it. *
 const STORES=ACTIVE.map(i=>ALL_STORES[i]);
 const storePrices=c=>ACTIVE.map(i=>c.pr[i]);
 const SECTIONS=["Fruit & veg","Meat & seafood","Dairy & eggs","Bakery","Pantry","Frozen","Snacks & treats","Household","Baby","Pets"];
+const BASE_SECTIONS=SECTIONS.slice();
+/* Aisles: built-in ones plus your own (numbered from 100), in the order you walk the store */
+function aisleState(){const a=S.aisles=S.aisles||{};a.names=a.names||{};a.custom=a.custom||[];a.order=a.order||[];return a}
+function applyAisles(){
+ const a=aisleState();SECTIONS.length=0;BASE_SECTIONS.forEach((n,i)=>SECTIONS[i]=n);
+ a.custom.forEach(i=>{SECTIONS[i]=a.names[i]||"My aisle"});
+ Object.entries(a.names).forEach(([i,n])=>{if(SECTIONS[+i]!==undefined&&n)SECTIONS[+i]=n});
+}
+function aisleList(){const a=aisleState();const all=[];SECTIONS.forEach((_,i)=>all.push(i));const known=a.order.filter(i=>all.includes(i));return known.concat(all.filter(i=>!known.includes(i)))}
+function aisleRank(i){const l=aisleList();const r=l.indexOf(i);return r<0?999:r}
 const C={
  bread:{n:"Wholemeal bread",u:"g",p:700,pr:[2.49,3.60,3.60],s:3,a:["gluten"]},
  bread_gf:{n:"Gluten-free bread",u:"g",p:500,pr:[4.99,6.50,6.50],s:3,a:[]},
@@ -612,6 +634,7 @@ const PREG_ORIG=JSON.parse(JSON.stringify(PREG));
 const BASE_ORIG=JSON.parse(JSON.stringify(C));
 let R=[],RBY={};
 function syncCustom(){
+ applyAisles();
  Object.keys(C).forEach(k=>{if(!BASE_C.includes(k))delete C[k]});
  BASE_C.forEach(k=>{C[k]=Object.assign(JSON.parse(JSON.stringify(BASE_ORIG[k])),(S.ingEdits||{})[k]||{})});
  Object.entries(S.customIng||{}).forEach(([k,v])=>C[k]=v);
@@ -726,6 +749,7 @@ const DEFAULT={
  hiddenRecipes:[],
  leftovers:[],
  ess:null,
+ aisles:null,
  postcode:"",
  plan:null,
  have:{},
@@ -737,7 +761,7 @@ S.leftovers=S.leftovers||[];
 S.custom=S.custom||[];S.customIng=S.customIng||{};
 /* Shared household: one document both of you read and write; this browser keeps a copy too */
 let firstSnap=true,ref=null,lastSent="",writing=false,again=false,canWrite=true,pushTimer=null,sharedExists=false;
-function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[],leftovers:S.leftovers||[],ess:S.ess||null}}
+function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[],leftovers:S.leftovers||[],ess:S.ess||null,aisles:S.aisles||null}}
 function setSync(kind){
  const el=document.getElementById("sync");if(!el)return;el.className="sync";
  if(kind==="ok"){el.classList.add("ok");el.innerHTML=`<span class="dot"></span>Shared · up to date`}
@@ -1036,7 +1060,7 @@ function shopping(range){
   const c=C[id];const packs=Math.max(1,Math.ceil(v.q/c.p-1e-6));
   const prices=storePrices(c).map(p=>p*packs);const best=prices.indexOf(Math.min(...prices));
   return {id,c,q:v.q,packs,prices,best,why:[...v.why]};
- }).sort((a,b)=>a.c.s-b.c.s||a.c.n.localeCompare(b.c.n));
+ }).sort((a,b)=>aisleRank(a.c.s)-aisleRank(b.c.s)||a.c.n.localeCompare(b.c.n));
 }
 function fmtQ(q,u){
  if(u==="g")return q>=1000?(q/1000).toFixed(2).replace(/\.?0+$/,"")+" kg":Math.ceil(q)+" g";
@@ -1202,7 +1226,7 @@ function packText(c){
 function ingHint(id){const c=C[id];if(!c)return "";const pr=storePrices(c);return `${packText(c)} · ${STORES.map((st,i)=>`${st} ${money(pr[i])}`).join(" · ")}`}
 function ingOptions(sel){
  const ids=Object.keys(C).sort((a,b)=>C[a].n.localeCompare(C[b].n));
- return `<option value="">Choose an ingredient…</option>`+SECTIONS.map((sec,si)=>{
+ return `<option value="">Choose an ingredient…</option>`+aisleList().map(si=>{const sec=SECTIONS[si];
   const o=ids.filter(k=>C[k].s===si);if(!o.length)return "";
   return `<optgroup label="${sec}">${o.map(k=>`<option value="${k}"${k===sel?" selected":""}>${esc(C[k].n)}${/\d/.test(C[k].n)?"":" · "+packText(C[k])}</option>`).join("")}</optgroup>`;
  }).join("");
@@ -1227,7 +1251,7 @@ function formHTML(){
    <label class="fld wide"><span class="label">Name</span><input type="text" id="ni-n" data-ni="n" value="${esc(n.n)}" placeholder="e.g. Frozen puff pastry"></label>
    <label class="fld"><span class="label">Measured in</span><select id="ni-u" data-ni="u"><option value="g"${n.u==="g"?" selected":""}>grams</option><option value="ml"${n.u==="ml"?" selected":""}>millilitres</option><option value="ea"${n.u==="ea"?" selected":""}>each</option></select></label>
    <label class="fld"><span class="label">Pack size</span><input type="number" id="ni-p" data-ni="p" min="0" step="any" value="${esc(n.p)}" placeholder="e.g. 500"></label>
-   <label class="fld"><span class="label">Aisle</span><select id="ni-s" data-ni="s">${SECTIONS.map((x,i)=>`<option value="${i}"${+n.s===i?" selected":""}>${x}</option>`).join("")}</select></label>
+   <label class="fld"><span class="label">Aisle</span><select id="ni-s" data-ni="s">${aisleList().map(i=>`<option value="${i}"${+n.s===i?" selected":""}>${esc(SECTIONS[i])}</option>`).join("")}</select></label>
    ${ACTIVE.map(i=>`<label class="fld"><span class="label">${ALL_STORES[i]} pack price $</span><input type="number" id="ni-pr-${i}" data-ni="pr" data-i="${i}" min="0" step="0.01" value="${esc(n.pr[i])}"></label>`).join("")}
   </div>
   <div><span class="label">Contains</span></div>
@@ -1545,13 +1569,27 @@ function usedIn(id){
  return rs.concat(sn,bx);
 }
 function isEdited(id){return !!(S.ingEdits&&S.ingEdits[id])}
+let aisleOpen=false,aisleMsg="",aislePending=null;
+function aislePanel(){
+ const a=aisleState();const l=aisleList();
+ const count=i=>Object.keys(C).filter(k=>C[k].s===i).length;
+ return `<details class="panel aisles" id="aisleBox"${aisleOpen?" open":""}><summary><b>Aisles</b> <span class="note">Add, rename or reorder aisles. The shopping list follows this order, so set it to how you walk your store.</span></summary>
+  <ol class="aisle-list">${l.map((i,k)=>`<li><input type="text" id="aisle-n-${i}" data-aislename="${i}" value="${esc(SECTIONS[i])}" aria-label="Aisle name">
+   <span class="note">${count(i)} ${count(i)===1?"item":"items"}</span>
+   <span class="aisle-btns"><button class="iconbtn" data-aislemove="${i}" data-d="-1" aria-label="Move ${esc(SECTIONS[i])} up"${k===0?" disabled":""}>↑</button><button class="iconbtn" data-aislemove="${i}" data-d="1" aria-label="Move ${esc(SECTIONS[i])} down"${k===l.length-1?" disabled":""}>↓</button>
+   ${a.custom.includes(i)?`<button class="linkbtn" data-aisledel="${i}">${aislePending===i?"Tap again":"Delete"}</button>`:a.names[i]?`<button class="linkbtn" data-aislereset="${i}">Undo name</button>`:""}</span></li>`).join("")}</ol>
+  <form class="frow" id="aisleAdd" novalidate><input type="text" id="aisle-new" placeholder="New aisle, e.g. Health food" aria-label="New aisle name"><button type="submit" class="btn primary">Add aisle</button></form>
+  <p class="note" role="status" style="margin:6px 0 0">${esc(aisleMsg)}</p>
+ </details>`;
+}
 function renderIng(){
  const el=$("#tab-ing");if(!el)return;
  const q=ingQ.trim().toLowerCase();
- const ids=Object.keys(C).filter(k=>(ingSec==="all"||C[k].s===+ingSec)&&(!q||C[k].n.toLowerCase().includes(q))).sort((a,b)=>C[a].s-C[b].s||C[a].n.localeCompare(C[b].n));
+ const ids=Object.keys(C).filter(k=>(ingSec==="all"||C[k].s===+ingSec)&&(!q||C[k].n.toLowerCase().includes(q))).sort((a,b)=>aisleRank(C[a].s)-aisleRank(C[b].s)||C[a].n.localeCompare(C[b].n));
  let h=`<div class="bar"><div><h2>Ingredients</h2><p class="lead">Every ingredient with its pack size and prices. Tap one to change its name, pack size or prices. Recipes, costs and the shopping list update straight away${gh?", and your other devices get the change too":""}.</p></div><button class="btn primary" id="ingAdd">Add an ingredient</button></div>
+ ${aislePanel()}
  <div class="ing-tools"><input type="search" id="ingSearch" placeholder="Search ingredients, e.g. rice" value="${esc(ingQ)}" aria-label="Search ingredients" autocomplete="off">
- <select id="ingSec" aria-label="Aisle"><option value="all">All aisles</option>${SECTIONS.map((x,i)=>`<option value="${i}"${String(i)===ingSec?" selected":""}>${x}</option>`).join("")}</select></div>`;
+ <select id="ingSec" aria-label="Aisle"><option value="all">All aisles</option>${aisleList().map(i=>`<option value="${i}"${String(i)===ingSec?" selected":""}>${esc(SECTIONS[i])}</option>`).join("")}</select></div>`;
  if(!ids.length)h+=`<div class="empty">No ingredients match "${esc(ingQ)}". Try another word, or add it with <b>Add an ingredient</b>.</div>`;
  else{
   h+=`<div class="tablewrap"><table class="ingtable"><thead><tr><th>Ingredient</th><th>Pack</th>${STORES.map(st=>`<th class="num">${st}</th>`).join("")}<th></th></tr></thead><tbody>`;
@@ -1579,7 +1617,7 @@ function renderIe(){
   ${id?`<div class="fld"><span class="label">Measured in</span><div class="ro">${unitLabel}</div></div>`:`<label class="fld"><span class="label">Measured in</span><select id="ie-u"><option value="g"${ie.u==="g"?" selected":""}>grams</option><option value="ml"${ie.u==="ml"?" selected":""}>millilitres</option><option value="ea"${ie.u==="ea"?" selected":""}>items</option></select></label>`}
   <label class="fld"><span class="label">Pack size (${ie.u==="ea"?"items per pack":ie.u})</span><input type="number" id="ie-p" min="0" step="any" value="${esc(ie.p)}" placeholder="${ie.u==="ea"?"e.g. 1":"e.g. 1000"}"></label>
   ${ACTIVE.map(i=>`<label class="fld"><span class="label">${ALL_STORES[i]} price per pack $</span><input type="number" id="ie-pr-${i}" data-i="${i}" min="0" step="0.01" value="${esc(ie.pr[i])}"></label>`).join("")}
-  <label class="fld"><span class="label">Aisle</span><select id="ie-s">${SECTIONS.map((x,i)=>`<option value="${i}"${+ie.s===i?" selected":""}>${x}</option>`).join("")}</select></label>
+  <label class="fld"><span class="label">Aisle</span><select id="ie-s">${aisleList().map(i=>`<option value="${i}"${+ie.s===i?" selected":""}>${esc(SECTIONS[i])}</option>`).join("")}</select></label>
  </div>
  <p class="note" style="margin:0">${ie.u==="g"?"1 kg is 1000 g, so a 1 kg bag is a pack size of 1000.":ie.u==="ml"?"1 L is 1000 ml, so a 2 L bottle is a pack size of 2000.":"For loose items like bananas, use 1. For a 12-pack of eggs, use 12."}${id?" Recipe amounts stay the same; only how many packs to buy and the costs change.":""}</p>
  <div><span class="label">Contains</span><div class="filters" style="margin-top:6px">${Object.entries(ALLERGEN_LABEL).map(([k,l])=>`<button type="button" class="chip" data-iea="${k}" aria-pressed="${ie.a.includes(k)}">${l}</button>`).join("")}</div></div>
@@ -1687,6 +1725,7 @@ $("#ingBg").addEventListener("click",e=>{
  if(t.id==="ieDel"){if(!ie.pendingDel){readIe();ie.pendingDel=true;renderIe();return}delete S.customIng[ie.id];syncCustom();save();render();closeIng();return}
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&ie)closeIng()});
+document.addEventListener("toggle",e=>{if(e.target.id==="aisleBox")aisleOpen=e.target.open},true);
 $("#recipeBg").addEventListener("click",e=>{
  if(e.target.id==="recipeBg"){closeRecipe();return}
  if(!rv)return;
@@ -1757,6 +1796,13 @@ document.addEventListener("click",e=>{
  if(t0.id==="ingAdd"){openIng(null,t0);return}
  const ied=t0.closest&&t0.closest("[data-ingedit]");if(ied){openIng(ied.dataset.ingedit,ied);return}
  if(e.target.id==="printWeek"){printWeek();return}
+ const am=e.target.closest("[data-aislemove]");if(am){const i=+am.dataset.aislemove,d=+am.dataset.d;const l=aisleList();const k=l.indexOf(i),j=k+d;if(j>=0&&j<l.length){[l[k],l[j]]=[l[j],l[k]];aisleState().order=l;aisleOpen=true;save();render();$(`[data-aislemove="${i}"][data-d="${d}"]`)?.focus()}return}
+ const ad=e.target.closest("[data-aisledel]");if(ad){const i=+ad.dataset.aisledel;if(aislePending!==i){aislePending=i;aisleOpen=true;renderIng();return}
+  aislePending=null;const a=aisleState();const nm=SECTIONS[i];
+  Object.values(S.customIng||{}).forEach(c=>{if(c.s===i)c.s=4});Object.values(S.ingEdits||{}).forEach(ed=>{if(ed.s===i)delete ed.s});
+  a.custom=a.custom.filter(x=>x!==i);delete a.names[i];a.order=a.order.filter(x=>x!==i);
+  aisleMsg=`${nm} deleted. Anything in it moved to Pantry.`;aisleOpen=true;syncCustom();save();render();return}
+ const ar=e.target.closest("[data-aislereset]");if(ar){delete aisleState().names[+ar.dataset.aislereset];aisleOpen=true;syncCustom();save();render();return}
  const dg=e.target.closest("[data-dogs]");if(dg){const es=essInit();es.dogs=Math.max(0,Math.min(10,es.dogs+(+dg.dataset.dogs)));save();render();$(`[data-dogs="${dg.dataset.dogs}"]`)?.focus();return}
  const cn=e.target.closest("[data-cans]");if(cn){const es=essInit();es.cans=Math.max(0,Math.min(5,es.cans+(+cn.dataset.cans)));save();render();$(`[data-cans="${cn.dataset.cans}"]`)?.focus();return}
  const edl=e.target.closest("[data-essdel]");if(edl){const id=edl.dataset.essdel;delete essInit().items[id];delete S.customIng[id];syncCustom();save();render();return}
@@ -1836,6 +1882,11 @@ document.addEventListener("click",e=>{
  }
 });
 document.addEventListener("submit",e=>{
+ if(e.target.id==="aisleAdd"){e.preventDefault();const v=$("#aisle-new").value.trim();
+  if(!v){aisleMsg="Type a name for the new aisle.";aisleOpen=true;renderIng();$("#aisle-new").focus();return}
+  if(SECTIONS.some(x=>x&&x.toLowerCase()===v.toLowerCase())){aisleMsg=`There's already an aisle called ${v}.`;aisleOpen=true;renderIng();return}
+  const a=aisleState();const i=Math.max(99,...a.custom)+1;a.custom.push(i);a.names[i]=v;
+  aisleMsg=`${v} added. Choose it as the aisle when you edit or add an ingredient.`;aisleOpen=true;syncCustom();save();render();$("#aisle-new")?.focus();return}
  if(e.target.dataset.essadd){e.preventDefault();const k=e.target.dataset.essadd;const sec=ESS_SECS.find(x=>x.k===k);const g=id=>document.getElementById(id);
   const name=g("ea-n-"+k).value.trim(),pack=+g("ea-p-"+k).value,un=g("ea-u-"+k).value.trim()||"items",wk=+g("ea-w-"+k).value;
   const prs=[0,0,0];ACTIVE.forEach(i=>{prs[i]=+g(`ea-pr${i}-${k}`).value||0});const known=ACTIVE.map(i=>prs[i]).filter(v=>v>0);
@@ -1866,6 +1917,10 @@ document.addEventListener("input",e=>{
 document.addEventListener("change",e=>{
  const t=e.target;
  if(t.id==="ingSec"){ingSec=t.value;renderIng();return}
+ if(t.dataset.aislename!==undefined){const i=+t.dataset.aislename;const v=t.value.trim();const a=aisleState();
+  if(!v){t.value=SECTIONS[i];return}
+  if(i<BASE_SECTIONS.length&&v===BASE_SECTIONS[i])delete a.names[i];else a.names[i]=v;
+  aisleOpen=true;syncCustom();save();setTimeout(render,0);return}
  if(t.dataset.esson){essInit().on[t.dataset.esson]=t.checked;save();render();return}
  if(t.dataset.essitem){essInit().items[t.dataset.essitem].on=t.checked;save();render();return}
  if(t.dataset.esswk){const v=Math.max(0,+t.value||0);essInit().items[t.dataset.esswk].wk=v;save();setTimeout(render,0);return}
