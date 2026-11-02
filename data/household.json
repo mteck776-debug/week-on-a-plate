@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-02T00:03:48.865Z",
+ "updated": "2026-11-02T00:03:56.130Z",
  "state": {
   "members": [
    {
@@ -976,19 +976,19 @@
     },
     "hh_bin": {
      "wk": 4,
-     "on": true
+     "on": false
     },
     "hh_spray": {
      "wk": 0.25,
-     "on": true
+     "on": false
     },
     "hh_handwash": {
      "wk": 0.5,
-     "on": true
+     "on": false
     },
     "hh_zip": {
      "wk": 10,
-     "on": true
+     "on": false
     },
     "hh_wrap": {
      "wk": 0.1,
