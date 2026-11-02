@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-02T00:02:33.809Z",
+ "updated": "2026-11-02T00:03:27.131Z",
  "state": {
   "members": [
    {
@@ -918,6 +918,13 @@
   "ingEdits": {
    "rice": {
     "n": "White rice 1kg Bag"
+   },
+   "dg_can": {
+    "pr": [
+     0,
+     2.5,
+     3.8
+    ]
    }
   },
   "recipeEdits": {},
