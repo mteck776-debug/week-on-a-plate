@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-02T00:02:24.156Z",
+ "updated": "2026-11-02T00:02:33.809Z",
  "state": {
   "members": [
    {
@@ -1060,7 +1060,7 @@
      "on": false
     }
    },
-   "dogs": 1,
+   "dogs": 2,
    "cans": 0.5
   }
  }
