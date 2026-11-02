@@ -203,6 +203,7 @@ table.ingtable{min-width:520px}
 .rv-steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;line-height:1.55}
 .view-recipe{border:0;background:none;color:var(--leaf);font:600 .78rem var(--f-body);padding:2px 0;cursor:pointer;text-align:left}
 .view-recipe:hover{text-decoration:underline}
+.split-btn{display:block;color:var(--muted);font-weight:500}
 .pk-sep{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:12px 10px 4px;border-top:1px solid var(--line);margin-top:6px}
 .pk-item.off{color:var(--muted)}
 .pk-item .warnline{color:var(--tomato)}
@@ -730,6 +731,16 @@ const isSchoolDay=d=>d%7<5;
 const dayLabel=d=>nWeeks()>1?`Week ${Math.floor(d/7)+1} ${DAYS[d%7]}`:DAYS[d%7];
 let viewWeek=0,shopRange="all";
 const SLOTS={b:"Breakfast",s:"School lunch",a:"Lunch",d:"Dinner"};
+function slotName(t){if(t.startsWith("a:")){const m=S.members.find(x=>String(x.id)===t.slice(2));return "Lunch · "+(m?m.name:"adult")}return SLOTS[t]}
+/* Split a day's adult lunch into one per adult (each starts with the shared meal), or share it again */
+function setSplit(day,on){
+ S.split=S.split||{};const ea=lunchAdults(day);const p=S.plan[day];
+ if(on){const shared=p.a;ea.forEach(m=>{if(!p["a:"+m.id])p["a:"+m.id]=shared||null});if(lunchAll(day).length===ea.length)delete p.a}
+ else{const first=ea.map(m=>p["a:"+m.id]).find(Boolean);p.a=p.a||first||null;Object.keys(p).forEach(k=>{if(k.startsWith("a:"))delete p[k]})}
+ S.split[day]=on;
+ if(!p.a&&!on){const pl=pool("a",lunchAll(day));if(pl.length)p.a=pl[Math.floor(Math.random()*pl.length)].id}
+ ea.forEach(m=>{const k="a:"+m.id;if(on&&!p[k]){const pl=pool(k,[m]);if(pl.length)p[k]=pl[Math.floor(Math.random()*pl.length)].id}});
+}
 
 /* ---------- State ---------- */
 const KEY="week-on-a-plate-v1";
@@ -750,6 +761,7 @@ const DEFAULT={
  leftovers:[],
  ess:null,
  aisles:null,
+ split:{},
  postcode:"",
  plan:null,
  have:{},
@@ -761,7 +773,7 @@ S.leftovers=S.leftovers||[];
 S.custom=S.custom||[];S.customIng=S.customIng||{};
 /* Shared household: one document both of you read and write; this browser keeps a copy too */
 let firstSnap=true,ref=null,lastSent="",writing=false,again=false,canWrite=true,pushTimer=null,sharedExists=false;
-function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[],leftovers:S.leftovers||[],ess:S.ess||null,aisles:S.aisles||null}}
+function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[],leftovers:S.leftovers||[],ess:S.ess||null,aisles:S.aisles||null,split:S.split||{}}}
 function setSync(kind){
  const el=document.getElementById("sync");if(!el)return;el.className="sync";
  if(kind==="ok"){el.classList.add("ok");el.innerHTML=`<span class="dot"></span>Shared · up to date`}
@@ -950,14 +962,19 @@ async function connectShared(){
 function portion(age){age=+age||0;if(age<4)return .4;if(age<9)return .6;if(age<14)return .85;if(age<19)return 1.1;if(age<65)return 1;return .9}
 function eaters(type,day){
  const ms=S.members;
+ if(type.startsWith("a:")){const id=type.slice(2);return lunchAll(day).filter(m=>String(m.id)===id)}
  if(type==="s")return isSchoolDay(day)?ms.filter(m=>m.school):[];
- if(type==="a")return S.rules.adultLunch?(isSchoolDay(day)?ms.filter(m=>!m.school):ms):[];
+ if(type==="a"){const all=lunchAll(day);return isSplit(day)?all.filter(m=>!isAdult(m)):all}
  return ms;
 }
+const isAdult=m=>(+m.age||0)>=18;
+function lunchAll(day){const ms=S.members;return S.rules.adultLunch?(isSchoolDay(day)?ms.filter(m=>!m.school):ms):[]}
+const lunchAdults=day=>lunchAll(day).filter(isAdult);
+function isSplit(day){const ea=lunchAdults(day);if(ea.length<2)return false;const v=(S.split||{})[day];return v==null?!!S.rules.splitLunch:!!v}
 function slotTypes(day){
  const t=["b"];
  if(isSchoolDay(day)&&S.members.some(m=>m.school))t.push("s");
- if(S.rules.adultLunch&&eaters("a",day).length)t.push("a");
+ if(lunchAll(day).length){if(isSplit(day)){lunchAdults(day).forEach(m=>t.push("a:"+m.id));if(eaters("a",day).length)t.push("a")}else t.push("a")}
  t.push("d");return t;
 }
 function needs(ms,type){
@@ -996,15 +1013,15 @@ function pool(type,ms){
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function generate(){
  const plan=allDays().map(()=>({}));
- ["b","s","a","d"].forEach(type=>{
-  let bag=[];
-  allDays().forEach(day=>{
-   if(!slotTypes(day).includes(type))return;
-   const p=pool(type,eaters(type,day));if(!p.length){plan[day][type]=null;return}
-   if(!bag.length)bag=shuffle(p);
-   plan[day][type]=bag.pop().id;
-  });
- });
+ const bags={};
+ allDays().forEach(day=>slotTypes(day).forEach(type=>{
+  const p=pool(type,eaters(type,day));if(!p.length){plan[day][type]=null;return}
+  const key=type;if(!bags[key]||!bags[key].length)bags[key]=shuffle(p);
+  let pick=bags[key].pop();
+  /* two adults splitting lunch shouldn't land on the same meal */
+  if(type.startsWith("a:")){const taken=Object.entries(plan[day]).filter(([k])=>k.startsWith("a:")).map(([,v])=>v);if(taken.includes(pick.id)){const alt=p.find(r=>!taken.includes(r.id));if(alt)pick=alt}}
+  plan[day][type]=pick.id;
+ }));
  /* keep leftovers you've already put on meals */
  if(Array.isArray(S.plan))S.plan.forEach((p,d)=>{if(p&&plan[d])Object.entries(p).forEach(([t,id])=>{if(id&&String(id).startsWith("lo:")&&RBY[id]&&slotTypes(d).includes(t))plan[d][t]=id})});
  S.plan=plan;
@@ -1093,10 +1110,12 @@ function renderWeek(){
    const ms=eaters(type,day);const p=pool(type,ms);const cur=S.plan[day]?.[type];
    const who=type==="s"?kids.map(k=>k.name).join(", "):type==="a"?ms.map(m=>m.name).join(", "):"";
    const nd=needs(ms,type);const sw=cur&&RBY[cur]?resolve(RBY[cur],nd).ing.filter(x=>x[2]).map(x=>C[x[0]].n):[];
-   h+=`<div class="slot${type==="s"?" school":""}"><div class="top"><span class="label">${SLOTS[type]}${type==="s"&&S.rules.crunch?" · Crunch & Sip":""}</span><button class="reroll" data-rr="${day},${type}" aria-label="Pick another ${SLOTS[type]} for ${dn}">↻</button></div>`;
+   h+=`<div class="slot${type==="s"?" school":""}"><div class="top"><span class="label">${esc(slotName(type))}${type==="s"&&S.rules.crunch?" · Crunch & Sip":""}</span><button class="reroll" data-rr="${day},${type}" aria-label="Pick another ${esc(slotName(type))} for ${dn}">↻</button></div>`;
    if(!p.length)h+=`<div class="meta">No recipe fits everyone's needs here yet.</div>`;
    else h+=`<button class="pick" data-pick="${day},${type}" aria-haspopup="dialog"><span>${cur&&RBY[cur]?esc(RBY[cur].n):"Choose a meal"}</span><span aria-hidden="true">⌕</span></button>`;
    if(cur&&RBY[cur]&&!RBY[cur].leftover)h+=`<button class="view-recipe" data-viewslot="${day},${type}">View recipe</button>`;
+   if(type==="a"&&!isSplit(day)&&lunchAdults(day).length>1)h+=`<button class="view-recipe split-btn" data-split="${day}">Split: give each adult their own lunch</button>`;
+   if(type.startsWith("a:")&&type===types.find(x=>x.startsWith("a:")))h+=`<button class="view-recipe split-btn" data-unsplit="${day}">Share one lunch again</button>`;
    if(cur&&RBY[cur]?.leftover){const st=loStatus(RBY[cur].lid);h+=`<div class="meta"><span class="tag ok">$0</span> Uses ${slotServes(day,type)} ${slotServes(day,type)===1?"serving":"servings"}${st?` · ${Math.max(0,st.left)} free after planned meals`:""}</div>`}
    const meta=[];if(who)meta.push(esc(who));if(sw.length)meta.push("Swap: "+sw.map(esc).join(", "));
    if(cur&&RBY[cur]){const wn=whyNot(RBY[cur],day,type);if(wn.length)meta.push(`<span class="tag warn">Check</span> ${wn.map(esc).join(" · ")}`)}
@@ -1154,6 +1173,7 @@ function renderHouse(){
  if(!S.members.length)h+=`<div class="empty">No one yet. Add each person in the house.</div>`;
  h+=`</div><div class="panel"><h3>Plan settings</h3>
   <label class="check snackrow">Adult snacks per week <input type="number" id="r-snacks" min="0" max="10" value="${S.rules.snackCount??4}" aria-label="Adult snacks per week"></label>
+  <label class="check"><input type="checkbox" id="r-splitlunch" data-splitrule="1"${S.rules.splitLunch?" checked":""}> Give each adult their own lunch every day (you can still share or split any single day)</label>
   <label class="check"><input type="checkbox" id="r-adult" data-rule="adultLunch"${S.rules.adultLunch?" checked":""}> Plan lunches for adults (and everyone on weekends)</label>
   <h3 style="margin-top:8px">School lunch rules</h3>
   <label class="check"><input type="checkbox" id="r-nut" data-rule="nutFree"${S.rules.nutFree?" checked":""}> Nut-aware school: no nuts or peanut butter in lunchboxes</label>
@@ -1341,7 +1361,7 @@ function renderPreg(){
   const rows=[];
   allDays().forEach(day=>{const dn=dayLabel(day);slotTypes(day).forEach(type=>{
    const ms=eaters(type,day);if(!ms.some(m=>m.d.includes("preg")))return;
-   const id=S.plan[day]?.[type];if(id&&PREG[id]?.tip)rows.push(`<li><b>${dn} ${SLOTS[type].toLowerCase()}: ${esc(RBY[id].n)}</b>${esc(PREG[id].tip)}</li>`);
+   const id=S.plan[day]?.[type];if(id&&PREG[id]?.tip)rows.push(`<li><b>${dn} ${slotName(type).toLowerCase()}: ${esc(RBY[id].n)}</b>${esc(PREG[id].tip)}</li>`);
   })});
   mine=`<div class="panel"><h3>This week's plan for ${who.map(m=>esc(m.name)).join(", ")}</h3><p class="note">High-risk meals are already left out of everything ${who.length>1?"they eat":"this person eats"}, shared dinners included. These meals are in the plan and need a little care:</p>${rows.length?`<ul class="avoid">${rows.join("")}</ul>`:`<p class="note">Nothing in this week's plan needs special handling.</p>`}</div>`;
  }else{
@@ -1372,7 +1392,7 @@ function renderPreg(){
 function printDoc(){
  const e=esc;const today=new Date().toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
  const mealName=(d,t)=>{const id=S.plan?.[d]?.[t];return id&&RBY[id]?RBY[id].n:"–"};
- const anyAdultLunch=allDays().some(d=>slotTypes(d).includes("a"));
+ const anyAdultLunch=allDays().some(d=>slotTypes(d).some(t=>t==="a"||t.startsWith("a:")));
  const anySchool=allDays().some(d=>slotTypes(d).includes("s"));
  const M=nWeeks()>1;const per=+S.rules.snackCount||0;
  const cols=[["b","Breakfast"]].concat(anySchool?[["s","School lunch"]]:[]).concat(anyAdultLunch?[["a","Lunch"]]:[]).concat([["d","Dinner"]]);
@@ -1380,6 +1400,7 @@ function printDoc(){
  weekDays(w).forEach(d=>{const dn=DAYS[d%7];
   const types=slotTypes(d);
   rows+=`<tr><th class="day">${dn}</th>`+cols.map(([t])=>{
+   if(t==="a"&&types.some(x=>x.startsWith("a:")))return `<td>${types.filter(x=>x.startsWith("a:")).map(x=>`<div class="split"><span>${e(slotName(x).replace("Lunch · ",""))}:</span> <b>${e(mealName(d,x))}</b></div>`).join("")}${types.includes("a")?`<div class="split"><span>Kids:</span> <b>${e(mealName(d,"a"))}</b></div>`:""}</td>`;
    if(!types.includes(t))return `<td class="none">–</td>`;
    let cell=`<b>${e(mealName(d,t))}</b>`;
    if(t==="s"&&boxOn()&&S.box?.[d]){const b=S.box[d];const nm=id=>BOXBY[id]?.n||"–";cell+=`<div class="box">${e(nm(b.f[0]))}, ${e(nm(b.f[1]))}<br>${e(nm(b.s[0]))}, ${e(nm(b.s[1]))}<br>${e(nm(b.x[0]))}</div>`}
@@ -1410,6 +1431,7 @@ function printDoc(){
  .week th.day{width:42px;background:#f3f6f1}
  .week td{font-size:9.5pt}.week td.none{color:#9aa79e;text-align:center}
  .box{font-size:8pt;color:#5a6a5f;margin-top:3px}
+ .split+.split{margin-top:4px}.split span{color:#5a6a5f;font-size:8.5pt}
  .snacks{margin:8px 0 0;font-size:9.5pt}
  .shop{page-break-before:always;break-before:page}
  .wk+.wk{page-break-before:always;break-before:page}
@@ -1548,9 +1570,9 @@ function renderLeft(){
    h+=`<div class="lo">
     <div class="lo-top"><div><b>${esc(l.name)}</b>${l.useBy?` <span class="tag ${past?"warn":"preg"}">${past?"Past use-by":"Use by"} ${fmtDate(l.useBy)}</span>`:""}${l.notes?`<div class="note" style="margin:2px 0 0">${esc(l.notes)}</div>`:""}</div>
      <div class="stepper sm"><button data-loinc="${l.id}" data-d="-1" aria-label="One less serving"${l.serves<=1?" disabled":""}>−</button><output>${l.serves}</output><button data-loinc="${l.id}" data-d="1" aria-label="One more serving">+</button></div></div>
-    <div class="note" style="margin:0">${st.sl.length?`Planned for ${st.sl.map(([d,t])=>`${dayLabel(d)} ${SLOTS[t].toLowerCase()} (${slotServes(d,t)})`).join(", ")}. `:""}<b class="${st.left<0?"neg":""}">${st.left<0?`${-st.left} ${-st.left===1?"serving":"servings"} short`:`${st.left} of ${l.serves} ${l.serves===1?"serving":"servings"} still free`}</b></div>
+    <div class="note" style="margin:0">${st.sl.length?`Planned for ${st.sl.map(([d,t])=>`${dayLabel(d)} ${esc(slotName(t).toLowerCase())} (${slotServes(d,t)})`).join(", ")}. `:""}<b class="${st.left<0?"neg":""}">${st.left<0?`${-st.left} ${-st.left===1?"serving":"servings"} short`:`${st.left} of ${l.serves} ${l.serves===1?"serving":"servings"} still free`}</b></div>
     <div class="frow">
-     ${slots.length?`<select id="lo-slot-${l.id}" aria-label="Meal to put ${esc(l.name)} on">${slots.map(([d,t],k)=>`<option value="${d},${t}"${k===slots.findIndex(([,tt])=>tt==="d")?" selected":""}>${dayLabel(d)} · ${SLOTS[t]} (${slotServes(d,t)} ${slotServes(d,t)===1?"serving":"servings"})</option>`).join("")}</select><button class="btn small primary" data-loput="${l.id}">Put on this meal</button>`:""}
+     ${slots.length?`<select id="lo-slot-${l.id}" aria-label="Meal to put ${esc(l.name)} on">${slots.map(([d,t],k)=>`<option value="${d},${t}"${k===slots.findIndex(([,tt])=>tt==="d")?" selected":""}>${dayLabel(d)} · ${esc(slotName(t))} (${slotServes(d,t)} ${slotServes(d,t)===1?"serving":"servings"})</option>`).join("")}</select><button class="btn small primary" data-loput="${l.id}">Put on this meal</button>`:""}
      ${st.sl.length?`<button class="btn small" data-loclear="${l.id}">Take off all meals</button>`:""}
      <button class="btn small" data-lodel="${l.id}">${loPending===l.id?"Tap again to remove":"Used up / remove"}</button>
     </div></div>`;
@@ -1741,7 +1763,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&rv)closeRecipe()});
 let pk=null,pkReturn=null;
 function openPicker(day,type,from){
  pk={day,type};pkReturn=from||null;
- $("#pkTitle").textContent=`${dayLabel(day)} · ${SLOTS[type]}`;
+ $("#pkTitle").textContent=`${dayLabel(day)} · ${slotName(type)}`;
  const ms=eaters(type,day);const nd=needs(ms,type);
  const notes=[];if(type==="s")notes.push("Lunchbox-safe for your school rules");
  if(ms.some(m=>m.d.length))notes.push("only meals that suit everyone eating");
@@ -1796,6 +1818,8 @@ document.addEventListener("click",e=>{
  if(t0.id==="ingAdd"){openIng(null,t0);return}
  const ied=t0.closest&&t0.closest("[data-ingedit]");if(ied){openIng(ied.dataset.ingedit,ied);return}
  if(e.target.id==="printWeek"){printWeek();return}
+ const sp=e.target.closest("[data-split],[data-unsplit]");if(sp){const on=sp.dataset.split!==undefined;const day=+(on?sp.dataset.split:sp.dataset.unsplit);setSplit(day,on);save();render();
+  const f=on?document.querySelector(`[data-unsplit="${day}"]`):document.querySelector(`[data-split="${day}"]`);f?.focus();return}
  const am=e.target.closest("[data-aislemove]");if(am){const i=+am.dataset.aislemove,d=+am.dataset.d;const l=aisleList();const k=l.indexOf(i),j=k+d;if(j>=0&&j<l.length){[l[k],l[j]]=[l[j],l[k]];aisleState().order=l;aisleOpen=true;save();render();$(`[data-aislemove="${i}"][data-d="${d}"]`)?.focus()}return}
  const ad=e.target.closest("[data-aisledel]");if(ad){const i=+ad.dataset.aisledel;if(aislePending!==i){aislePending=i;aisleOpen=true;renderIng();return}
   aislePending=null;const a=aisleState();const nm=SECTIONS[i];
@@ -1807,7 +1831,7 @@ document.addEventListener("click",e=>{
  const cn=e.target.closest("[data-cans]");if(cn){const es=essInit();es.cans=Math.max(0,Math.min(5,es.cans+(+cn.dataset.cans)));save();render();$(`[data-cans="${cn.dataset.cans}"]`)?.focus();return}
  const edl=e.target.closest("[data-essdel]");if(edl){const id=edl.dataset.essdel;delete essInit().items[id];delete S.customIng[id];syncCustom();save();render();return}
  const li=e.target.closest("[data-loinc]");if(li){const l=S.leftovers.find(x=>x.id===li.dataset.loinc);if(l){l.serves=Math.max(1,Math.min(40,l.serves+(+li.dataset.d)));save();render();$(`[data-loinc="${l.id}"][data-d="${li.dataset.d}"]`)?.focus()}return}
- const lp=e.target.closest("[data-loput]");if(lp){const id=lp.dataset.loput;const v=$("#lo-slot-"+id)?.value;if(v){const[d,t]=v.split(",");S.plan[+d][t]="lo:"+id;const l=S.leftovers.find(x=>x.id===id);loMsg=`${l.name} is on ${dayLabel(+d)} ${SLOTS[t].toLowerCase()}.`;save();render();$("#loMsg").textContent=loMsg}return}
+ const lp=e.target.closest("[data-loput]");if(lp){const id=lp.dataset.loput;const v=$("#lo-slot-"+id)?.value;if(v){const[d,t]=v.split(",");S.plan[+d][t]="lo:"+id;const l=S.leftovers.find(x=>x.id===id);loMsg=`${l.name} is on ${dayLabel(+d)} ${slotName(t).toLowerCase()}.`;save();render();$("#loMsg").textContent=loMsg}return}
  const lc=e.target.closest("[data-loclear]");if(lc){loSlots(lc.dataset.loclear).forEach(([d,t])=>{S.plan[d][t]=null});refillSlots();save();render();return}
  const ld=e.target.closest("[data-lodel]");if(ld){const id=ld.dataset.lodel;if(loPending!==id){loPending=id;renderLeft();return}
   loPending=null;const l=S.leftovers.find(x=>x.id===id);S.leftovers=S.leftovers.filter(x=>x.id!==id);syncCustom();refillSlots();loMsg=l?`${l.name} removed.`:"";save();render();return}
@@ -1822,7 +1846,7 @@ document.addEventListener("click",e=>{
  const vr=e.target.closest("[data-viewrecipe]");if(vr){openRecipe(vr.dataset.viewrecipe,{},vr);return}
  const vs=e.target.closest("[data-viewslot]");if(vs){const[d,ty]=vs.dataset.viewslot.split(",");const day=+d;const id=S.plan?.[day]?.[ty];if(id&&!RBY[id]?.leftover){const ms=eaters(ty,day);const portions=ms.reduce((a,m)=>a+portion(m.age),0);
    const serves=Math.max(1,Math.ceil(portions-0.1));
-   openRecipe(id,{serves,nd:needs(ms,ty),ctx:`${dayLabel(day)} ${SLOTS[ty].toLowerCase()} for ${ms.map(m=>m.name).join(", ")}. Set to ${serves} adult ${serves===1?"serving":"servings"} to cover everyone's ages. Change it if you're cooking extra.`},vs)}return}
+   openRecipe(id,{serves,nd:needs(ms,ty),ctx:`${dayLabel(day)} ${slotName(ty).toLowerCase()} for ${ms.map(m=>m.name).join(", ")}. Set to ${serves} adult ${serves===1?"serving":"servings"} to cover everyone's ages. Change it if you're cooking extra.`},vs)}return}
  const pb=e.target.closest("[data-pick]");if(pb){const[d,ty]=pb.dataset.pick.split(",");openPicker(+d,ty,pb);return}
  if(e.target.id==="startShare"){sharedExists=true;push();return}
  const a=e.target.closest("[data-act]");
@@ -1931,6 +1955,7 @@ document.addEventListener("change",e=>{
  if(t.dataset.box){const[d,g,i]=t.dataset.box.split(",");S.box[+d][g][+i]=t.value;save();render();return}
  if(t.dataset.snack){S.snacks[+t.dataset.snack]=t.value;save();render();return}
  if(t.id==="r-snacks"){S.rules.snackCount=Math.max(0,Math.min(10,Math.round(+t.value||0)));pickSnacks();save();setTimeout(render,0);return}
+ if(t.dataset.splitrule){S.rules.splitLunch=t.checked;S.split={};allDays().forEach(d=>{if(lunchAdults(d).length>1&&S.plan?.[d])setSplit(d,t.checked)});S.split={};save();setTimeout(render,0);return}
  if(t.dataset.rule){S.rules[t.dataset.rule]=t.checked;generate();save();render();return}
  const row=t.closest("[data-m]");
  if(row&&t.dataset.f){
