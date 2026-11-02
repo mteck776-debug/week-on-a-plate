@@ -53,6 +53,11 @@ h3{font-family:var(--f-display);font-weight:600;font-size:1.05rem;margin:0}
 .label{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .days{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
 .day{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.day.done{background:var(--sunk)}
+.day.done .slot{opacity:.6}
+.donebtn{align-self:flex-start;border:1px solid var(--leaf);background:none;color:var(--leaf);font:600 .8rem var(--f-body);padding:5px 10px;border-radius:999px;cursor:pointer}
+.day.done .donebtn{border-color:var(--line);color:var(--muted)}
+.donebtn:focus-visible{outline:2px solid var(--leaf);outline-offset:2px}
 .day header{display:flex;justify-content:space-between;align-items:baseline}
 .day header .d{font-family:var(--f-display);font-weight:800;font-size:1.15rem}
 .day header .c{font-family:var(--f-mono);font-size:.78rem;color:var(--muted)}
@@ -266,6 +271,12 @@ textarea{font:500 .92rem var(--f-body);padding:8px 9px;border-radius:6px;border:
   <section id="tab-preg" hidden></section>
   <section id="tab-stores" hidden></section>
 </main>
+<div class="sheet-bg" id="doneBg" hidden>
+ <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dnTitle">
+  <div class="sheet-head"><h3 id="dnTitle">Day done</h3><button class="btn small" id="dnClose">Cancel</button></div>
+  <div id="dnBody" class="rv-body"></div>
+ </div>
+</div>
 <div class="sheet-bg" id="ingBg" hidden>
  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ieTitle">
   <div class="sheet-head"><h3 id="ieTitle">Edit ingredient</h3><button class="btn small" id="ieClose">Close</button></div>
@@ -762,6 +773,7 @@ const DEFAULT={
  ess:null,
  aisles:null,
  split:{},
+ done:{},
  postcode:"",
  plan:null,
  have:{},
@@ -773,7 +785,7 @@ S.leftovers=S.leftovers||[];
 S.custom=S.custom||[];S.customIng=S.customIng||{};
 /* Shared household: one document both of you read and write; this browser keeps a copy too */
 let firstSnap=true,ref=null,lastSent="",writing=false,again=false,canWrite=true,pushTimer=null,sharedExists=false;
-function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[],leftovers:S.leftovers||[],ess:S.ess||null,aisles:S.aisles||null,split:S.split||{}}}
+function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[],leftovers:S.leftovers||[],ess:S.ess||null,aisles:S.aisles||null,split:S.split||{},done:S.done||{}}}
 function setSync(kind){
  const el=document.getElementById("sync");if(!el)return;el.className="sync";
  if(kind==="ok"){el.classList.add("ok");el.innerHTML=`<span class="dot"></span>Shared · up to date`}
@@ -1025,6 +1037,7 @@ function generate(){
  /* keep leftovers you've already put on meals */
  if(Array.isArray(S.plan))S.plan.forEach((p,d)=>{if(p&&plan[d])Object.entries(p).forEach(([t,id])=>{if(id&&String(id).startsWith("lo:")&&RBY[id]&&slotTypes(d).includes(t))plan[d][t]=id})});
  S.plan=plan;
+ if(S.leftovers)S.leftovers=S.leftovers.filter(l=>!l.gone||plan.some(p=>Object.values(p).includes("lo:"+l.id)));
  pickSnacks();
  pickBoxes();
 }
@@ -1105,7 +1118,9 @@ function renderWeek(){
  weekDays(M?viewWeek:0).forEach(day=>{const dn=DAYS[day%7];
   const types=slotTypes(day);
   const dc=types.reduce((s,t)=>s+mealCost(day,t),0)+boxCost(day);
-  h+=`<article class="day"><header><span class="d">${dn}</span><span class="c">≈ ${money(dc)}</span></header>`;
+  const dn0=isDone(day);
+  h+=`<article class="day${dn0?" done":""}"><header><span class="d">${dn}${dn0?` <span class="tag ok">Done</span>`:""}</span><span class="c">≈ ${money(dc)}</span></header>
+  <button class="donebtn" data-${dn0?"undone":"done"}="${day}">${dn0?"Undo day done":"✓ Day done"}</button>`;
   types.forEach(type=>{
    const ms=eaters(type,day);const p=pool(type,ms);const cur=S.plan[day]?.[type];
    const who=type==="s"?kids.map(k=>k.name).join(", "):type==="a"?ms.map(m=>m.name).join(", "):"";
@@ -1537,12 +1552,75 @@ function renderEss(){
 /* ---------- Leftovers: food already made, zero cost ---------- */
 let loMsg="",loPending=null;
 const slotServes=(day,type)=>{const ms=eaters(type,day);return Math.max(1,Math.ceil(ms.reduce((a,m)=>a+portion(m.age),0)-0.1))};
-function loSlots(lid){const out=[];if(!S.plan)return out;allDays().forEach(d=>slotTypes(d).forEach(t=>{if(S.plan[d]?.[t]==="lo:"+lid)out.push([d,t])}));return out}
+function isDone(d){return !!(S.done&&S.done[d])}
+function loSlots(lid){const out=[];if(!S.plan)return out;allDays().forEach(d=>{if(isDone(d))return;slotTypes(d).forEach(t=>{if(S.plan[d]?.[t]==="lo:"+lid)out.push([d,t])})});return out}
 function loStatus(lid){const l=(S.leftovers||[]).find(x=>x.id===lid);if(!l)return null;const sl=loSlots(lid);const used=sl.reduce((a,[d,t])=>a+slotServes(d,t),0);return {l,sl,used,left:l.serves-used}}
 function todayISO(){const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
 function fmtDate(iso){if(!iso)return "";const [y,m,d]=iso.split("-").map(Number);return new Date(y,m-1,d).toLocaleDateString("en-AU",{weekday:"short",day:"numeric",month:"short"})}
-function freeSlots(){const out=[];if(!S.plan)return out;allDays().forEach(d=>slotTypes(d).forEach(t=>{const id=S.plan[d]?.[t];if(!(id&&RBY[id]?.leftover))out.push([d,t])}));return out}
+function freeSlots(){const out=[];if(!S.plan)return out;allDays().forEach(d=>{if(isDone(d))return;slotTypes(d).forEach(t=>{const id=S.plan[d]?.[t];if(!(id&&RBY[id]?.leftover))out.push([d,t])})});return out}
 function refillSlots(){if(S.plan)allDays().forEach(day=>slotTypes(day).forEach(type=>{if(!S.plan[day][type]){const p=pool(type,eaters(type,day));if(p.length)S.plan[day][type]=p[Math.floor(Math.random()*p.length)].id}}))}
+/* ---------- Day done: tick off a day and save dinner leftovers ---------- */
+let dn=null;
+function addDaysISO(n){const d=new Date();d.setDate(d.getDate()+n);return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
+function openDone(day,from){
+ const id=S.plan?.[day]?.d;const r=id&&RBY[id];
+ const name=r?(r.leftover?(S.leftovers.find(l=>"lo:"+l.id===id)?.name||r.n.replace(/^Leftovers: /,"")):r.n):"";
+ const preg=S.members.some(m=>m.d.includes("preg"));
+ dn={day,from:from||null,name,serves:0,useBy:addDaysISO(preg?1:2),preg};
+ $("#dnTitle").textContent=`${dayLabel(day)} done`;$("#doneBg").hidden=false;renderDone();setTimeout(()=>$("#dnMinus")?.focus()||$("#dnClose").focus(),0);
+}
+function closeDone(){$("#doneBg").hidden=true;const f=dn&&dn.from;dn=null;if(f&&document.body.contains(f))f.focus()}
+function renderDone(){
+ if(!dn)return;const d=dn.day;
+ const used=slotTypes(d).map(t=>[t,S.plan[d]?.[t]]).filter(([,id])=>id&&RBY[id]?.leftover);
+ const existing=(S.leftovers||[]).find(l=>!l.gone&&l.name.trim().toLowerCase()===dn.name.trim().toLowerCase());
+ $("#dnBody").innerHTML=`
+  ${dn.name?`<p style="margin:0">Dinner was <b>${esc(dn.name)}</b>. Any leftovers?</p>`:`<p style="margin:0">Any leftovers from dinner?</p>`}
+  <div class="serves"><span class="label">Servings left over</span>
+   <div class="stepper"><button id="dnMinus" aria-label="One less serving"${dn.serves<=0?" disabled":""}>−</button><output aria-live="polite">${dn.serves}</output><button id="dnPlus" aria-label="One more serving">+</button></div></div>
+  <div class="fgrid"${dn.serves>0?"":" hidden"}>
+   <label class="fld wide"><span class="label">Save as</span><input type="text" id="dn-name" value="${esc(dn.name)}" placeholder="e.g. Spaghetti bolognese"></label>
+   <label class="fld"><span class="label">Use by</span><input type="date" id="dn-useby" value="${dn.useBy}"></label>
+  </div>
+  ${dn.serves>0?`<p class="note" id="dnNote" style="margin:0">${existing?`Adds to the ${existing.serves} ${existing.serves===1?"serving":"servings"} of ${esc(existing.name)} you already have.`:"Saved to the Leftovers tab, ready to put on another meal."}${dn.preg?" Someone is pregnant, so use-by is set to tomorrow.":" Cooked leftovers keep 2 to 3 days in the fridge."}</p>`:""}
+  ${used.length?`<p class="note" style="margin:0">Leftovers eaten today come off what you have: ${used.map(([t,id])=>`${esc(RBY[id].n.replace(/^Leftovers: /,""))} (${slotServes(d,t)})`).join(", ")}.</p>`:""}
+  <p class="err" id="dnErr" role="alert" hidden></p>
+  <div class="frow"><button class="btn primary" id="dnSave">${dn.serves>0?`Save ${dn.serves} ${dn.serves===1?"serving":"servings"} and mark done`:"No leftovers, mark done"}</button></div>`;
+}
+function readDone(){const n=$("#dn-name"),u=$("#dn-useby");if(n)dn.name=n.value;if(u)dn.useBy=u.value}
+function completeDay(){
+ const d=dn.day;readDone();
+ if(dn.serves>0&&!dn.name.trim()){const e=$("#dnErr");e.textContent="Say what the leftovers are.";e.hidden=false;$("#dn-name").focus();return false}
+ const rec={at:new Date().toISOString(),used:{},added:null};
+ /* use up leftovers eaten today */
+ slotTypes(d).forEach(t=>{const id=S.plan[d]?.[t];if(id&&RBY[id]?.leftover){const lid=RBY[id].lid;const n=slotServes(d,t);rec.used[lid]=(rec.used[lid]||0)+n}});
+ Object.entries(rec.used).forEach(([lid,n])=>{const l=S.leftovers.find(x=>x.id===lid);if(l){const took=Math.min(l.serves,n);l.serves-=took;rec.used[lid]=took}else delete rec.used[lid]});
+ /* save new leftovers */
+ if(dn.serves>0){
+  const name=dn.name.trim();const ex=S.leftovers.find(l=>l.name.trim().toLowerCase()===name.toLowerCase());
+  if(ex){delete ex.gone;ex.serves+=dn.serves;if(dn.useBy&&(!ex.useBy||dn.useBy<ex.useBy))ex.useBy=dn.useBy;rec.added={id:ex.id,n:dn.serves}}
+  else{const id=Date.now().toString(36);S.leftovers.push({id,name,serves:dn.serves,useBy:dn.useBy||"",notes:"",added:todayISO(),from:dayLabel(d)});rec.added={id,n:dn.serves}}
+ }
+ S.done=S.done||{};S.done[d]=rec;
+ /* leftovers with nothing left and no future meals go (kept on the record so Undo can bring them back) */
+ rec.gone=[];S.leftovers.forEach(l=>{if(!l.gone&&!(l.serves>0||loSlots(l.id).length)){l.gone=true;rec.gone.push(l.id)}});
+ syncCustom();save();render();return true;
+}
+function undoDone(d){
+ const rec=S.done&&S.done[d];if(!rec)return;
+ (rec.gone||[]).forEach(id=>{const l=S.leftovers.find(x=>x.id===id);if(l)delete l.gone});
+ Object.entries(rec.used||{}).forEach(([lid,n])=>{const l=S.leftovers.find(x=>x.id===lid);if(l)l.serves+=n});
+ if(rec.added){const l=S.leftovers.find(x=>x.id===rec.added.id);if(l){l.serves-=rec.added.n;if(l.serves<=0&&!loSlots(l.id).length)l.gone=true}}
+ delete S.done[d];syncCustom();save();render();
+}
+$("#dnClose").addEventListener("click",closeDone);
+$("#doneBg").addEventListener("input",e=>{if(!dn||e.target.id!=="dn-name")return;readDone();const pos=e.target.selectionStart;renderDone();const n=$("#dn-name");n.focus();n.setSelectionRange(pos,pos)});
+$("#doneBg").addEventListener("click",e=>{
+ if(e.target.id==="doneBg"){closeDone();return}if(!dn)return;
+ if(e.target.id==="dnMinus"||e.target.id==="dnPlus"){readDone();dn.serves=Math.max(0,Math.min(40,dn.serves+(e.target.id==="dnPlus"?1:-1)));const k=e.target.id;renderDone();$("#"+k)?.focus();return}
+ if(e.target.id==="dnSave"){const d=dn.day;if(completeDay()){closeDone();const b=document.querySelector(`[data-undone="${d}"]`);b?.focus()}}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dn)closeDone()});
 function renderLeft(){
  const el=$("#tab-left");if(!el)return;
  const today=todayISO();
@@ -1561,7 +1639,7 @@ function renderLeft(){
   <p class="note" role="status" id="loMsg">${esc(loMsg)}</p>
  </form>
  <div class="panel"><h3>Saved leftovers</h3>`;
- const list=(S.leftovers||[]);
+ const list=(S.leftovers||[]).filter(l=>!l.gone);
  if(!list.length)h+=`<div class="empty">Nothing saved yet. Add leftovers on the left, then put them on a meal here or from any meal's search on ${nWeeks()>1?"This month":"This week"}.</div>`;
  else{
   const slots=freeSlots();
@@ -1788,7 +1866,7 @@ function renderPicker(){
  }).filter(Boolean).sort((a,b)=>(b.nameHit-a.nameHit)||a.r.n.localeCompare(b.r.n));
  const okIds=new Set(pool(type,ms).map(r=>r.id));
  const need=slotServes(day,type);
- const los=(S.leftovers||[]).filter(l=>!words.length||words.every(w=>l.name.toLowerCase().includes(w)||"leftovers".includes(w))).map(l=>{const st=loStatus(l.id);const mine=cur==="lo:"+l.id?need:0;return {l,free:st.left+mine}});
+ const los=(S.leftovers||[]).filter(l=>!l.gone).filter(l=>!words.length||words.every(w=>l.name.toLowerCase().includes(w)||"leftovers".includes(w))).map(l=>{const st=loStatus(l.id);const mine=cur==="lo:"+l.id?need:0;return {l,free:st.left+mine}});
  const loHtml=los.length?`<li class="pk-sep">Leftovers · $0</li>`+los.map(({l,free})=>`<li><button class="pk-item${free<need?" off":""}" data-choose="lo:${l.id}"${cur==="lo:"+l.id?' aria-current="true"':""}><span>${esc(l.name)}<span class="why${free<need?" warnline":""}">${free} ${free===1?"serving":"servings"} free · this meal needs ${need}</span></span><small>$0</small></button></li>`).join("")+`<li class="pk-sep">Recipes</li>`:"";
  const others=R.filter(r=>!okIds.has(r.id)&&!r.leftover).filter(r=>{
   if(words.length)return words.every(w=>(r.custom?r.n+" "+r.i.map(([x])=>C[x]?.n||"").join(" "):r.n).toLowerCase().includes(w));
@@ -1818,6 +1896,8 @@ document.addEventListener("click",e=>{
  if(t0.id==="ingAdd"){openIng(null,t0);return}
  const ied=t0.closest&&t0.closest("[data-ingedit]");if(ied){openIng(ied.dataset.ingedit,ied);return}
  if(e.target.id==="printWeek"){printWeek();return}
+ const dd=e.target.closest("[data-done]");if(dd){openDone(+dd.dataset.done,dd);return}
+ const ud=e.target.closest("[data-undone]");if(ud){const d=+ud.dataset.undone;undoDone(d);document.querySelector(`[data-done="${d}"]`)?.focus();return}
  const sp=e.target.closest("[data-split],[data-unsplit]");if(sp){const on=sp.dataset.split!==undefined;const day=+(on?sp.dataset.split:sp.dataset.unsplit);setSplit(day,on);save();render();
   const f=on?document.querySelector(`[data-unsplit="${day}"]`):document.querySelector(`[data-split="${day}"]`);f?.focus();return}
  const am=e.target.closest("[data-aislemove]");if(am){const i=+am.dataset.aislemove,d=+am.dataset.d;const l=aisleList();const k=l.indexOf(i),j=k+d;if(j>=0&&j<l.length){[l[k],l[j]]=[l[j],l[k]];aisleState().order=l;aisleOpen=true;save();render();$(`[data-aislemove="${i}"][data-d="${d}"]`)?.focus()}return}
@@ -1839,7 +1919,7 @@ document.addEventListener("click",e=>{
  const pl=e.target.closest("[data-plen]");if(pl){const n=+pl.dataset.plen;if(n!==nWeeks()){setWeeks(n);save();render()}return}
  const vw=e.target.closest("[data-vweek]");if(vw){viewWeek=+vw.dataset.vweek;renderWeek();$(`[data-vweek="${viewWeek}"]`)?.focus();return}
  const sr=e.target.closest("[data-shoprange]");if(sr){shopRange=sr.dataset.shoprange;renderShop();$(`[data-shoprange="${shopRange}"]`)?.focus();return}
- if(e.target.id==="genWeek"){regenWeek(viewWeek);save();render();return}
+ if(e.target.id==="genWeek"){regenWeek(viewWeek);weekDays(viewWeek).forEach(d=>{if(S.done)delete S.done[d]});save();render();return}
  if(e.target.id==="boxNew"){pickBoxes();save();render();return}
  if(e.target.id==="snackNew"){pickSnacks();save();render();return}
  if(e.target.dataset.snackrr){const i=+e.target.dataset.snackrr;const ok=SNACKS.filter(x=>snackFits(x)&&x.id!==S.snacks[i]&&!S.snacks.includes(x.id));const alt=ok.length?ok:SNACKS.filter(x=>snackFits(x)&&x.id!==S.snacks[i]);if(alt.length)S.snacks[i]=alt[Math.floor(Math.random()*alt.length)].id;save();render();return}
@@ -1875,7 +1955,7 @@ document.addEventListener("click",e=>{
  }
  if(e.target.dataset.nia&&niDraft){const k=e.target.dataset.nia;const i=niDraft.a.indexOf(k);i<0?niDraft.a.push(k):niDraft.a.splice(i,1);e.target.setAttribute("aria-pressed",i<0);return}
  const t=e.target;
- if(t.id==="gen"){generate();save();render();return}
+ if(t.id==="gen"){generate();S.done={};save();render();return}
  if(t.dataset.rr){const[d,ty]=t.dataset.rr.split(",");reroll(+d,ty);save();render();return}
  if(t.id==="addM"){const id=Math.max(0,...S.members.map(m=>m.id))+1;S.members.push({id,name:"New person",age:30,school:false,d:[]});S.example=false;generate();save();render();return}
  if(t.dataset.del){S.members=S.members.filter(m=>m.id!=t.dataset.del);S.example=false;generate();save();render();return}
