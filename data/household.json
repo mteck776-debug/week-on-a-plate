@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-01T23:58:35.666Z",
+ "updated": "2026-11-02T00:01:29.535Z",
  "state": {
   "members": [
    {
@@ -939,6 +939,129 @@
     "notes": "In fridge",
     "added": "2026-11-02"
    }
-  ]
+  ],
+  "ess": {
+   "on": {
+    "hh": true,
+    "bb": true,
+    "dg": true
+   },
+   "items": {
+    "hh_tp": {
+     "wk": 8,
+     "on": true
+    },
+    "hh_towel": {
+     "wk": 1,
+     "on": true
+    },
+    "hh_dish": {
+     "wk": 0.25,
+     "on": true
+    },
+    "hh_dishtab": {
+     "wk": 7,
+     "on": true
+    },
+    "hh_laundry": {
+     "wk": 6,
+     "on": true
+    },
+    "hh_bin": {
+     "wk": 4,
+     "on": true
+    },
+    "hh_spray": {
+     "wk": 0.25,
+     "on": true
+    },
+    "hh_handwash": {
+     "wk": 0.5,
+     "on": true
+    },
+    "hh_zip": {
+     "wk": 10,
+     "on": true
+    },
+    "hh_wrap": {
+     "wk": 0.1,
+     "on": false
+    },
+    "hh_foil": {
+     "wk": 0.1,
+     "on": false
+    },
+    "hh_tissue": {
+     "wk": 0.25,
+     "on": false
+    },
+    "hh_paste": {
+     "wk": 0.25,
+     "on": true
+    },
+    "hh_shampoo": {
+     "wk": 0.25,
+     "on": true
+    },
+    "hh_bodywash": {
+     "wk": 0.25,
+     "on": true
+    },
+    "hh_sponge": {
+     "wk": 1,
+     "on": false
+    },
+    "bb_nappies": {
+     "wk": 42,
+     "on": true
+    },
+    "bb_wipes": {
+     "wk": 70,
+     "on": true
+    },
+    "bb_bags": {
+     "wk": 42,
+     "on": true
+    },
+    "bb_cream": {
+     "wk": 0.1,
+     "on": true
+    },
+    "bb_wash": {
+     "wk": 0.1,
+     "on": true
+    },
+    "bb_formula": {
+     "wk": 1.5,
+     "on": false
+    },
+    "bb_pouch": {
+     "wk": 7,
+     "on": false
+    },
+    "bb_wipesens": {
+     "wk": 0,
+     "on": false
+    },
+    "dg_treats": {
+     "wk": 0.5,
+     "on": true
+    },
+    "dg_bags": {
+     "wk": 14,
+     "on": true
+    },
+    "dg_dry": {
+     "wk": 0,
+     "on": false
+    },
+    "dg_chews": {
+     "wk": 7,
+     "on": false
+    }
+   },
+   "dogs": 2,
+   "cans": 0.5
+  }
  }
 }
