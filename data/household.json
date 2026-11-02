@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-02T00:03:56.130Z",
+ "updated": "2026-11-02T00:03:58.865Z",
  "state": {
   "members": [
    {
@@ -968,11 +968,11 @@
     },
     "hh_dishtab": {
      "wk": 7,
-     "on": true
+     "on": false
     },
     "hh_laundry": {
      "wk": 6,
-     "on": true
+     "on": false
     },
     "hh_bin": {
      "wk": 4,
