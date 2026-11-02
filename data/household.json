@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-02T02:34:12.997Z",
+ "updated": "2026-11-02T02:34:19.807Z",
  "state": {
   "members": [
    {
@@ -631,21 +631,21 @@
   "example": false,
   "snacks": [
    "darkchoc",
-   "ricecake",
+   "pretz",
+   "nuts",
+   "cheesecrack",
    "chips",
+   "ice",
+   "darkchoc",
+   "nuts",
+   "nachos",
+   "ricecake",
+   "jerky",
+   "nuts",
    "dried",
    "jerky",
-   "cheesecrack",
-   "darkchoc",
-   "nuts",
-   "nuts",
-   "darkchoc",
-   "bisc",
-   "chips",
-   "chips",
-   "lolly",
-   "pop",
-   "nuts"
+   "ice",
+   "pretz"
   ],
   "box": [
    {
