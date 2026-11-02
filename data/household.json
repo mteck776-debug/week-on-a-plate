@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-02T00:04:05.537Z",
+ "updated": "2026-11-02T00:04:08.599Z",
  "state": {
   "members": [
    {
@@ -960,7 +960,7 @@
     },
     "hh_towel": {
      "wk": 1,
-     "on": true
+     "on": false
     },
     "hh_dish": {
      "wk": 0.25,
