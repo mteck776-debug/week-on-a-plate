@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-02T00:01:29.535Z",
+ "updated": "2026-11-02T00:01:50.840Z",
  "state": {
   "members": [
    {
@@ -1045,11 +1045,11 @@
     },
     "dg_treats": {
      "wk": 0.5,
-     "on": true
+     "on": false
     },
     "dg_bags": {
      "wk": 14,
-     "on": true
+     "on": false
     },
     "dg_dry": {
      "wk": 0,
