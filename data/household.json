@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-02T00:03:27.131Z",
+ "updated": "2026-11-02T00:03:48.865Z",
  "state": {
   "members": [
    {
@@ -1004,15 +1004,15 @@
     },
     "hh_paste": {
      "wk": 0.25,
-     "on": true
+     "on": false
     },
     "hh_shampoo": {
      "wk": 0.25,
-     "on": true
+     "on": false
     },
     "hh_bodywash": {
      "wk": 0.25,
-     "on": true
+     "on": false
     },
     "hh_sponge": {
      "wk": 1,
