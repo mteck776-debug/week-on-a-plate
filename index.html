@@ -96,6 +96,9 @@ td.num,th.num{text-align:right;font-family:var(--f-mono);font-variant-numeric:ta
 tr.sec td{background:var(--sunk);font-family:var(--f-display);font-weight:600;font-size:.85rem;border-bottom:1px solid var(--line)}
 td.best{background:var(--citrus);color:var(--citrus-ink)}
 tr.have td{opacity:.45}
+tr.got td{color:var(--muted)}
+tr.got td.num,tr.got .nm{text-decoration:line-through}
+tr.got td.best{background:none;color:var(--muted)}
 tr.have td:first-child{opacity:1}
 tfoot td{font-weight:600;border-bottom:0;border-top:2px solid var(--ink)}
 .totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
@@ -1264,10 +1267,12 @@ function renderShop(){
  const el=$("#tab-shop");const list=shopping();
  const M=nWeeks()>1;
  const rangeChips=M?`<div class="wktabs" role="group" aria-label="Shopping for"><button class="chip" data-shoprange="all" aria-pressed="${shopRange==="all"}">Whole month</button>${[0,1,2,3].map(w=>`<button class="chip" data-shoprange="${w}" aria-pressed="${shopRange===String(w)}">Week ${w+1}</button>`).join("")}</div>`:"";
- const covered=lastCovered;
+ /* bought items stay on the list, crossed out; the rest of what the pantry covers goes in its own section */
+ const gotRows=lastCovered.filter(x=>S.bought[x.id]).map(x=>{const bp=Math.max(1,Math.round(S.bought[x.id]/x.c.p));return Object.assign({},x,{got:true,packs:bp,prices:storePrices(x.c).map(v=>v*bp)})});
+ const covered=lastCovered.filter(x=>!S.bought[x.id]);
  const coveredHtml=covered.length?`<details class="panel covered"${coveredOpen?" open":""} id="coveredBox"><summary><b>Already in your pantry</b> <span class="note">${covered.length} ${covered.length===1?"item":"items"} you don't need to buy</span></summary>
-  <ul class="cov-list">${covered.map(x=>`<li><span>${esc(x.c.n)}</span><span class="note">need ${esc(amountOf(x.id,x.q))}, have ${esc(amountOf(x.id,x.have))}</span>${S.bought[x.id]?`<button class="linkbtn" data-unbuy="${x.id}">Undo "got it"</button>`:""}</li>`).join("")}</ul></details>`:"";
- if(!list.length){el.innerHTML=rangeChips+(covered.length?`<div class="empty">Nothing to buy. Your pantry covers everything in the plan.</div>${coveredHtml}`:`<div class="empty">Your plan is empty, so there's nothing to buy yet.</div>`);return}
+  <ul class="cov-list">${covered.map(x=>`<li><span>${esc(x.c.n)}</span><span class="note">need ${esc(amountOf(x.id,x.q))}, have ${esc(amountOf(x.id,x.have))}</span></li>`).join("")}</ul></details>`:"";
+ if(!list.length&&!gotRows.length){el.innerHTML=rangeChips+(covered.length?`<div class="empty">Nothing to buy. Your pantry covers everything in the plan.</div>${coveredHtml}`:`<div class="empty">Your plan is empty, so there's nothing to buy yet.</div>`);return}
  const live=list;
  const tots=STORES.map((_,i)=>live.reduce((s,x)=>s+x.prices[i],0));
  const split=live.reduce((s,x)=>s+x.prices[x.best],0);
@@ -1277,17 +1282,18 @@ function renderShop(){
  <div class="tot"><div class="label">Split shop, cheapest each</div><div class="v">${money(split)}</div></div></div>
  <div class="tablewrap"><table><thead><tr><th>Got it</th><th>Item</th><th class="num">Need</th><th class="num">Packs</th>${STORES.map(s=>`<th class="num">${s}</th>`).join("")}<th>Best at</th><th>Add online</th></tr></thead><tbody>`;
  let sec=-1;
- list.forEach(x=>{
+ const rows=list.map(x=>Object.assign({},x,{got:false})).concat(gotRows).sort((a,b)=>aisleRank(a.c.s)-aisleRank(b.c.s)||a.c.n.localeCompare(b.c.n));
+ rows.forEach(x=>{
   if(x.c.s!==sec){sec=x.c.s;h+=`<tr class="sec"><td colspan="${6+STORES.length}">${SECTIONS[sec]}</td></tr>`}
-  const have=false;
-  h+=`<tr><td><input type="checkbox" id="h-${x.id}" data-gotit="${x.id}" aria-label="Got ${esc(x.c.n)}: add to my pantry"></td>
-  <td><div>${esc(x.c.n)}</div><div class="note">${esc(x.why.slice(0,3).join(", "))}${x.why.length>3?` +${x.why.length-3} more`:""}</div></td>
-  <td class="num">${esc(amountOf(x.id,x.need))}${x.have>0?`<div class="note" style="margin:0">have ${esc(amountOf(x.id,x.have))}</div>`:""}</td><td class="num">${x.packs}</td>
+  const have=x.got;
+  h+=`<tr class="${have?"got":""}"><td><input type="checkbox" id="h-${x.id}" ${have?`data-ungot="${x.id}" checked aria-label="Got ${esc(x.c.n)}. Untick to take it back out of my pantry"`:`data-gotit="${x.id}" aria-label="Got ${esc(x.c.n)}: add to my pantry"`}></td>
+  <td><div class="nm">${esc(x.c.n)}</div>${have?`<div class="note"><span class="tag ok">In pantry</span></div>`:""}<div class="note">${esc(x.why.slice(0,3).join(", "))}${x.why.length>3?` +${x.why.length-3} more`:""}</div></td>
+  <td class="num">${esc(amountOf(x.id,have?x.q:x.need))}${x.have>0&&!have?`<div class="note" style="margin:0">have ${esc(amountOf(x.id,x.have))}</div>`:""}</td><td class="num">${x.packs}</td>
   ${x.prices.map((p,i)=>`<td class="num${i===x.best&&!have?" best":""}">${money(p)}</td>`).join("")}
   <td>${STORES[x.best]}</td><td>${have?"":shopLinks(x.c)}</td></tr>`;
  });
  h+=`</tbody><tfoot><tr><td></td><td>Total</td><td></td><td></td>${tots.map(t=>`<td class="num">${money(t)}</td>`).join("")}<td class="num">${money(split)}</td><td></td></tr></tfoot></table></div>
- <p class="note" id="copyMsg" style="margin-top:8px">Tick <b>Got it</b> as you buy things and they go into My pantry. Highlighted cells are the cheaper store for that item. Coles and Woolworths both run weekly specials, so the cheaper store can change from week to week.</p>`;
+ <p class="note" id="copyMsg" style="margin-top:8px">Tick <b>Got it</b> as you buy things: they're crossed out and go into My pantry. Untick to take them back out. Highlighted cells are the cheaper store for that item. Coles and Woolworths both run weekly specials, so the cheaper store can change from week to week.</p>`;
  el.innerHTML=h+coveredHtml;
 }
 let coveredOpen=false;
@@ -2123,8 +2129,9 @@ document.addEventListener("change",e=>{
  if(t.id==="ie-u"&&ie){readIe();renderIe();return}
  if(t.dataset.dr||t.dataset.ni){if(t.dataset.dr==="preg"&&draft)draft.preg=t.checked;if(t.dataset.dr==="ing"&&draft){draft.rows[+t.dataset.i].id=t.value;const u=$(`#dr-u-${t.dataset.i}`);if(u)u.textContent=t.value&&C[t.value]?UNIT_LABEL[C[t.value].u]:"";const hh=$(`#dr-h-${t.dataset.i}`);if(hh)hh.textContent=t.value?ingHint(t.value):""}return}
  if(t.dataset.sel){const[d,ty]=t.dataset.sel.split(",");S.plan[+d][ty]=t.value;save();render();return}
+ if(t.dataset.ungot){const id=t.dataset.ungot;const n=C[id]?.n||"Item";pantryAdd(id,-(S.bought[id]||0));delete S.bought[id];save();renderShop();renderPantry();renderTotal();const cm=$("#copyMsg");if(cm)cm.textContent=`${n} taken back out of My pantry and back on the list.`;$(`[data-gotit="${id}"]`)?.focus();return}
  if(t.dataset.gotit){const id=t.dataset.gotit;const x=shopping().find(y=>y.id===id);if(x){const amt=x.packs*x.c.p;pantryAdd(id,amt);S.bought[id]=(S.bought[id]||0)+amt;
-  const qty=x.c.p===1?amountOf(id,amt):`${x.packs} ${x.packs===1?"pack":"packs"}`;const m=`${x.c.n}: ${qty} added to My pantry.`;save();renderShop();renderPantry();renderTotal();const cm=$("#copyMsg");if(cm)cm.textContent=m}return}
+  const qty=x.c.p===1?amountOf(id,amt):`${x.packs} ${x.packs===1?"pack":"packs"}`;const m=`${x.c.n}: ${qty} added to My pantry.`;save();renderShop();renderPantry();renderTotal();const cm=$("#copyMsg");if(cm)cm.textContent=m;$(`[data-ungot="${id}"]`)?.focus()}return}
  if(t.dataset.box){const[d,g,i]=t.dataset.box.split(",");S.box[+d][g][+i]=t.value;save();render();return}
  if(t.dataset.snack){S.snacks[+t.dataset.snack]=t.value;save();render();return}
  if(t.id==="r-snacks"){S.rules.snackCount=Math.max(0,Math.min(10,Math.round(+t.value||0)));pickSnacks();save();setTimeout(render,0);return}
