@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-03T03:28:36.617Z",
+ "updated": "2026-11-03T03:31:09.293Z",
  "state": {
   "members": [
    {
@@ -442,6 +442,36 @@
      [
       "chicken_breast",
       250
+     ]
+    ]
+   },
+   {
+    "id": "u_mw04ryj1",
+    "m": "l",
+    "n": "Curried Egg Sandwhich",
+    "t": 10,
+    "serves": 1,
+    "custom": true,
+    "preg": false,
+    "i": [
+     [
+      "eggs",
+      1
+     ],
+     [
+      "x_mw04oopp",
+      5
+     ]
+    ],
+    "st": "",
+    "raw": [
+     [
+      "eggs",
+      1
+     ],
+     [
+      "x_mw04oopp",
+      5
      ]
     ]
    }
