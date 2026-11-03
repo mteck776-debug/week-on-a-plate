@@ -251,7 +251,9 @@ a{color:var(--leaf)}
 .fld select,.irow select{font:500 .9rem var(--f-body);padding:7px 8px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);min-width:0;width:100%}
 textarea{font:500 .92rem var(--f-body);padding:8px 9px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);width:100%;resize:vertical}
 .irows{display:flex;flex-direction:column;gap:6px}
-.irow{display:grid;grid-template-columns:minmax(0,1fr) 90px 44px 28px;gap:6px;align-items:center}
+.irow{display:grid;grid-template-columns:minmax(0,1fr) 84px 78px 28px;gap:6px;align-items:center}
+.musel{font:500 .88rem var(--f-body);padding:7px 4px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);min-width:0;width:100%}
+@media (max-width:480px){.irow{grid-template-columns:minmax(0,1fr) 72px 70px 24px}}
 .irow .unit{font-size:.8rem;color:var(--muted)}
 .frow{display:flex;gap:8px;flex-wrap:wrap}
 .sub-panel{border:1px dashed var(--leaf);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--bg)}
@@ -1312,6 +1314,40 @@ function packText(c){
  return c.p>=1000?(Math.round(c.p/10)/100).toString()+" "+big:c.p+" "+small;
 }
 function ingHint(id){const c=C[id];if(!c)return "";const pr=storePrices(c);return `${packText(c)} · ${STORES.map((st,i)=>`${st} ${money(pr[i])}`).join(" · ")}`}
+/* ---------- Cups and spoons (Australian metric: cup 250 ml, tbsp 20 ml, tsp 5 ml) ---------- */
+const ML_PER={cup:250,tbsp:20,tsp:5,L:1000,ml:1};
+/* Grams in one level cup, by ingredient (prepared the usual way: chopped, grated or as it comes) */
+const G_PER_CUP={flour:150,flour_gf:150,rice:200,oats:90,weetbix:60,cereal_gf:40,granola:110,crumbs:110,crumbs_gf:110,pasta:100,pasta_gf:100,
+ lentils:200,beans:180,chickpeas:165,corn:165,peas:140,stirfryveg:130,berries:150,raisins:160,honey:340,peanutbutter:260,
+ butter:230,spread_df:230,cheese:100,cheese_df:100,mozz:100,parmesan:90,yoghurt:260,yog_coco:250,creamcheese:240,hummus:250,pesto:250,
+ tomcan:250,passata:250,salsa:250,currypaste:250,tacoseas:120,mince:220,chicken_breast:200,chicken_thigh:200,ham:140,bacon:150,
+ fish:180,prawns:160,tinsalmon:200,tuna:200,tofu:250,onion:160,carrot:110,capsicum:150,broccoli:90,mushrooms:70,spinach:30,
+ lettuce:50,cabbage:70,cucumber:130,zucchini:125,tomato:180,potato:150,sweetpot:140,pumpkin:140,beansgreen:110,gnocchi:150,
+ ricenoodles:90,eggnoodles:90,lasagne:100,lasagne_gf:100,cornchips:30,ricecrackers:30,grapes:150,strawberries:150,blueberries:150};
+function gPerCup(id){return G_PER_CUP[id]||150}
+function measuresFor(id){const c=C[id];if(!c)return [];if(c.u==="g")return [["g","g"],["kg","kg"],["cup","cups"],["tbsp","tbsp"],["tsp","tsp"]];if(c.u==="ml")return [["ml","ml"],["L","L"],["cup","cups"],["tbsp","tbsp"],["tsp","tsp"]];return [["each",c.un||"each"]]}
+function parseAmt(v){
+ v=String(v==null?"":v).trim().replace(/½/g," 1/2").replace(/¼/g," 1/4").replace(/¾/g," 3/4").replace(/⅓/g," 1/3").replace(/⅔/g," 2/3").trim();
+ if(!v)return NaN;let t=0;for(const part of v.split(/\s+/)){if(/^\d+(\.\d+)?$/.test(part))t+=+part;else if(/^\d+\/\d+$/.test(part)){const[a,b]=part.split("/").map(Number);if(!b)return NaN;t+=a/b}else return NaN}return t;
+}
+function toBase(id,q,mu){
+ const c=C[id];if(!c||!(q>=0))return NaN;mu=mu||"base";
+ if(mu==="base"||mu==="g"||mu==="ml"||mu==="each")return q;
+ if(mu==="kg")return q*1000;if(mu==="L")return q*1000;
+ const ml=q*ML_PER[mu];if(!ml&&ml!==0)return NaN;
+ return c.u==="ml"?ml:ml/250*gPerCup(id);
+}
+function convHint(r){
+ if(!r.id||!C[r.id])return "";const q=parseAmt(r.q);const mu=r.mu||"base";
+ const pack=ingHint(r.id);
+ if(["cup","tbsp","tsp"].includes(mu)&&q>0){const b=toBase(r.id,q,mu);return `≈ ${C[r.id].u==="g"?Math.round(b)+" g":Math.round(b)+" ml"}${C[r.id].u==="g"&&!G_PER_CUP[r.id]?" (rough guess)":""} · ${pack}`}
+ if(mu==="kg"&&q>0)return `${Math.round(q*1000)} g · ${pack}`;
+ if(mu==="L"&&q>0)return `${Math.round(q*1000)} ml · ${pack}`;
+ return pack;
+}
+function unitSelect(r,i){const opts=measuresFor(r.id);if(!opts.length)return `<span class="unit" id="dr-u-${i}"></span>`;
+ const cur=r.mu&&opts.some(([k])=>k===r.mu)?r.mu:opts[0][0];
+ return `<select class="musel" id="dr-mu-${i}" data-dr="mu" data-i="${i}" aria-label="Unit for ingredient ${i+1}">${opts.map(([k,l])=>`<option value="${k}"${k===cur?" selected":""}>${esc(l)}</option>`).join("")}</select>`}
 function ingOptions(sel){
  const ids=Object.keys(C).sort((a,b)=>C[a].n.localeCompare(C[b].n));
  return `<option value="">Choose an ingredient…</option>`+aisleList().map(si=>{const sec=SECTIONS[si];
@@ -1331,7 +1367,8 @@ function formHTML(){
   <label class="fld"><span class="label">Minutes</span><input type="number" id="dr-t" data-dr="t" min="1" max="600" value="${d.t}"></label>
  </div>
  <div><span class="label">Ingredients</span></div>
- <div class="irows">${d.rows.map((r,i)=>`<div class="irow"><select id="dr-ing-${i}" data-dr="ing" data-i="${i}" aria-label="Ingredient ${i+1}">${ingOptions(r.id)}</select><input type="number" id="dr-q-${i}" data-dr="q" data-i="${i}" min="0" step="any" value="${esc(r.q)}" placeholder="Amount" aria-label="Amount for ingredient ${i+1}"><span class="unit" id="dr-u-${i}">${r.id&&C[r.id]?UNIT_LABEL[C[r.id].u]:""}</span><button type="button" class="reroll" data-act="del-row" data-i="${i}" aria-label="Remove ingredient ${i+1}">✕</button><span class="ihint" id="dr-h-${i}">${r.id&&C[r.id]?esc(ingHint(r.id)):""}</span></div>`).join("")}</div>
+ <div class="irows">${d.rows.map((r,i)=>`<div class="irow"><select id="dr-ing-${i}" data-dr="ing" data-i="${i}" aria-label="Ingredient ${i+1}">${ingOptions(r.id)}</select><input type="text" inputmode="decimal" id="dr-q-${i}" data-dr="q" data-i="${i}" value="${esc(r.q)}" placeholder="e.g. 1 1/2" aria-label="Amount for ingredient ${i+1}">${unitSelect(r,i)}<button type="button" class="reroll" data-act="del-row" data-i="${i}" aria-label="Remove ingredient ${i+1}">✕</button><span class="ihint" id="dr-h-${i}">${esc(convHint(r))}</span></div>`).join("")}</div>
+ <p class="note" style="margin:0">Use cups and spoons if you like (Australian sizes: cup 250 ml, tablespoon 20 ml, teaspoon 5 ml). Fractions such as 1/2 or 1 1/2 work. They're turned into grams or ml for costs and shopping.</p>
  <div class="frow"><button type="button" class="btn small" data-act="add-row">Add another ingredient</button><button type="button" class="btn small" data-act="toggle-ni">${niDraft?"Close new ingredient":"Ingredient not listed? Add it"}</button></div>`;
  if(niDraft){const n=niDraft;
   h+=`<div class="sub-panel"><h3>New ingredient</h3><p class="note">Enter a typical pack and its price at each store you know. Leave a store blank if you're not sure, and the app will use your lowest price for it.</p>
@@ -1368,13 +1405,15 @@ function saveIngredient(){
 }
 function saveRecipe(){
  const d=draft;const name=d.n.trim();const serves=Math.max(1,+d.serves||1);
- const rows=d.rows.filter(r=>r.id&&+r.q>0);
+ const amt=r=>parseAmt(r.q);
  if(!name)return "Give your recipe a name.";
+ const bad=d.rows.find(r=>r.id&&!(amt(r)>0));
+ if(bad)return `Check the amount for ${C[bad.id]?.n||"an ingredient"}. Use a number like 2, 0.5 or 1 1/2.`;
+ const rows=d.rows.filter(r=>r.id&&amt(r)>0).map(r=>({id:r.id,q:toBase(r.id,amt(r),r.mu||measuresFor(r.id)[0]?.[0]),typed:[r.id,String(r.q).trim(),r.mu||measuresFor(r.id)[0]?.[0]]}));
  if(!rows.length)return "Add at least one ingredient with an amount.";
- if(d.rows.some(r=>r.id&&!(+r.q>0)))return "Every chosen ingredient needs an amount above 0.";
  const builtin=!!d.id&&BASE_R.some(r=>r.id===d.id);
  const rec={id:d.id||"u_"+Date.now().toString(36),m:d.m,n:name,t:Math.max(1,+d.t||30),serves,custom:!builtin,preg:!!d.preg,
-  i:rows.map(r=>[r.id,+r.q/serves]),st:d.st.trim(),raw:rows.map(r=>[r.id,+r.q])};
+  i:rows.map(r=>[r.id,r.q/serves]),st:d.st.trim(),raw:rows.map(r=>[r.id,r.q]),measures:rows.map(r=>r.typed)};
  if(builtin){S.recipeEdits=S.recipeEdits||{};S.recipeEdits[rec.id]=rec}
  else{const ix=S.custom.findIndex(r=>r.id===rec.id);if(ix<0)S.custom.push(rec);else S.custom[ix]=rec}
  syncCustom();save();return "";
@@ -2040,7 +2079,7 @@ document.addEventListener("click",e=>{
   if(act==="cancel-recipe"){draft=null;niDraft=null;renderRecipes();return}
   if(act==="save-recipe"){formErr=saveRecipe();if(!formErr){savedMsg=`${draft.n.trim()} is in your recipes and can now come up in plans. Pick it from any matching meal menu on This week.`;draft=null;niDraft=null;rFilter="mine";render()}else renderRecipes();return}
   if(act==="edit-recipe"){const r=RBY[a.dataset.id];const sv=r.raw?(r.serves||1):4;
-   draft={id:r.id,n:r.n,m:r.m,t:r.t,serves:sv,rows:(r.raw||r.i.map(([id,q])=>[id,q*sv])).map(([id,q])=>({id,q:String(Math.round(q*100)/100)})),st:r.st||"",preg:r.custom||r.edited?!!r.preg:!!PREG[r.id]?.avoid};niDraft=null;savedMsg="";renderRecipes();window.scrollTo({top:0});return}
+   draft={id:r.id,n:r.n,m:r.m,t:r.t,serves:sv,rows:r.measures?r.measures.map(([id,q,mu])=>({id,q,mu})):(r.raw||r.i.map(([id,q])=>[id,q*sv])).map(([id,q])=>({id,q:String(Math.round(q*100)/100),mu:""})),st:r.st||"",preg:r.custom||r.edited?!!r.preg:!!PREG[r.id]?.avoid};niDraft=null;savedMsg="";renderRecipes();window.scrollTo({top:0});return}
   if(act==="del-recipe"){const id=a.dataset.id;if(pendingDel!==id){pendingDel=id;renderRecipes();return}
    pendingDel=null;const nm=RBY[id]?.n||"Recipe";
    if(BASE_R.some(r=>r.id===id)){S.hiddenRecipes=(S.hiddenRecipes||[]).filter(x=>x!==id).concat([id]);if(S.recipeEdits)delete S.recipeEdits[id]}
@@ -2115,8 +2154,9 @@ document.addEventListener("input",e=>{
  if(t.id==="ingSearch"){ingQ=t.value;renderIng();const n=$("#ingSearch");n.focus();n.setSelectionRange(n.value.length,n.value.length);return}
  if(t.dataset.dr&&draft){
   const f=t.dataset.dr,i=+t.dataset.i;
-  if(f==="ing"){draft.rows[i].id=t.value;const u=$(`#dr-u-${i}`);if(u)u.textContent=t.value&&C[t.value]?UNIT_LABEL[C[t.value].u]:"";const hh=$(`#dr-h-${i}`);if(hh)hh.textContent=t.value?ingHint(t.value):""}
-  else if(f==="q")draft.rows[i].q=t.value;
+  if(f==="ing"){draft.rows[i].id=t.value;draft.rows[i].mu="";renderRecipes();$(`#dr-ing-${i}`)?.focus()}
+  else if(f==="q"){draft.rows[i].q=t.value;const hh=$(`#dr-h-${i}`);if(hh)hh.textContent=convHint(draft.rows[i])}
+  else if(f==="mu"){draft.rows[i].mu=t.value;const hh=$(`#dr-h-${i}`);if(hh)hh.textContent=convHint(draft.rows[i])}
   else if(f==="preg")draft.preg=t.checked;
   else draft[f]=t.value;
  }
@@ -2135,7 +2175,7 @@ document.addEventListener("change",e=>{
  if(t.dataset.essitem){essInit().items[t.dataset.essitem].on=t.checked;save();render();return}
  if(t.dataset.esswk){const v=Math.max(0,+t.value||0);essInit().items[t.dataset.esswk].wk=v;save();setTimeout(render,0);return}
  if(t.id==="ie-u"&&ie){readIe();renderIe();return}
- if(t.dataset.dr||t.dataset.ni){if(t.dataset.dr==="preg"&&draft)draft.preg=t.checked;if(t.dataset.dr==="ing"&&draft){draft.rows[+t.dataset.i].id=t.value;const u=$(`#dr-u-${t.dataset.i}`);if(u)u.textContent=t.value&&C[t.value]?UNIT_LABEL[C[t.value].u]:"";const hh=$(`#dr-h-${t.dataset.i}`);if(hh)hh.textContent=t.value?ingHint(t.value):""}return}
+ if(t.dataset.dr||t.dataset.ni){if(t.dataset.dr==="preg"&&draft)draft.preg=t.checked;return}
  if(t.dataset.sel){const[d,ty]=t.dataset.sel.split(",");S.plan[+d][ty]=t.value;save();render();return}
  if(t.dataset.ungot){const id=t.dataset.ungot;const n=C[id]?.n||"Item";pantryAdd(id,-(S.bought[id]||0));delete S.bought[id];save();renderShop();renderPantry();renderTotal();const cm=$("#copyMsg");if(cm)cm.textContent=`${n} taken back out of My pantry and back on the list.`;$(`[data-gotit="${id}"]`)?.focus();return}
  if(t.dataset.gotit){const id=t.dataset.gotit;const x=shopping().find(y=>y.id===id);if(x){const amt=x.packs*x.c.p;pantryAdd(id,amt);S.bought[id]=(S.bought[id]||0)+amt;
