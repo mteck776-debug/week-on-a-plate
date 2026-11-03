@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-03T04:15:08.076Z",
+ "updated": "2026-11-03T04:15:11.260Z",
  "state": {
   "members": [
    {
@@ -1032,7 +1032,7 @@
    {
     "id": "mvyhlgcm",
     "name": "Pumpkin Soup",
-    "serves": 6,
+    "serves": 3,
     "useBy": "2026-11-06",
     "notes": "In fridge",
     "added": "2026-11-02"
