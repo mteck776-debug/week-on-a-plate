@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-03T03:31:32.870Z",
+ "updated": "2026-11-03T03:31:46.973Z",
  "state": {
   "members": [
    {
@@ -969,6 +969,9 @@
      2.5,
      3.8
     ]
+   },
+   "currypaste": {
+    "s": 101
    }
   },
   "recipeEdits": {},
