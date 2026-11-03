@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-03T04:15:11.260Z",
+ "updated": "2026-11-03T13:14:19.916Z",
  "state": {
   "members": [
    {
@@ -1035,6 +1035,14 @@
     "serves": 3,
     "useBy": "2026-11-06",
     "notes": "In fridge",
+    "added": "2026-11-02"
+   },
+   {
+    "id": "mvyhl0jw",
+    "name": "Spaghetti bolognese",
+    "serves": 4,
+    "useBy": "2026-11-04",
+    "notes": "Middle of fridge",
     "added": "2026-11-02"
    }
   ],
