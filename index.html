@@ -122,6 +122,8 @@ table{min-width:760px}
 .sheet-bg[hidden],[hidden]{display:none!important}
 .sheet{background:var(--surface);border:1px solid var(--line);border-radius:12px;width:100%;max-width:560px;max-height:100%;display:flex;flex-direction:column;gap:10px;padding:16px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
 .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#ssSearch{font:500 1rem var(--f-body);padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);width:100%}
+#ssSearch:focus-visible{outline:2px solid var(--leaf);outline-offset:2px}
 #pkSearch{font:500 1rem var(--f-body);padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);width:100%}
 .pk-list{list-style:none;margin:0;padding:0;overflow-y:auto;display:flex;flex-direction:column;gap:4px;min-height:0}
 .pk-item{width:100%;text-align:left;display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:9px 10px;border-radius:8px;border:1px solid transparent;background:none;color:var(--ink);font:500 .95rem var(--f-body);cursor:pointer}
@@ -297,6 +299,13 @@ textarea{font:500 .92rem var(--f-body);padding:8px 9px;border-radius:6px;border:
   <section id="tab-preg" hidden></section>
   <section id="tab-stores" hidden></section>
 </main>
+<div class="sheet-bg" id="selBg" hidden>
+ <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ssTitle">
+  <div class="sheet-head"><h3 id="ssTitle">Choose</h3><button class="btn small" id="ssClose">Close</button></div>
+  <input type="search" id="ssSearch" placeholder="Type to search" autocomplete="off" aria-label="Search">
+  <ul class="pk-list" id="ssList"></ul>
+ </div>
+</div>
 <div class="sheet-bg" id="doneBg" hidden>
  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dnTitle">
   <div class="sheet-head"><h3 id="dnTitle">Day done</h3><button class="btn small" id="dnClose">Cancel</button></div>
@@ -2195,6 +2204,51 @@ document.addEventListener("change",e=>{
  }
  if(t.id==="pc"){S.postcode=t.value;save();renderStores()}
 });
+/* ---------- Searchable dropdowns: long menus open a panel with a search box ---------- */
+const SS_MIN=9;let ss=null;
+function ssWanted(sel){return sel&&sel.tagName==="SELECT"&&!sel.disabled&&!sel.multiple&&sel.options.length>=SS_MIN&&!sel.closest(".sheet")}
+function ssLabel(sel){
+ if(sel.matches('[data-dr="ing"],#pa-id'))return "Choose an ingredient";
+ const a=sel.getAttribute("aria-label");if(a)return a;
+ const lab=sel.closest("label");if(lab){const t=lab.querySelector(".label");if(t)return t.textContent}
+ const row=sel.closest(".boxrow,.snack,.irow,.lo");if(row){const t=row.querySelector(".label");if(t)return t.textContent}
+ return "Choose";
+}
+function ssOpen(sel){
+ ss={sel,id:sel.id};$("#ssTitle").textContent=ssLabel(sel);$("#ssSearch").value="";$("#selBg").hidden=false;ssRender();
+ setTimeout(()=>$("#ssSearch").focus(),0);
+}
+function ssClose(refocus){$("#selBg").hidden=true;const id=ss&&ss.id;ss=null;if(refocus&&id)document.getElementById(id)?.focus()}
+function ssRender(){
+ if(!ss)return;const sel=document.getElementById(ss.id)||ss.sel;
+ const words=$("#ssSearch").value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+ let h="",group=null,n=0;
+ [...sel.options].forEach(o=>{
+  const txt=o.textContent;const g=o.parentElement.tagName==="OPTGROUP"?o.parentElement.label:"";
+  if(o.value===""&&words.length)return;
+  if(words.length&&!words.every(w=>(txt+" "+g).toLowerCase().includes(w)))return;
+  if(g!==group){group=g;if(g)h+=`<li class="pk-sep">${esc(g)}</li>`}
+  h+=`<li><button class="pk-item" data-ssval="${esc(o.value)}"${o.value===sel.value?' aria-current="true"':""}><span>${esc(txt)}</span></button></li>`;n++;
+ });
+ $("#ssList").innerHTML=n?h:`<li class="empty">Nothing matches "${esc($("#ssSearch").value)}".</li>`;
+}
+function ssPick(v){
+ const sel=document.getElementById(ss.id)||ss.sel;const id=ss.id;ssClose(false);
+ if(sel.value!==v){sel.value=v;sel.dispatchEvent(new Event("input",{bubbles:true}));sel.dispatchEvent(new Event("change",{bubbles:true}))}
+ setTimeout(()=>document.getElementById(id)?.focus(),0);
+}
+function ssIntercept(e){const sel=e.target.closest&&e.target.closest("select");if(!ssWanted(sel))return;e.preventDefault();e.stopPropagation();sel.focus();ssOpen(sel)}
+document.addEventListener("mousedown",ssIntercept,true);
+document.addEventListener("touchstart",ssIntercept,{capture:true,passive:false});
+document.addEventListener("keydown",e=>{
+ const sel=e.target;if(ss){if(e.key==="Escape"){e.preventDefault();ssClose(true)}return}
+ if(!ssWanted(sel))return;
+ if([" ","Enter","ArrowDown","ArrowUp","F4"].includes(e.key)||(e.altKey&&e.key==="ArrowDown")){e.preventDefault();ssOpen(sel)}
+},true);
+$("#ssClose").addEventListener("click",()=>ssClose(true));
+$("#ssSearch").addEventListener("input",ssRender);
+$("#ssSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const b=$("#ssList .pk-item");if(b)ssPick(b.dataset.ssval)}});
+$("#selBg").addEventListener("click",e=>{if(e.target.id==="selBg"){ssClose(true);return}const b=e.target.closest("[data-ssval]");if(b&&ss)ssPick(b.dataset.ssval)});
 syncCustom();
 render();
 connectShared();
