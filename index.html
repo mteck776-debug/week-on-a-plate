@@ -57,6 +57,12 @@ h3{font-family:var(--f-display);font-weight:600;font-size:1.05rem;margin:0}
 .day.done .slot{opacity:.6}
 .donebtn{align-self:flex-start;border:1px solid var(--leaf);background:none;color:var(--leaf);font:600 .8rem var(--f-body);padding:5px 10px;border-radius:999px;cursor:pointer}
 .day.done .donebtn{border-color:var(--line);color:var(--muted)}
+.pan-use{background:var(--sunk);border-radius:10px;padding:10px 12px}
+.pan-use summary{cursor:pointer;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}.pan-use summary .note{margin:0}
+.pan-use ul{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:3px;font-size:.88rem}
+.pan-use li{display:flex;justify-content:space-between;gap:10px}
+.pan-use li span:last-child{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted)}
+.used-pan{margin:0}.used-pan summary{cursor:pointer;color:var(--leaf);font-weight:600}.used-pan ul{margin:4px 0 0;padding-left:18px}
 .donebtn:focus-visible{outline:2px solid var(--leaf);outline-offset:2px}
 .day header{display:flex;justify-content:space-between;align-items:baseline}
 .day header .d{font-family:var(--f-display);font-weight:800;font-size:1.15rem}
@@ -1160,7 +1166,7 @@ function renderWeek(){
   const dc=types.reduce((s,t)=>s+mealCost(day,t),0)+boxCost(day);
   const dn0=isDone(day);
   h+=`<article class="day${dn0?" done":""}"><header><span class="d">${dn}${dn0?` <span class="tag ok">Done</span>`:""}</span><span class="c">≈ ${money(dc)}</span></header>
-  <button class="donebtn" data-${dn0?"undone":"done"}="${day}">${dn0?"Undo day done":"✓ Day done"}</button>`;
+  <button class="donebtn" data-${dn0?"undone":"done"}="${day}">${dn0?"Undo day done":"✓ Day done"}</button>${dn0&&S.done[day].pantry&&Object.keys(S.done[day].pantry).length?`<details class="note used-pan"><summary>Used ${Object.keys(S.done[day].pantry).length} ${Object.keys(S.done[day].pantry).length===1?"item":"items"} from My pantry</summary><ul>${Object.entries(S.done[day].pantry).filter(([id])=>C[id]).map(([id,q])=>`<li>${esc(C[id].n)}: ${esc(amountOf(id,q))}</li>`).join("")}</ul></details>`:""}`;
   types.forEach(type=>{
    const ms=eaters(type,day);const p=pool(type,ms);const cur=S.plan[day]?.[type];
    const who=type==="s"?kids.map(k=>k.name).join(", "):type==="a"?ms.map(m=>m.name).join(", "):"";
@@ -1668,6 +1674,8 @@ function renderDone(){
   </div>
   ${dn.serves>0?`<p class="note" id="dnNote" style="margin:0">${existing?`Adds to the ${existing.serves} ${existing.serves===1?"serving":"servings"} of ${esc(existing.name)} you already have.`:"Saved to the Leftovers tab, ready to put on another meal."}${dn.preg?" Someone is pregnant, so use-by is set to tomorrow.":" Cooked leftovers keep 2 to 3 days in the fridge."}</p>`:""}
   ${used.length?`<p class="note" style="margin:0">Leftovers eaten today come off what you have: ${used.map(([t,id])=>`${esc(RBY[id].n.replace(/^Leftovers: /,""))} (${slotServes(d,t)})`).join(", ")}.</p>`:""}
+  ${(()=>{const u=Object.entries(dayUsage(d)).map(([id,q])=>[id,Math.min(pantryQ(id),q)]).filter(([,t])=>t>1e-6).sort((a,b)=>C[a[0]].n.localeCompare(C[b[0]].n));
+   return u.length?`<details class="pan-use"><summary><b>${u.length} ${u.length===1?"item comes":"items come"} out of My pantry</b> <span class="note">Tap to see</span></summary><ul>${u.map(([id,t])=>`<li><span>${esc(C[id].n)}</span><span>${esc(amountOf(id,t))}</span></li>`).join("")}</ul></details>`:`<p class="note" style="margin:0">Nothing from today's meals is in My pantry, so it stays as it is.</p>`})()}
   <p class="err" id="dnErr" role="alert" hidden></p>
   <div class="frow"><button class="btn primary" id="dnSave">${dn.serves>0?`Save ${dn.serves} ${dn.serves===1?"serving":"servings"} and mark done`:"No leftovers, mark done"}</button></div>`;
 }
