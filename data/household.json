@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-03T03:59:27.726Z",
+ "updated": "2026-11-03T04:02:51.465Z",
  "state": {
   "members": [
    {
@@ -668,6 +668,20 @@
     ],
     "s": 101,
     "a": []
+   },
+   "x_mw05wq91": {
+    "n": "Mayonnaise 445g",
+    "u": "g",
+    "p": 445,
+    "pr": [
+     2.8,
+     2.8,
+     2.8
+    ],
+    "s": 4,
+    "a": [
+     "egg"
+    ]
    }
   },
   "example": false,
