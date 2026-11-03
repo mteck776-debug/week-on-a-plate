@@ -159,6 +159,19 @@ details.note li{margin-bottom:4px}
 .dogrow{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:.92rem}
 .ess-add summary{cursor:pointer;color:var(--leaf);font-weight:600;font-size:.88rem;padding-top:6px}
 .ess-add form{margin-top:8px}
+.covered{margin-top:16px}
+.covered summary{cursor:pointer;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.cov-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column}
+.cov-list li{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:6px 0;border-top:1px dashed var(--line)}
+.cov-list li .note{margin:0}
+.pa-sec{margin-top:10px}
+.pa-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px 12px;align-items:center;padding:8px 0;border-top:1px dashed var(--line)}
+.pa-name{display:flex;flex-direction:column;min-width:0}
+.pa-name .note{margin:2px 0 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pa-qty{display:flex;gap:6px;align-items:center;font-size:.8rem;color:var(--muted)}
+.pa-qty input{width:74px}
+#pantrySearch{width:100%;margin-bottom:6px;font:500 .95rem var(--f-body);padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--sunk);color:var(--ink)}
+#pa-id{font:500 .92rem var(--f-body);padding:7px 8px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);width:100%}
 .lo{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
 .lo:first-of-type{border-top:0;padding-top:0}
 .lo-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
@@ -249,6 +262,7 @@ textarea{font:500 .92rem var(--f-body);padding:8px 9px;border-radius:6px;border:
     <nav class="tabs" role="tablist" id="tabs">
       <button role="tab" data-tab="week" aria-selected="true">This week</button>
       <button role="tab" data-tab="left" aria-selected="false">Leftovers</button>
+      <button role="tab" data-tab="pantry" aria-selected="false">My pantry</button>
       <button role="tab" data-tab="ess" aria-selected="false">Essentials</button>
       <button role="tab" data-tab="house" aria-selected="false">Household</button>
       <button role="tab" data-tab="shop" aria-selected="false">Shopping list</button>
@@ -263,6 +277,7 @@ textarea{font:500 .92rem var(--f-body);padding:8px 9px;border-radius:6px;border:
 <main class="wrap">
   <section id="tab-week"></section>
   <section id="tab-left" hidden></section>
+  <section id="tab-pantry" hidden></section>
   <section id="tab-ess" hidden></section>
   <section id="tab-house" hidden></section>
   <section id="tab-shop" hidden></section>
@@ -774,6 +789,8 @@ const DEFAULT={
  aisles:null,
  split:{},
  done:{},
+ pantry:{},
+ bought:{},
  postcode:"",
  plan:null,
  have:{},
@@ -782,10 +799,12 @@ let S;
 try{S=JSON.parse(localStorage.getItem(KEY))||null}catch(e){S=null}
 if(!S)S=structuredClone(DEFAULT);
 S.leftovers=S.leftovers||[];
+S.pantry=S.pantry||{};S.bought=S.bought||{};
+if(S.have&&Object.keys(S.have).length){Object.entries(S.have).forEach(([id,v])=>{if(v&&C[id]&&!S.pantry[id])S.pantry[id]={q:C[id].p,since:new Date().toISOString().slice(0,10)}});S.have={}}
 S.custom=S.custom||[];S.customIng=S.customIng||{};
 /* Shared household: one document both of you read and write; this browser keeps a copy too */
 let firstSnap=true,ref=null,lastSent="",writing=false,again=false,canWrite=true,pushTimer=null,sharedExists=false;
-function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[],leftovers:S.leftovers||[],ess:S.ess||null,aisles:S.aisles||null,split:S.split||{},done:S.done||{}}}
+function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[],leftovers:S.leftovers||[],ess:S.ess||null,aisles:S.aisles||null,split:S.split||{},done:S.done||{},pantry:S.pantry||{},bought:S.bought||{}}}
 function setSync(kind){
  const el=document.getElementById("sync");if(!el)return;el.className="sync";
  if(kind==="ok"){el.classList.add("ok");el.innerHTML=`<span class="dot"></span>Shared · up to date`}
@@ -1076,21 +1095,39 @@ function shopping(range){
  const tot={};
  const add=(id,q,why)=>{tot[id]=tot[id]||{q:0,why:new Set()};tot[id].q+=q;if(why)tot[id].why.add(why)};
  if(!S.plan)return [];
- days.forEach(day=>slotTypes(day).forEach(type=>{
+ days.forEach(day=>{if(isDone(day))return;slotTypes(day).forEach(type=>{
   const id=S.plan[day]?.[type];if(!id||!RBY[id])return;
   const ms=eaters(type,day);const nd=needs(ms,type);const f=ms.reduce((s,m)=>s+portion(m.age),0);
   resolve(RBY[id],nd).ing.forEach(([x,q])=>add(x,q*f,RBY[id].n));
- }));
+ })});
  const per=+S.rules.snackCount||0;const wks=[...new Set(days.map(d=>Math.floor(d/7)))];
  const sp=snackPacks();(S.snacks||[]).filter((_,i)=>per&&wks.includes(Math.floor(i/per))).forEach(id=>{const sn=SBY[id];if(sn)sn.i.forEach(([x,q])=>add(x,q*sp,"Adult snacks: "+sn.n))});
- if(boxOn()&&S.box){const k=schoolKids().length;S.box.forEach((b,d)=>{if(!b||!inR.has(d))return;BOX_PARTS.forEach(([g,i])=>{const it=BOXBY[b[g][i]];if(it)it.i.forEach(([x,q])=>add(x,q*k,"Lunchbox: "+it.n))})})}
+ if(boxOn()&&S.box){const k=schoolKids().length;S.box.forEach((b,d)=>{if(!b||!inR.has(d)||isDone(d))return;BOX_PARTS.forEach(([g,i])=>{const it=BOXBY[b[g][i]];if(it)it.i.forEach(([x,q])=>add(x,q*k,"Lunchbox: "+it.n))})})}
  if(S.rules.crunch&&!boxOn()){const k=S.members.filter(m=>m.school).length;if(k){add("apple",k*3*wks.length,"Crunch & Sip fruit");add("banana",k*2*wks.length,"Crunch & Sip fruit")}}
  essAdd(add,wks.length);
- return Object.entries(tot).map(([id,v])=>{
-  const c=C[id];const packs=Math.max(1,Math.ceil(v.q/c.p-1e-6));
+ const all=Object.entries(tot).filter(([id])=>C[id]).map(([id,v])=>{
+  const c=C[id];const have=pantryQ(id);const rem=v.q-have;
+  const packs=rem>1e-6?Math.max(1,Math.ceil(rem/c.p-1e-6)):0;
   const prices=storePrices(c).map(p=>p*packs);const best=prices.indexOf(Math.min(...prices));
-  return {id,c,q:v.q,packs,prices,best,why:[...v.why]};
+  return {id,c,q:v.q,need:Math.max(0,rem),have,packs,prices,best,why:[...v.why]};
  }).sort((a,b)=>aisleRank(a.c.s)-aisleRank(b.c.s)||a.c.n.localeCompare(b.c.n));
+ lastCovered=all.filter(x=>x.packs===0);
+ return all.filter(x=>x.packs>0);
+}
+let lastCovered=[];
+/* ---------- My pantry: what you already have, in each ingredient's own units ---------- */
+function pantryQ(id){const e=S.pantry&&S.pantry[id];return e?Math.max(0,+e.q||0):0}
+function pantryAdd(id,q){S.pantry=S.pantry||{};const e=S.pantry[id]||{q:0,since:todayISO()};e.q=Math.max(0,(+e.q||0)+q);if(e.q<=1e-6)delete S.pantry[id];else S.pantry[id]=e}
+function amountOf(id,q){const c=C[id];if(!c)return "";if(c.un)return `${Math.round(q*10)/10} ${c.un}`;if(c.u==="ea")return `${Math.round(q*10)/10}${c.p>1?" items":""}`;return fmtQ(q,c.u)}
+function packsOf(id,q){const c=C[id];const n=Math.round(q/c.p*100)/100;return n}
+/* Ingredients one day's meals and lunchboxes use */
+function dayUsage(day){
+ const out={};const add=(x,q)=>{out[x]=(out[x]||0)+q};
+ slotTypes(day).forEach(type=>{const id=S.plan?.[day]?.[type];if(!id||!RBY[id])return;
+  const ms=eaters(type,day);const nd=needs(ms,type);const f=ms.reduce((t,m)=>t+portion(m.age),0);
+  resolve(RBY[id],nd).ing.forEach(([x,q])=>add(x,q*f))});
+ if(boxOn()&&S.box?.[day]){const k=schoolKids().length;const b=S.box[day];BOX_PARTS.forEach(([g,i])=>{const it=BOXBY[b[g][i]];if(it)it.i.forEach(([x,q])=>add(x,q*k))})}
+ return out;
 }
 function fmtQ(q,u){
  if(u==="g")return q>=1000?(q/1000).toFixed(2).replace(/\.?0+$/,"")+" kg":Math.ceil(q)+" g";
@@ -1227,29 +1264,33 @@ function renderShop(){
  const el=$("#tab-shop");const list=shopping();
  const M=nWeeks()>1;
  const rangeChips=M?`<div class="wktabs" role="group" aria-label="Shopping for"><button class="chip" data-shoprange="all" aria-pressed="${shopRange==="all"}">Whole month</button>${[0,1,2,3].map(w=>`<button class="chip" data-shoprange="${w}" aria-pressed="${shopRange===String(w)}">Week ${w+1}</button>`).join("")}</div>`:"";
- if(!list.length){el.innerHTML=rangeChips+`<div class="empty">Your plan is empty, so there's nothing to buy yet.</div>`;return}
- const live=list.filter(x=>!S.have[x.id]);
+ const covered=lastCovered;
+ const coveredHtml=covered.length?`<details class="panel covered"${coveredOpen?" open":""} id="coveredBox"><summary><b>Already in your pantry</b> <span class="note">${covered.length} ${covered.length===1?"item":"items"} you don't need to buy</span></summary>
+  <ul class="cov-list">${covered.map(x=>`<li><span>${esc(x.c.n)}</span><span class="note">need ${esc(amountOf(x.id,x.q))}, have ${esc(amountOf(x.id,x.have))}</span>${S.bought[x.id]?`<button class="linkbtn" data-unbuy="${x.id}">Undo "got it"</button>`:""}</li>`).join("")}</ul></details>`:"";
+ if(!list.length){el.innerHTML=rangeChips+(covered.length?`<div class="empty">Nothing to buy. Your pantry covers everything in the plan.</div>${coveredHtml}`:`<div class="empty">Your plan is empty, so there's nothing to buy yet.</div>`);return}
+ const live=list;
  const tots=STORES.map((_,i)=>live.reduce((s,x)=>s+x.prices[i],0));
  const split=live.reduce((s,x)=>s+x.prices[x.best],0);
  const bestStore=tots.indexOf(Math.min(...tots));
  let h=`${rangeChips}<div class="bar"><div><h2>Shopping list${M?(shopRange==="all"?" · whole month":` · week ${+shopRange+1}`):""}</h2><p class="lead">${M?(shopRange==="all"?"Quantities cover the whole month (four weeks), rounded up to whole packs. Fresh fruit, veg, meat and bread keep better bought weekly: pick a week above for that.":`Quantities cover week ${+shopRange+1}, rounded up to whole packs.`):"Quantities cover the whole week, rounded up to whole packs."} Prices are rough Queensland estimates, so check in store or online before you shop. Tick anything you already have. To shop online, sign in to Coles or Woolworths first, then tap <b>Coles</b> or <b>Woolies</b> on an item to open that store's search for it, ready to add to your trolley.</p></div><button class="btn" id="copy">Copy list</button></div>
  <div class="totals">${STORES.map((s,i)=>`<div class="tot${i===bestStore?" win":""}"><div class="label">All at ${s}</div><div class="v">${money(tots[i])}</div></div>`).join("")}
  <div class="tot"><div class="label">Split shop, cheapest each</div><div class="v">${money(split)}</div></div></div>
- <div class="tablewrap"><table><thead><tr><th>Have</th><th>Item</th><th class="num">Need</th><th class="num">Packs</th>${STORES.map(s=>`<th class="num">${s}</th>`).join("")}<th>Best at</th><th>Add online</th></tr></thead><tbody>`;
+ <div class="tablewrap"><table><thead><tr><th>Got it</th><th>Item</th><th class="num">Need</th><th class="num">Packs</th>${STORES.map(s=>`<th class="num">${s}</th>`).join("")}<th>Best at</th><th>Add online</th></tr></thead><tbody>`;
  let sec=-1;
  list.forEach(x=>{
   if(x.c.s!==sec){sec=x.c.s;h+=`<tr class="sec"><td colspan="${6+STORES.length}">${SECTIONS[sec]}</td></tr>`}
-  const have=!!S.have[x.id];
-  h+=`<tr class="${have?"have":""}"><td><input type="checkbox" id="h-${x.id}" data-have="${x.id}" aria-label="Already have ${esc(x.c.n)}"${have?" checked":""}></td>
+  const have=false;
+  h+=`<tr><td><input type="checkbox" id="h-${x.id}" data-gotit="${x.id}" aria-label="Got ${esc(x.c.n)}: add to my pantry"></td>
   <td><div>${esc(x.c.n)}</div><div class="note">${esc(x.why.slice(0,3).join(", "))}${x.why.length>3?` +${x.why.length-3} more`:""}</div></td>
-  <td class="num">${x.c.un?`${Math.round(x.q*10)/10} ${esc(x.c.un)}`:fmtQ(x.q,x.c.u)}</td><td class="num">${x.packs}</td>
+  <td class="num">${esc(amountOf(x.id,x.need))}${x.have>0?`<div class="note" style="margin:0">have ${esc(amountOf(x.id,x.have))}</div>`:""}</td><td class="num">${x.packs}</td>
   ${x.prices.map((p,i)=>`<td class="num${i===x.best&&!have?" best":""}">${money(p)}</td>`).join("")}
   <td>${STORES[x.best]}</td><td>${have?"":shopLinks(x.c)}</td></tr>`;
  });
  h+=`</tbody><tfoot><tr><td></td><td>Total</td><td></td><td></td>${tots.map(t=>`<td class="num">${money(t)}</td>`).join("")}<td class="num">${money(split)}</td><td></td></tr></tfoot></table></div>
- <p class="note" id="copyMsg" style="margin-top:8px">Highlighted cells are the cheaper store for that item. Coles and Woolworths both run weekly specials, so the cheaper store can change from week to week.</p>`;
- el.innerHTML=h;
+ <p class="note" id="copyMsg" style="margin-top:8px">Tick <b>Got it</b> as you buy things and they go into My pantry. Highlighted cells are the cheaper store for that item. Coles and Woolworths both run weekly specials, so the cheaper store can change from week to week.</p>`;
+ el.innerHTML=h+coveredHtml;
 }
+let coveredOpen=false;
 let rFilter="all",draft=null,niDraft=null,formErr="",savedMsg="",pendingDel=null;
 const UNIT_LABEL={g:"g",ml:"ml",ea:"each"};
 function blankDraft(){return {id:null,n:"",m:"d",t:30,serves:4,rows:[{id:"",q:""},{id:"",q:""},{id:"",q:""}],st:"",preg:false}}
@@ -1427,7 +1468,7 @@ function printDoc(){
  const weeksHtml=Array.from({length:nWeeks()},(_,w)=>`<div class="wk">${M?`<h2>Week ${w+1}</h2>`:`<h2>Meals this week</h2>`}<table class="week">${head}<tbody>${weekRows(w)}</tbody></table>${snackLine(w)}</div>`).join("");
  const pr=M?shopRange:"all";
  const who=S.members.map(m=>m.name.includes("("+m.age+")")?e(m.name):`${e(m.name)} (${m.age})`).join(", ");
- const list=shopping(pr).filter(x=>!S.have[x.id]);
+ const list=shopping(pr);
  const tots=STORES.map((_,i)=>list.reduce((t,x)=>t+x.prices[i],0));
  const split=list.reduce((t,x)=>t+x.prices[x.best],0);
  let shop="",sec=-1;
@@ -1480,9 +1521,9 @@ function printWeek(){
  setTimeout(()=>{try{f.contentWindow.focus();f.contentWindow.print();msg("In the print window, choose Save as PDF to keep or email it, or pick a printer.")}catch(e){msg("Printing isn't available here.")}},300);
 }
 function renderTotal(){
- const list=shopping().filter(x=>!S.have[x.id]);
+ const list=shopping();
  const split=list.reduce((s,x)=>s+x.prices[x.best],0);
- const lst=shopping("all").filter(x=>!S.have[x.id]);const tot=lst.reduce((s,x)=>s+x.prices[x.best],0);
+ const lst=shopping("all");const tot=lst.reduce((s,x)=>s+x.prices[x.best],0);
  $("#hdrTotal").innerHTML=lst.length?`${nWeeks()>1?"Month's":"Week's"} groceries ≈ <b>${money(tot)}</b>`:"";
 }
 /* ---------- Essentials: household, baby and dog supplies bought every week ---------- */
@@ -1549,6 +1590,43 @@ function renderEss(){
  el.innerHTML=h+`</div>`;
 }
 
+let pantryQ_="",pantryMsg="",pantryAddId="";
+function renderPantry(){
+ const el=$("#tab-pantry");if(!el)return;
+ const ids=Object.keys(S.pantry||{}).filter(id=>C[id]);
+ const needAll={};shopping("all");/* refresh need figures */
+ const full=(()=>{const t={};allDays().forEach(d=>{if(isDone(d))return;Object.entries(dayUsage(d)).forEach(([id,q])=>t[id]=(t[id]||0)+q)});return t})();
+ const q=pantryQ_.trim().toLowerCase();
+ const shown=ids.filter(id=>!q||C[id].n.toLowerCase().includes(q)).sort((a,b)=>aisleRank(C[a].s)-aisleRank(C[b].s)||C[a].n.localeCompare(C[b].n));
+ const sel=pantryAddId&&C[pantryAddId]?pantryAddId:"";
+ let h=`<div class="bar"><div><h2>My pantry</h2><p class="lead">Food you already have. The shopping list only asks for what the pantry doesn't cover. Ticking <b>Got it</b> on the shopping list adds things here, and marking a day done takes that day's meals out.</p></div>${ids.length?`<button class="btn" id="pantryClear">${pantryClearPending?"Tap again to empty":"Empty pantry"}</button>`:""}</div>
+ <div class="cols"><form class="panel" id="pantryForm" novalidate>
+  <h3>Add something you already have</h3>
+  <label class="fld"><span class="label">Item</span><select id="pa-id">${ingOptions(sel)}</select></label>
+  <div class="fgrid"><label class="fld"><span class="label">How many packs</span><input type="number" id="pa-n" min="0" step="0.25" value="1"></label>
+  <div class="fld"><span class="label">Pack</span><div class="ro" id="pa-pack">${sel?esc(packText(C[sel])):"Choose an item"}</div></div></div>
+  <p class="note" style="margin:0">Use part packs for opened ones, for example 0.5 for half a bag of rice.</p>
+  <div class="frow"><button type="submit" class="btn primary">Add to pantry</button></div>
+  <p class="note" role="status" id="pantryMsg">${esc(pantryMsg)}</p>
+ </form>
+ <div class="panel"><h3>In the pantry</h3>
+  ${ids.length>6?`<input type="search" id="pantrySearch" placeholder="Search the pantry" value="${esc(pantryQ_)}" aria-label="Search the pantry">`:""}`;
+ if(!ids.length)h+=`<div class="empty">Nothing here yet. Add things you already have, or tick Got it on the shopping list as you shop.</div>`;
+ else{
+  let sec=null;
+  shown.forEach(id=>{const c=C[id];const have=pantryQ(id);const need=full[id]||0;
+   if(c.s!==sec){sec=c.s;h+=`<div class="pa-sec label">${esc(SECTIONS[sec]||"")}</div>`}
+   const st=need<=0?`<span class="note">Not in this plan</span>`:have>=need-1e-6?`<span class="tag ok">Enough for the plan</span>`:`<span class="tag warn">Plan needs ${esc(amountOf(id,need-have))} more</span>`;
+   h+=`<div class="pa-row"><div class="pa-name"><b>${esc(c.n)}</b><span class="note">${esc(amountOf(id,have))} · ${st}</span></div>
+    <label class="pa-qty"><input type="number" id="pa-q-${id}" data-pantryq="${id}" min="0" step="0.25" value="${packsOf(id,have)}" aria-label="Packs of ${esc(c.n)}"><span>${c.p===1?(c.un||"each"):"packs"}</span></label>
+    <button class="linkbtn" data-pantrydel="${id}">Remove</button></div>`;
+  });
+ }
+ h+=`</div></div>`;
+ el.innerHTML=h;
+}
+let pantryClearPending=false;
+
 /* ---------- Leftovers: food already made, zero cost ---------- */
 let loMsg="",loPending=null;
 const slotServes=(day,type)=>{const ms=eaters(type,day);return Math.max(1,Math.ceil(ms.reduce((a,m)=>a+portion(m.age),0)-0.1))};
@@ -1601,6 +1679,8 @@ function completeDay(){
   if(ex){delete ex.gone;ex.serves+=dn.serves;if(dn.useBy&&(!ex.useBy||dn.useBy<ex.useBy))ex.useBy=dn.useBy;rec.added={id:ex.id,n:dn.serves}}
   else{const id=Date.now().toString(36);S.leftovers.push({id,name,serves:dn.serves,useBy:dn.useBy||"",notes:"",added:todayISO(),from:dayLabel(d)});rec.added={id,n:dn.serves}}
  }
+ /* take that day's meals out of the pantry */
+ rec.pantry={};Object.entries(dayUsage(d)).forEach(([id,q])=>{const took=Math.min(pantryQ(id),q);if(took>0){pantryAdd(id,-took);rec.pantry[id]=took}});
  S.done=S.done||{};S.done[d]=rec;
  /* leftovers with nothing left and no future meals go (kept on the record so Undo can bring them back) */
  rec.gone=[];S.leftovers.forEach(l=>{if(!l.gone&&!(l.serves>0||loSlots(l.id).length)){l.gone=true;rec.gone.push(l.id)}});
@@ -1608,6 +1688,7 @@ function completeDay(){
 }
 function undoDone(d){
  const rec=S.done&&S.done[d];if(!rec)return;
+ Object.entries(rec.pantry||{}).forEach(([id,q])=>pantryAdd(id,q));
  (rec.gone||[]).forEach(id=>{const l=S.leftovers.find(x=>x.id===id);if(l)delete l.gone});
  Object.entries(rec.used||{}).forEach(([lid,n])=>{const l=S.leftovers.find(x=>x.id===lid);if(l)l.serves+=n});
  if(rec.added){const l=S.leftovers.find(x=>x.id===rec.added.id);if(l){l.serves-=rec.added.n;if(l.serves<=0&&!loSlots(l.id).length)l.gone=true}}
@@ -1749,7 +1830,7 @@ function saveIe(){
  } else S.customIng[ie.id]=Object.assign({},S.customIng[ie.id],rec);
  syncCustom();save();render();return "";
 }
-function render(){renderWeek();renderLeft();renderEss();renderHouse();renderShop();renderRecipes();renderIng();renderPreg();renderStores();renderTotal()}
+function render(){renderWeek();renderLeft();renderPantry();renderEss();renderHouse();renderShop();renderRecipes();renderIng();renderPreg();renderStores();renderTotal()}
 
 /* Copy text: the Android app provides a native copy; elsewhere use the browser clipboard */
 function copyText(txt){
@@ -1825,7 +1906,7 @@ $("#ingBg").addEventListener("click",e=>{
  if(t.id==="ieDel"){if(!ie.pendingDel){readIe();ie.pendingDel=true;renderIe();return}delete S.customIng[ie.id];syncCustom();save();render();closeIng();return}
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&ie)closeIng()});
-document.addEventListener("toggle",e=>{if(e.target.id==="aisleBox")aisleOpen=e.target.open},true);
+document.addEventListener("toggle",e=>{if(e.target.id==="aisleBox")aisleOpen=e.target.open;if(e.target.id==="coveredBox")coveredOpen=e.target.open},true);
 $("#recipeBg").addEventListener("click",e=>{
  if(e.target.id==="recipeBg"){closeRecipe();return}
  if(!rv)return;
@@ -1896,6 +1977,10 @@ document.addEventListener("click",e=>{
  if(t0.id==="ingAdd"){openIng(null,t0);return}
  const ied=t0.closest&&t0.closest("[data-ingedit]");if(ied){openIng(ied.dataset.ingedit,ied);return}
  if(e.target.id==="printWeek"){printWeek();return}
+ const pd=e.target.closest("[data-pantrydel]");if(pd){const id=pd.dataset.pantrydel;delete S.pantry[id];delete S.bought[id];pantryMsg=`${C[id]?.n||"Item"} removed.`;save();render();return}
+ if(e.target.id==="pantryClear"){if(!pantryClearPending){pantryClearPending=true;renderPantry();return}pantryClearPending=false;S.pantry={};S.bought={};pantryMsg="Pantry emptied.";save();render();return}
+ if(pantryClearPending&&e.target.id!=="pantryClear"){pantryClearPending=false;renderPantry()}
+ const ub=e.target.closest("[data-unbuy]");if(ub){const id=ub.dataset.unbuy;pantryAdd(id,-(S.bought[id]||0));delete S.bought[id];coveredOpen=true;save();renderShop();renderPantry();renderTotal();return}
  const dd=e.target.closest("[data-done]");if(dd){openDone(+dd.dataset.done,dd);return}
  const ud=e.target.closest("[data-undone]");if(ud){const d=+ud.dataset.undone;undoDone(d);document.querySelector(`[data-done="${d}"]`)?.focus();return}
  const sp=e.target.closest("[data-split],[data-unsplit]");if(sp){const on=sp.dataset.split!==undefined;const day=+(on?sp.dataset.split:sp.dataset.unsplit);setSplit(day,on);save();render();
@@ -1979,13 +2064,17 @@ document.addEventListener("click",e=>{
  if(t.id!=="bkLoad"&&t.id!=="bkText"&&bkPending){bkPending=false}
  if(t.id==="reset"){const keep={custom:S.custom,customIng:S.customIng};S=Object.assign(structuredClone(DEFAULT),keep);generate();save();render();return}
  if(t.id==="copy"){
-  const list=shopping().filter(x=>!S.have[x.id]);
+  const list=shopping();
   const txt=list.map(x=>`${x.c.n} × ${x.packs}  (${STORES[x.best]} ${money(x.prices[x.best])})`).join("\n");
   const msg=$("#copyMsg");
   copyText(txt).then(()=>{msg.textContent="Copied to your clipboard."}).catch(()=>{msg.innerHTML=`<textarea readonly style="width:100%;height:160px">${esc(txt)}</textarea>`;msg.querySelector("textarea").select()});
  }
 });
 document.addEventListener("submit",e=>{
+ if(e.target.id==="pantryForm"){e.preventDefault();const id=$("#pa-id").value,n=+$("#pa-n").value;
+  if(!id){pantryMsg="Choose what you have.";renderPantry();$("#pa-id").focus();return}
+  if(!(n>0)){pantryMsg="Enter how many packs, for example 1 or 0.5.";pantryAddId=id;renderPantry();$("#pa-n").focus();return}
+  pantryAdd(id,n*C[id].p);pantryAddId="";pantryMsg=`${C[id].n} added: ${amountOf(id,pantryQ(id))} in the pantry now.`;save();render();$("#pa-id")?.focus();return}
  if(e.target.id==="aisleAdd"){e.preventDefault();const v=$("#aisle-new").value.trim();
   if(!v){aisleMsg="Type a name for the new aisle.";aisleOpen=true;renderIng();$("#aisle-new").focus();return}
   if(SECTIONS.some(x=>x&&x.toLowerCase()===v.toLowerCase())){aisleMsg=`There's already an aisle called ${v}.`;aisleOpen=true;renderIng();return}
@@ -2008,6 +2097,7 @@ document.addEventListener("submit",e=>{
 });
 document.addEventListener("input",e=>{
  const t=e.target;
+ if(t.id==="pantrySearch"){pantryQ_=t.value;renderPantry();const n=$("#pantrySearch");n.focus();n.setSelectionRange(n.value.length,n.value.length);return}
  if(t.id==="ingSearch"){ingQ=t.value;renderIng();const n=$("#ingSearch");n.focus();n.setSelectionRange(n.value.length,n.value.length);return}
  if(t.dataset.dr&&draft){
   const f=t.dataset.dr,i=+t.dataset.i;
@@ -2021,6 +2111,8 @@ document.addEventListener("input",e=>{
 document.addEventListener("change",e=>{
  const t=e.target;
  if(t.id==="ingSec"){ingSec=t.value;renderIng();return}
+ if(t.id==="pa-id"){pantryAddId=t.value;const pk=$("#pa-pack");if(pk)pk.textContent=t.value?packText(C[t.value]):"Choose an item";return}
+ if(t.dataset.pantryq){const id=t.dataset.pantryq;const n=Math.max(0,+t.value||0);if(n<=0){delete S.pantry[id];delete S.bought[id]}else{S.pantry[id]=Object.assign(S.pantry[id]||{since:todayISO()},{q:n*C[id].p})}save();setTimeout(render,0);return}
  if(t.dataset.aislename!==undefined){const i=+t.dataset.aislename;const v=t.value.trim();const a=aisleState();
   if(!v){t.value=SECTIONS[i];return}
   if(i<BASE_SECTIONS.length&&v===BASE_SECTIONS[i])delete a.names[i];else a.names[i]=v;
@@ -2031,7 +2123,8 @@ document.addEventListener("change",e=>{
  if(t.id==="ie-u"&&ie){readIe();renderIe();return}
  if(t.dataset.dr||t.dataset.ni){if(t.dataset.dr==="preg"&&draft)draft.preg=t.checked;if(t.dataset.dr==="ing"&&draft){draft.rows[+t.dataset.i].id=t.value;const u=$(`#dr-u-${t.dataset.i}`);if(u)u.textContent=t.value&&C[t.value]?UNIT_LABEL[C[t.value].u]:"";const hh=$(`#dr-h-${t.dataset.i}`);if(hh)hh.textContent=t.value?ingHint(t.value):""}return}
  if(t.dataset.sel){const[d,ty]=t.dataset.sel.split(",");S.plan[+d][ty]=t.value;save();render();return}
- if(t.dataset.have){S.have[t.dataset.have]=t.checked;save();renderShop();renderTotal();return}
+ if(t.dataset.gotit){const id=t.dataset.gotit;const x=shopping().find(y=>y.id===id);if(x){const amt=x.packs*x.c.p;pantryAdd(id,amt);S.bought[id]=(S.bought[id]||0)+amt;
+  const qty=x.c.p===1?amountOf(id,amt):`${x.packs} ${x.packs===1?"pack":"packs"}`;const m=`${x.c.n}: ${qty} added to My pantry.`;save();renderShop();renderPantry();renderTotal();const cm=$("#copyMsg");if(cm)cm.textContent=m}return}
  if(t.dataset.box){const[d,g,i]=t.dataset.box.split(",");S.box[+d][g][+i]=t.value;save();render();return}
  if(t.dataset.snack){S.snacks[+t.dataset.snack]=t.value;save();render();return}
  if(t.id==="r-snacks"){S.rules.snackCount=Math.max(0,Math.min(10,Math.round(+t.value||0)));pickSnacks();save();setTimeout(render,0);return}
