@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-03T04:02:51.465Z",
+ "updated": "2026-11-03T04:04:30.647Z",
  "state": {
   "members": [
    {
@@ -460,10 +460,18 @@
      ],
      [
       "x_mw04oopp",
-      5
+      3
+     ],
+     [
+      "x_mw05wq91",
+      12
+     ],
+     [
+      "bread",
+      33
      ]
     ],
-    "st": "",
+    "st": "1. Boil egg\n2. Mix boiled egg, curry powder and Mayo together\n3. Serve on bread",
     "raw": [
      [
       "eggs",
@@ -471,7 +479,37 @@
      ],
      [
       "x_mw04oopp",
-      5
+      3
+     ],
+     [
+      "x_mw05wq91",
+      12
+     ],
+     [
+      "bread",
+      33
+     ]
+    ],
+    "measures": [
+     [
+      "eggs",
+      "1",
+      "each"
+     ],
+     [
+      "x_mw04oopp",
+      "1",
+      "tsp"
+     ],
+     [
+      "x_mw05wq91",
+      "1",
+      "tbsp"
+     ],
+     [
+      "bread",
+      "33",
+      "g"
      ]
     ]
    }
