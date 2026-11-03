@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-03T04:13:50.210Z",
+ "updated": "2026-11-03T04:13:53.951Z",
  "state": {
   "members": [
    {
@@ -1200,7 +1200,7 @@
   "done": {},
   "pantry": {
    "eggs": {
-    "q": 21,
+    "q": 12,
     "since": "2026-11-03"
    }
   },
