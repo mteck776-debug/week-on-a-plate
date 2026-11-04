@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T12:35:52.956Z",
+ "updated": "2026-11-04T12:36:07.807Z",
  "state": {
   "members": [
    {
@@ -49,7 +49,7 @@
   "postcode": "4870",
   "plan": [
    {
-    "s": "lqb",
+    "s": "lo:mw23oc2b",
     "d": "lo:mvyhl0jw",
     "a:1": "ltc",
     "a:2": "lcs",
