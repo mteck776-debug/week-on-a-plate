@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:37:33.764Z",
+ "updated": "2026-11-04T04:37:38.022Z",
  "state": {
   "members": [
    {
@@ -1581,6 +1581,10 @@
    },
    "bb_nappies": {
     "q": 144,
+    "since": "2026-11-04"
+   },
+   "bb_cream": {
+    "q": 1,
     "since": "2026-11-04"
    }
   },
