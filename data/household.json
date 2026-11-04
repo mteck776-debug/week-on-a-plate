@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:37:16.162Z",
+ "updated": "2026-11-04T04:37:21.971Z",
  "state": {
   "members": [
    {
@@ -1568,6 +1568,10 @@
     "since": "2026-11-04"
    },
    "hh_handwash": {
+    "q": 1,
+    "since": "2026-11-04"
+   },
+   "hh_foil": {
     "q": 1,
     "since": "2026-11-04"
    }
