@@ -720,7 +720,8 @@ const SNACKS=[
  {id:"ricecake",n:"Rice cakes",i:[["sn_ricecake",1]]},
  {id:"dried",n:"Dried fruit mix",i:[["sn_dried",1]]},
 ];
-const SBY=Object.fromEntries(SNACKS.map(x=>[x.id,x]));
+const SNACK_NONE={id:"none",n:"None",i:[]};
+const SBY=Object.fromEntries(SNACKS.concat([SNACK_NONE]).map(x=>[x.id,x]));
 const adults=()=>S.members.filter(m=>(+m.age||0)>=18);
 function snackFits(sn){const nd=needs(adults(),"a");const al=new Set();sn.i.forEach(([x])=>C[x].a.forEach(a=>al.add(a)));return ![...al].some(a=>nd.excl.has(a))}
 function snackPacks(){return Math.max(1,Math.ceil(adults().length/2))}
@@ -741,7 +742,8 @@ const BOX={
  s:[{id:"cream",n:"Cream biscuits pack",i:[["lb_cream",1]]},{id:"shapes",n:"Savoury biscuits pack",i:[["lb_shapes",1]]},{id:"teddy",n:"Teddy biscuits pack",i:[["lb_teddy",1]]},{id:"rice",n:"Rice crackers pack",i:[["lb_rice",1]]},{id:"pop",n:"Popcorn pack",i:[["lb_pop",1]]},{id:"chips",n:"Chips pack",i:[["lb_chips",1]]},{id:"bar",n:"Muesli bar (nut-free)",i:[["lb_bar",1]]},{id:"sultana",n:"Sultana box",i:[["lb_sultana",1]]},{id:"pretzel",n:"Pretzels pack",i:[["lb_pretzel",1]]},{id:"strip",n:"Fruit strip",i:[["lb_fruitstrip",1]]},{id:"cheesecrack",n:"Cheese & crackers pack",i:[["lb_cheesecrack",1]]}],
  x:[{id:"yog",n:"Yoghurt pouch",i:[["lb_yog",1]]},{id:"coyog",n:"Dairy-free yoghurt pouch",i:[["lb_coyog",1]]},{id:"jelly",n:"Jelly cup",i:[["lb_jelly",1]]},{id:"cheesestick",n:"Cheese stick",i:[["lb_cheesestick",1]]},{id:"fruitcup",n:"Fruit cup",i:[["lb_fruitcup",1]]},{id:"custard",n:"Custard cup",i:[["lb_custard",1]]},{id:"puree",n:"Fruit puree pouch",i:[["lb_puree",1]]}]
 };
-const BOXBY=Object.fromEntries([...BOX.f,...BOX.s,...BOX.x].map(x=>[x.id,x]));
+const BOX_NONE={id:"none",n:"None",i:[]};
+const BOXBY=Object.fromEntries([...BOX.f,...BOX.s,...BOX.x,BOX_NONE].map(x=>[x.id,x]));
 const BOX_PARTS=[["f",0,"Fruit 1"],["f",1,"Fruit 2"],["s",0,"Snack 1"],["s",1,"Snack 2"],["x",0,"Extra"]];
 const schoolKids=()=>S.members.filter(m=>m.school);
 function boxFits(item){const nd=needs(schoolKids(),"s");const al=new Set();item.i.forEach(([x])=>C[x].a.forEach(a=>al.add(a)));return ![...al].some(a=>nd.excl.has(a))}
@@ -766,8 +768,9 @@ function boxCost(day){
  return BOX_PARTS.reduce((t,[g,i])=>{const it=BOXBY[b[g][i]];return t+(it?it.i.reduce((a,[x,q])=>a+unitCost(x)*q*k,0):0)},0);
 }
 function boxSummary(day){
- const b=S.box?.[day];if(!b)return "";const nm=id=>BOXBY[id]?.n||"–";
- return `<div class="boxline"><span class="label">In the lunchbox</span> ${esc(nm(b.f[0]))}, ${esc(nm(b.f[1]))} · ${esc(nm(b.s[0]))}, ${esc(nm(b.s[1]))} · ${esc(nm(b.x[0]))}</div>`;
+ const b=S.box?.[day];if(!b)return "";const nm=id=>id&&id!=="none"&&BOXBY[id]?BOXBY[id].n:"";
+ const parts=[[b.f[0],b.f[1]],[b.s[0],b.s[1]],[b.x[0]]].map(g=>g.map(nm).filter(Boolean).join(", ")).filter(Boolean);
+ return `<div class="boxline"><span class="label">In the lunchbox</span> ${parts.length?esc(parts.join(" · ")):"Just the main"}</div>`;
 }
 const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 /* Meals that use nothing from home: $0 and no shopping */
@@ -1232,7 +1235,7 @@ function renderWeek(){
    h+=`<div class="boxday"><div class="top"><span class="d">${DAYS[d%7]}</span><span class="c">≈ ${money(boxCost(d)+mealCost(d,"s"))}</span></div>
    <div class="boxrow"><span class="label">Main</span><span class="mainname">${main&&RBY[main]?esc(RBY[main].n):"Choose above"}</span></div>`;
    BOX_PARTS.forEach(([g,i,lab])=>{
-    const cur=b[g][i];const opts=BOX[g].filter(x=>boxFits(x)||x.id===cur);
+    const cur=b[g][i];const opts=[BOX_NONE].concat(BOX[g].filter(x=>boxFits(x)||x.id===cur));
     h+=`<label class="boxrow"><span class="label">${lab}</span><select id="box-${d}-${g}${i}" data-box="${d},${g},${i}">${opts.map(o=>`<option value="${o.id}"${o.id===cur?" selected":""}>${esc(o.n)}</option>`).join("")}</select></label>`;
    });
    h+=`</div>`;
@@ -1242,9 +1245,9 @@ function renderWeek(){
  const per=+S.rules.snackCount||0;const w0=(M?viewWeek:0)*per;const wkSn=(S.snacks||[]).slice(w0,w0+per);
  if(adults().length&&wkSn.length){
   const tot=wkSn.reduce((t,id)=>t+(SBY[id]?snackCost(SBY[id]):0),0);
-  h+=`<section class="snacks"><div class="bar" style="margin:20px 0 10px"><div><h2>Adult snacks ${M?`· week ${viewWeek+1}`:"this week"}</h2><p class="lead">${wkSn.length} treats for the adults, about ${money(tot)}. Change how many under Household.</p></div><button class="btn" id="snackNew">New snacks</button></div><div class="snack-grid">`;
+  h+=`<section class="snacks"><div class="bar" style="margin:20px 0 10px"><div><h2>Adult snacks ${M?`· week ${viewWeek+1}`:"this week"}</h2><p class="lead">${(n=>`${n} ${n===1?"treat":"treats"}`)(wkSn.filter(x=>x&&x!=="none").length)} for the adults, about ${money(tot)}. Change how many under Household.</p></div><button class="btn" id="snackNew">New snacks</button></div><div class="snack-grid">`;
   wkSn.forEach((id,j)=>{const i=w0+j;
-   const opts=SNACKS.filter(x=>snackFits(x)||x.id===id);
+   const opts=[SNACK_NONE].concat(SNACKS.filter(x=>snackFits(x)||x.id===id));
    h+=`<div class="snack"><div class="top"><span class="label">Snack ${j+1}</span><button class="reroll" data-snackrr="${i}" aria-label="Pick another snack ${i+1}">↻</button></div>
    <select id="snack-${i}" data-snack="${i}" aria-label="Snack ${i+1}">${opts.map(x=>`<option value="${x.id}"${x.id===id?" selected":""}>${esc(x.n)}</option>`).join("")}</select>
    <div class="meta">≈ ${SBY[id]?money(snackCost(SBY[id])):"–"}</div></div>`;
@@ -1546,11 +1549,11 @@ function printDoc(){
    if(t==="a"&&types.some(x=>x.startsWith("a:")))return `<td>${types.filter(x=>x.startsWith("a:")).map(x=>`<div class="split"><span>${e(slotName(x).replace("Lunch · ",""))}:</span> <b>${e(mealName(d,x))}</b></div>`).join("")}${types.includes("a")?`<div class="split"><span>Kids:</span> <b>${e(mealName(d,"a"))}</b></div>`:""}</td>`;
    if(!types.includes(t))return `<td class="none">–</td>`;
    let cell=`<b>${e(mealName(d,t))}</b>`;
-   if(t==="s"&&boxOn()&&S.box?.[d]&&!boxSkipped(d)){const b=S.box[d];const nm=id=>BOXBY[id]?.n||"–";cell+=`<div class="box">${e(nm(b.f[0]))}, ${e(nm(b.f[1]))}<br>${e(nm(b.s[0]))}, ${e(nm(b.s[1]))}<br>${e(nm(b.x[0]))}</div>`}
+   if(t==="s"&&boxOn()&&S.box?.[d]&&!boxSkipped(d)){const b=S.box[d];const nm=id=>id&&id!=="none"&&BOXBY[id]?BOXBY[id].n:"";const parts=[[b.f[0],b.f[1]],[b.s[0],b.s[1]],[b.x[0]]].map(g=>g.map(nm).filter(Boolean).join(", ")).filter(Boolean);if(parts.length)cell+=`<div class="box">${parts.map(e).join("<br>")}</div>`}
    return `<td>${cell}</td>`;
   }).join("")+`</tr>`;
  });return rows};
- const snackLine=w=>{const sn=(S.snacks||[]).slice(w*per,w*per+per);return adults().length&&sn.length?`<p class="snacks"><b>Adult snacks:</b> ${sn.map(id=>e(SBY[id]?.n||"")).filter(Boolean).join(", ")}</p>`:""};
+ const snackLine=w=>{const sn=(S.snacks||[]).slice(w*per,w*per+per);return adults().length&&sn.length?`<p class="snacks"><b>Adult snacks:</b> ${sn.filter(id=>id!=="none").map(id=>e(SBY[id]?.n||"")).filter(Boolean).join(", ")||"None"}</p>`:""};
  const head=`<thead><tr><th></th>${cols.map(([,l])=>`<th>${l}</th>`).join("")}</tr></thead>`;
  const weeksHtml=Array.from({length:nWeeks()},(_,w)=>`<div class="wk">${M?`<h2>Week ${w+1}</h2>`:`<h2>Meals this week</h2>`}<table class="week">${head}<tbody>${weekRows(w)}</tbody></table>${snackLine(w)}</div>`).join("");
  const pr=M?shopRange:"all";
