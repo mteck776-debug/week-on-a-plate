@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T12:31:08.787Z",
+ "updated": "2026-11-04T12:32:40.427Z",
  "state": {
   "members": [
    {
@@ -1626,16 +1626,17 @@
    {
     "id": "mw1ki1xt",
     "name": "Quick 2 min Noodle (2 Ramen & 2 chicken)",
-    "serves": 2,
+    "serves": 0,
     "useBy": "2026-11-05",
     "notes": "",
     "added": "2026-11-04",
-    "from": "Week 1 Tue"
+    "from": "Week 1 Tue",
+    "gone": true
    },
    {
     "id": "mw1kw4qt",
     "name": "Homemade sausage rolls",
-    "serves": 6,
+    "serves": 5,
     "useBy": "",
     "notes": "Top Shelf Freezer",
     "added": "2026-11-04"
@@ -1655,6 +1656,15 @@
     "useBy": "2026-11-06",
     "notes": "In fridge",
     "added": "2026-11-02"
+   },
+   {
+    "id": "mw23k7ik",
+    "name": "Pizza leftovers",
+    "serves": 3,
+    "useBy": "2026-11-07",
+    "notes": "",
+    "added": "2026-11-04",
+    "from": "Week 1 Wed"
    }
   ],
   "ess": {
@@ -1840,11 +1850,32 @@
      "pasta": 70
     },
     "gone": []
+   },
+   "2": {
+    "at": "2026-11-04T12:32:38.923Z",
+    "used": {
+     "mw1ki1xt": 2,
+     "mw1kw4qt": 1
+    },
+    "added": {
+     "id": "mw23k7ik",
+     "n": 3
+    },
+    "pantry": {
+     "x_mw1m6cir": 36,
+     "eggs": 2,
+     "x_mvx5va6y": 4,
+     "apple": 2,
+     "lb_fruitcup": 2
+    },
+    "gone": [
+     "mw1ki1xt"
+    ]
    }
   },
   "pantry": {
    "eggs": {
-    "q": 12,
+    "q": 10,
     "since": "2026-11-03"
    },
    "pasta": {
@@ -1864,7 +1895,7 @@
     "since": "2026-11-04"
    },
    "apple": {
-    "q": 4,
+    "q": 2,
     "since": "2026-11-04"
    },
    "blueberries": {
@@ -1892,7 +1923,7 @@
     "since": "2026-11-04"
    },
    "x_mvx5va6y": {
-    "q": 33.6,
+    "q": 29.6,
     "since": "2026-11-04"
    },
    "crumbs": {
@@ -1924,7 +1955,7 @@
     "since": "2026-11-04"
    },
    "lb_fruitcup": {
-    "q": 4,
+    "q": 2,
     "since": "2026-11-04"
    },
    "sn_lolly": {
@@ -1988,7 +2019,7 @@
     "since": "2026-11-04"
    },
    "x_mw1m6cir": {
-    "q": 320,
+    "q": 284,
     "since": "2026-11-04"
    }
   },
