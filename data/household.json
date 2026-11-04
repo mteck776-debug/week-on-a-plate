@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T03:20:22.949Z",
+ "updated": "2026-11-04T03:28:38.939Z",
  "state": {
   "members": [
    {
@@ -731,6 +731,18 @@
      8
     ],
     "s": 4,
+    "a": []
+   },
+   "x_mw1k4l67": {
+    "n": "Coles Asian Choy Pak",
+    "u": "ea",
+    "p": 1,
+    "pr": [
+     3,
+     3,
+     3
+    ],
+    "s": 0,
     "a": []
    }
   },
