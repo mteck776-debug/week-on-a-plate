@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:30:44.460Z",
+ "updated": "2026-11-04T04:30:53.878Z",
  "state": {
   "members": [
    {
@@ -1485,6 +1485,10 @@
    },
    "drumsticks": {
     "q": 1000,
+    "since": "2026-11-04"
+   },
+   "x_mvuc30lr": {
+    "q": 880,
     "since": "2026-11-04"
    }
   },
