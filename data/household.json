@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:50:57.243Z",
+ "updated": "2026-11-04T04:51:16.893Z",
  "state": {
   "members": [
    {
@@ -65,9 +65,10 @@
    {
     "s": "lo:mw1ki1xt",
     "d": "x:takeaway",
-    "a": "lo:mw1kw4qt",
     "b:kids": "u_mw1m809z",
-    "b:adults": "u_mvx60kmo"
+    "b:adults": "u_mvx60kmo",
+    "a:1": "lo:mw1kw4qt",
+    "a:2": "lo:mw1kw4qt"
    },
    {
     "s": "lo:mw1kw4qt",
@@ -1405,7 +1406,7 @@
   "split": {
    "0": true,
    "1": true,
-   "2": false
+   "2": true
   },
   "splitB": {
    "0": true,
