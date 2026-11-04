@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:29:34.840Z",
+ "updated": "2026-11-04T04:29:43.798Z",
  "state": {
   "members": [
    {
@@ -1461,6 +1461,10 @@
    },
    "banana": {
     "q": 2,
+    "since": "2026-11-04"
+   },
+   "apple": {
+    "q": 4,
     "since": "2026-11-04"
    }
   },
