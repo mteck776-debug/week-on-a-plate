@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-03T13:14:19.916Z",
+ "updated": "2026-11-04T03:20:22.949Z",
  "state": {
   "members": [
    {
@@ -720,6 +720,18 @@
     "a": [
      "egg"
     ]
+   },
+   "x_mw1jtygz": {
+    "n": "Nongshim Shin Ramyun Noodle 5 Pack",
+    "u": "ea",
+    "p": 6,
+    "pr": [
+     8,
+     8,
+     8
+    ],
+    "s": 4,
+    "a": []
    }
   },
   "example": false,
