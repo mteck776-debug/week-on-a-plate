@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:21:09.894Z",
+ "updated": "2026-11-04T04:21:21.154Z",
  "state": {
   "members": [
    {
@@ -888,7 +888,7 @@
    },
    {
     "f": [
-     "pear",
+     "apple",
      "apple"
     ],
     "s": [
