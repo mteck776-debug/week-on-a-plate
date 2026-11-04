@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:36:54.689Z",
+ "updated": "2026-11-04T04:36:56.985Z",
  "state": {
   "members": [
    {
@@ -1545,6 +1545,10 @@
    },
    "hh_laundry": {
     "q": 40,
+    "since": "2026-11-04"
+   },
+   "hh_towel": {
+    "q": 2,
     "since": "2026-11-04"
    }
   },
