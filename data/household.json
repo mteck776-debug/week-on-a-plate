@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:27:17.701Z",
+ "updated": "2026-11-04T04:27:29.509Z",
  "state": {
   "members": [
    {
@@ -623,7 +623,7 @@
    {
     "id": "u_mw1m809z",
     "m": "b",
-    "n": "Cereal",
+    "n": "Coco Pops Cereal",
     "t": 1,
     "serves": 1,
     "custom": true,
