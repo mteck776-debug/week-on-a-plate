@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:36:36.405Z",
+ "updated": "2026-11-04T04:36:44.902Z",
  "state": {
   "members": [
    {
@@ -1532,6 +1532,10 @@
     "since": "2026-11-04"
    },
    "lb_pop": {
+    "q": 8,
+    "since": "2026-11-04"
+   },
+   "lb_teddy": {
     "q": 8,
     "since": "2026-11-04"
    }
