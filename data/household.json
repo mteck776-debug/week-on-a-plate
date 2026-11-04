@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:35:36.482Z",
+ "updated": "2026-11-04T04:36:18.570Z",
  "state": {
   "members": [
    {
@@ -1521,6 +1521,10 @@
    },
    "x_mvu9wmlv": {
     "q": 150,
+    "since": "2026-11-04"
+   },
+   "lb_fruitcup": {
+    "q": 4,
     "since": "2026-11-04"
    }
   },
