@@ -780,7 +780,18 @@ const isSchoolDay=d=>d%7<5;
 const dayLabel=d=>nWeeks()>1?`Week ${Math.floor(d/7)+1} ${DAYS[d%7]}`:DAYS[d%7];
 let viewWeek=0,shopRange="all";
 const SLOTS={b:"Breakfast",s:"School lunch",a:"Lunch",d:"Dinner"};
-function slotName(t){if(t.startsWith("a:")){const m=S.members.find(x=>String(x.id)===t.slice(2));return "Lunch · "+(m?m.name:"adult")}return SLOTS[t]}
+function slotName(t){if(t==="b:kids")return "Breakfast · Kids";if(t==="b:adults")return "Breakfast · Adults";if(t.startsWith("a:")){const m=S.members.find(x=>String(x.id)===t.slice(2));return "Lunch · "+(m?m.name:"adult")}return SLOTS[t]}
+/* Split a day's breakfast into kids and adults (both start with the shared meal), or share it again */
+function setSplitB(day,on){
+ S.splitB=S.splitB||{};const p=S.plan[day];
+ if(on){const shared=p.b;
+  ["b:kids","b:adults"].forEach(k=>{if(p[k])return;
+   const pl=pool(k,eaters(k,day));const fits=shared&&(RBY[shared]?.leftover||RBY[shared]?.nofood||pl.some(r=>r.id===shared));
+   p[k]=fits?shared:(pl.length?pl[Math.floor(Math.random()*pl.length)].id:shared||null)});
+  delete p.b}
+ else{p.b=p.b||p["b:adults"]||p["b:kids"]||null;delete p["b:kids"];delete p["b:adults"];if(!p.b){const pl=pool("b",S.members);if(pl.length)p.b=pl[Math.floor(Math.random()*pl.length)].id}}
+ S.splitB[day]=on;
+}
 /* Split a day's adult lunch into one per adult (each starts with the shared meal), or share it again */
 function setSplit(day,on){
  S.split=S.split||{};const ea=lunchAdults(day);const p=S.plan[day];
@@ -811,6 +822,7 @@ const DEFAULT={
  ess:null,
  aisles:null,
  split:{},
+ splitB:{},
  done:{},
  pantry:{},
  bought:{},
@@ -827,7 +839,7 @@ if(S.have&&Object.keys(S.have).length){Object.entries(S.have).forEach(([id,v])=>
 S.custom=S.custom||[];S.customIng=S.customIng||{};
 /* Shared household: one document both of you read and write; this browser keeps a copy too */
 let firstSnap=true,ref=null,lastSent="",writing=false,again=false,canWrite=true,pushTimer=null,sharedExists=false;
-function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[],leftovers:S.leftovers||[],ess:S.ess||null,aisles:S.aisles||null,split:S.split||{},done:S.done||{},pantry:S.pantry||{},bought:S.bought||{}}}
+function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[],leftovers:S.leftovers||[],ess:S.ess||null,aisles:S.aisles||null,split:S.split||{},splitB:S.splitB||{},done:S.done||{},pantry:S.pantry||{},bought:S.bought||{}}}
 function setSync(kind){
  const el=document.getElementById("sync");if(!el)return;el.className="sync";
  if(kind==="ok"){el.classList.add("ok");el.innerHTML=`<span class="dot"></span>Shared · up to date`}
@@ -1017,6 +1029,8 @@ function portion(age){age=+age||0;if(age<4)return .4;if(age<9)return .6;if(age<1
 function eaters(type,day){
  const ms=S.members;
  if(type.startsWith("a:")){const id=type.slice(2);return lunchAll(day).filter(m=>String(m.id)===id)}
+ if(type==="b:kids")return ms.filter(m=>!isAdult(m));
+ if(type==="b:adults")return ms.filter(isAdult);
  if(type==="s")return isSchoolDay(day)?ms.filter(m=>m.school):[];
  if(type==="a"){const all=lunchAll(day);return isSplit(day)?all.filter(m=>!isAdult(m)):all}
  return ms;
@@ -1025,8 +1039,10 @@ const isAdult=m=>(+m.age||0)>=18;
 function lunchAll(day){const ms=S.members;return S.rules.adultLunch?(isSchoolDay(day)?ms.filter(m=>!m.school):ms):[]}
 const lunchAdults=day=>lunchAll(day).filter(isAdult);
 function isSplit(day){const ea=lunchAdults(day);if(ea.length<2)return false;const v=(S.split||{})[day];return v==null?!!S.rules.splitLunch:!!v}
+function canSplitB(){return S.members.some(isAdult)&&S.members.some(m=>!isAdult(m))}
+function isSplitB(day){if(!canSplitB())return false;const v=(S.splitB||{})[day];return v==null?!!S.rules.splitBreakfast:!!v}
 function slotTypes(day){
- const t=["b"];
+ const t=isSplitB(day)?["b:kids","b:adults"]:["b"];
  if(isSchoolDay(day)&&S.members.some(m=>m.school))t.push("s");
  if(lunchAll(day).length){if(isSplit(day)){lunchAdults(day).forEach(m=>t.push("a:"+m.id));if(eaters("a",day).length)t.push("a")}else t.push("a")}
  t.push("d");return t;
@@ -1047,7 +1063,7 @@ const MEAL_WORD={b:"breakfast",l:"lunch",d:"dinner"};
 function whyNot(r,day,type){
  if(r.nofood)return [];
  if(r.leftover){const st=loStatus(r.lid);return st&&st.left<0?[`Not enough leftovers: ${st.used} servings planned, ${st.l.serves} saved`]:[]}
- const want=type==="b"?"b":type==="d"?"d":"l";const out=[];
+ const bt=type.split(":")[0];const want=bt==="b"?"b":bt==="d"?"d":"l";const out=[];
  if(r.m!==want)out.push(`Saved as a ${MEAL_WORD[r.m]} recipe`);
  const ms=eaters(type,day);
  ms.forEach(m=>{
@@ -1062,7 +1078,7 @@ function whyNot(r,day,type){
  return out;
 }
 function pool(type,ms){
- const m=type==="b"?"b":type==="d"?"d":"l";const nd=needs(ms,type);
+ const bt=type.split(":")[0];const m=bt==="b"?"b":bt==="d"?"d":"l";const nd=needs(ms,type);
  return R.filter(r=>r.m===m&&resolve(r,nd).ok&&!(nd.preg&&PREG[r.id]?.avoid));
 }
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
@@ -1191,6 +1207,8 @@ function renderWeek(){
    else h+=`<button class="pick" data-pick="${day},${type}" aria-haspopup="dialog"><span>${cur&&RBY[cur]?esc(RBY[cur].n):"Choose a meal"}</span><span aria-hidden="true">⌕</span></button>`;
    if(cur&&RBY[cur]?.nofood)h+=`<div class="meta"><span class="tag ok">$0</span> ${esc(RBY[cur].note)} · nothing added to the shopping list</div>`;
    if(cur&&RBY[cur]&&!RBY[cur].leftover&&!RBY[cur].nofood)h+=`<button class="view-recipe" data-viewslot="${day},${type}">View recipe</button>`;
+   if(type==="b"&&canSplitB())h+=`<button class="view-recipe split-btn" data-splitb="${day}">Split: kids and adults have different breakfasts</button>`;
+   if(type==="b:kids")h+=`<button class="view-recipe split-btn" data-unsplitb="${day}">Share one breakfast again</button>`;
    if(type==="a"&&!isSplit(day)&&lunchAdults(day).length>1)h+=`<button class="view-recipe split-btn" data-split="${day}">Split: give each adult their own lunch</button>`;
    if(type.startsWith("a:")&&type===types.find(x=>x.startsWith("a:")))h+=`<button class="view-recipe split-btn" data-unsplit="${day}">Share one lunch again</button>`;
    if(cur&&RBY[cur]?.leftover){const st=loStatus(RBY[cur].lid);h+=`<div class="meta"><span class="tag ok">$0</span> Uses ${slotServes(day,type)} ${slotServes(day,type)===1?"serving":"servings"}${st?` · ${Math.max(0,st.left)} free after planned meals`:""}</div>`}
@@ -1250,6 +1268,7 @@ function renderHouse(){
  if(!S.members.length)h+=`<div class="empty">No one yet. Add each person in the house.</div>`;
  h+=`</div><div class="panel"><h3>Plan settings</h3>
   <label class="check snackrow">Adult snacks per week <input type="number" id="r-snacks" min="0" max="10" value="${S.rules.snackCount??4}" aria-label="Adult snacks per week"></label>
+  <label class="check"><input type="checkbox" id="r-splitbreakfast" data-splitbrule="1"${S.rules.splitBreakfast?" checked":""}> Give kids and adults different breakfasts every day (you can still share or split any single day)</label>
   <label class="check"><input type="checkbox" id="r-splitlunch" data-splitrule="1"${S.rules.splitLunch?" checked":""}> Give each adult their own lunch every day (you can still share or split any single day)</label>
   <label class="check"><input type="checkbox" id="r-adult" data-rule="adultLunch"${S.rules.adultLunch?" checked":""}> Plan lunches for adults (and everyone on weekends)</label>
   <h3 style="margin-top:8px">School lunch rules</h3>
@@ -1521,6 +1540,7 @@ function printDoc(){
  weekDays(w).forEach(d=>{const dn=DAYS[d%7];
   const types=slotTypes(d);
   rows+=`<tr><th class="day">${dn}</th>`+cols.map(([t])=>{
+   if(t==="b"&&types.includes("b:kids"))return `<td><div class="split"><span>Kids:</span> <b>${e(mealName(d,"b:kids"))}</b></div><div class="split"><span>Adults:</span> <b>${e(mealName(d,"b:adults"))}</b></div></td>`;
    if(t==="a"&&types.some(x=>x.startsWith("a:")))return `<td>${types.filter(x=>x.startsWith("a:")).map(x=>`<div class="split"><span>${e(slotName(x).replace("Lunch · ",""))}:</span> <b>${e(mealName(d,x))}</b></div>`).join("")}${types.includes("a")?`<div class="split"><span>Kids:</span> <b>${e(mealName(d,"a"))}</b></div>`:""}</td>`;
    if(!types.includes(t))return `<td class="none">–</td>`;
    let cell=`<b>${e(mealName(d,t))}</b>`;
@@ -2051,6 +2071,8 @@ document.addEventListener("click",e=>{
  const ub=e.target.closest("[data-unbuy]");if(ub){const id=ub.dataset.unbuy;pantryAdd(id,-(S.bought[id]||0));delete S.bought[id];coveredOpen=true;save();renderShop();renderPantry();renderTotal();return}
  const dd=e.target.closest("[data-done]");if(dd){openDone(+dd.dataset.done,dd);return}
  const ud=e.target.closest("[data-undone]");if(ud){const d=+ud.dataset.undone;undoDone(d);document.querySelector(`[data-done="${d}"]`)?.focus();return}
+ const sb=e.target.closest("[data-splitb],[data-unsplitb]");if(sb){const on=sb.dataset.splitb!==undefined;const day=+(on?sb.dataset.splitb:sb.dataset.unsplitb);setSplitB(day,on);save();render();
+  (on?document.querySelector(`[data-unsplitb="${day}"]`):document.querySelector(`[data-splitb="${day}"]`))?.focus();return}
  const sp=e.target.closest("[data-split],[data-unsplit]");if(sp){const on=sp.dataset.split!==undefined;const day=+(on?sp.dataset.split:sp.dataset.unsplit);setSplit(day,on);save();render();
   const f=on?document.querySelector(`[data-unsplit="${day}"]`):document.querySelector(`[data-split="${day}"]`);f?.focus();return}
  const am=e.target.closest("[data-aislemove]");if(am){const i=+am.dataset.aislemove,d=+am.dataset.d;const l=aisleList();const k=l.indexOf(i),j=k+d;if(j>=0&&j<l.length){[l[k],l[j]]=[l[j],l[k]];aisleState().order=l;aisleOpen=true;save();render();$(`[data-aislemove="${i}"][data-d="${d}"]`)?.focus()}return}
@@ -2198,6 +2220,7 @@ document.addEventListener("change",e=>{
  if(t.dataset.box){const[d,g,i]=t.dataset.box.split(",");S.box[+d][g][+i]=t.value;save();render();return}
  if(t.dataset.snack){S.snacks[+t.dataset.snack]=t.value;save();render();return}
  if(t.id==="r-snacks"){S.rules.snackCount=Math.max(0,Math.min(10,Math.round(+t.value||0)));pickSnacks();save();setTimeout(render,0);return}
+ if(t.dataset.splitbrule){S.rules.splitBreakfast=t.checked;S.splitB={};if(canSplitB())allDays().forEach(d=>{if(S.plan?.[d])setSplitB(d,t.checked)});S.splitB={};save();setTimeout(render,0);return}
  if(t.dataset.splitrule){S.rules.splitLunch=t.checked;S.split={};allDays().forEach(d=>{if(lunchAdults(d).length>1&&S.plan?.[d])setSplit(d,t.checked)});S.split={};save();setTimeout(render,0);return}
  if(t.dataset.rule){S.rules[t.dataset.rule]=t.checked;generate();save();render();return}
  const row=t.closest("[data-m]");
