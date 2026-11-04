@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T03:50:14.265Z",
+ "updated": "2026-11-04T03:50:32.767Z",
  "state": {
   "members": [
    {
@@ -1182,7 +1182,7 @@
    {
     "id": "mw1kw4qt",
     "name": "Homemade sausage rolls",
-    "serves": 36,
+    "serves": 8,
     "useBy": "",
     "notes": "Top Shelf Freezer",
     "added": "2026-11-04"
