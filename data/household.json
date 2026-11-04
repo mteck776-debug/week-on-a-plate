@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:36:44.902Z",
+ "updated": "2026-11-04T04:36:50.014Z",
  "state": {
   "members": [
    {
@@ -1537,6 +1537,10 @@
    },
    "lb_teddy": {
     "q": 8,
+    "since": "2026-11-04"
+   },
+   "hh_bodywash": {
+    "q": 1,
     "since": "2026-11-04"
    }
   },
