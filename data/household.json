@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:37:06.781Z",
+ "updated": "2026-11-04T04:37:12.739Z",
  "state": {
   "members": [
    {
@@ -1561,6 +1561,10 @@
    },
    "hh_paste": {
     "q": 1,
+    "since": "2026-11-04"
+   },
+   "hh_bin": {
+    "q": 50,
     "since": "2026-11-04"
    }
   },
