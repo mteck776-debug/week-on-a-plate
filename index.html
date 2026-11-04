@@ -700,6 +700,7 @@ function syncCustom(){
  if(S.plan&&S.plan.length!==nDays()){const want=nWeeks();S.rules.weeks=want===4?4:1;setWeeks(want)}
  fixSnacks();
  fixBoxes();
+ fixABoxes();
 }
 /* Adult snacks: one shared pack each per week (more packs for bigger groups of adults) */
 const SNACKS=[
@@ -757,6 +758,34 @@ function pickBoxes(){
  for(let w=0;w<nWeeks();w++){const F=set("f",4),SN=set("s",3),X=set("x",2);
   for(let i=0;i<7;i++)S.box.push(i>4?null:{f:[at(F,i),at(F,i+1)],s:[at(SN,i),at(SN,i+1)],x:[at(X,i)]})}
 }
+/* Adult lunch extras: same fruit, snack and extra lists, one set per day for each adult having lunch */
+function aboxOn(){return S.rules.adultKit!==false&&S.rules.adultLunch!==false&&S.members.some(isAdult)}
+function aboxFits(item){const nd=needs(S.members.filter(isAdult),"a");const al=new Set();item.i.forEach(([x])=>C[x].a.forEach(a=>al.add(a)));return ![...al].some(a=>nd.excl.has(a))}
+/* how many adults actually eat a home lunch that day (not skipped, takeaway or out) */
+function aboxCount(day){
+ if(!aboxOn()||!S.plan?.[day])return 0;const p=S.plan[day];const ad=lunchAll(day).filter(isAdult);
+ const home=id=>id&&RBY[id]&&!RBY[id].nofood;
+ if(isSplit(day))return ad.filter(m=>home(p["a:"+m.id])).length;
+ return home(p.a)?ad.length:0;
+}
+function pickABoxes(){
+ if(!aboxOn()){S.abox=null;return}
+ const set=(k,n)=>shuffle(BOX[k].filter(aboxFits)).slice(0,n).map(x=>x.id);
+ const at=(arr,i)=>arr.length?arr[i%arr.length]:"none";
+ S.abox=[];
+ for(let w=0;w<nWeeks();w++){const F=set("f",4),SN=set("s",3);
+  for(let i=0;i<7;i++)S.abox.push({f:[at(F,i),"none"],s:[at(SN,i),"none"],x:["none"]})}
+}
+function fixABoxes(){
+ if(S.rules.adultKit==null)S.rules.adultKit=true;
+ if(!aboxOn()){return}
+ if(!Array.isArray(S.abox)||S.abox.length!==nDays()||!S.abox[0])pickABoxes();
+}
+function aboxCost(day){const b=S.abox?.[day];const k=aboxCount(day);if(!b||!k)return 0;
+ return BOX_PARTS.reduce((t,[g,i])=>{const it=BOXBY[b[g][i]];return t+(it?it.i.reduce((a,[x,q])=>a+unitCost(x)*q*k,0):0)},0)}
+function aboxSummary(day){const b=S.abox?.[day];if(!b||!aboxCount(day))return "";const nm=id=>id&&id!=="none"&&BOXBY[id]?BOXBY[id].n:"";
+ const parts=[[b.f[0],b.f[1]],[b.s[0],b.s[1]],[b.x[0]]].map(g=>g.map(nm).filter(Boolean).join(", ")).filter(Boolean);
+ return parts.length?`<div class="boxline"><span class="label">With lunch</span> ${esc(parts.join(" · "))}</div>`:""}
 function fixBoxes(){
  if(S.rules.lunchKit==null)S.rules.lunchKit=true;
  if(!boxOn()){S.box=null;return}
@@ -818,6 +847,7 @@ const DEFAULT={
  ],
  rules:{nutFree:true,eggFree:false,crunch:true,adultLunch:true,snackCount:4,lunchKit:true},
  box:null,
+ abox:null,
  snacks:null,
  ingEdits:{},
  recipeEdits:{},
@@ -843,7 +873,7 @@ if(S.have&&Object.keys(S.have).length){Object.entries(S.have).forEach(([id,v])=>
 S.custom=S.custom||[];S.customIng=S.customIng||{};
 /* Shared household: one document both of you read and write; this browser keeps a copy too */
 let firstSnap=true,ref=null,lastSent="",writing=false,again=false,canWrite=true,pushTimer=null,sharedExists=false;
-function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[],leftovers:S.leftovers||[],ess:S.ess||null,aisles:S.aisles||null,split:S.split||{},splitB:S.splitB||{},done:S.done||{},pantry:S.pantry||{},bought:S.bought||{}}}
+function sharedState(){return {members:S.members,rules:S.rules,postcode:S.postcode,plan:S.plan,have:S.have,custom:S.custom,customIng:S.customIng,example:S.example,snacks:S.snacks,box:S.box,abox:S.abox||null,ingEdits:S.ingEdits||{},recipeEdits:S.recipeEdits||{},hiddenRecipes:S.hiddenRecipes||[],leftovers:S.leftovers||[],ess:S.ess||null,aisles:S.aisles||null,split:S.split||{},splitB:S.splitB||{},done:S.done||{},pantry:S.pantry||{},bought:S.bought||{}}}
 function setSync(kind){
  const el=document.getElementById("sync");if(!el)return;el.className="sync";
  if(kind==="ok"){el.classList.add("ok");el.innerHTML=`<span class="dot"></span>Shared · up to date`}
@@ -1103,22 +1133,24 @@ function generate(){
  if(S.leftovers)S.leftovers=S.leftovers.filter(l=>!l.gone||plan.some(p=>Object.values(p).includes("lo:"+l.id)));
  pickSnacks();
  pickBoxes();
+ pickABoxes();
 }
 /* Make a fresh plan for one week of a month, keeping the other weeks */
 function regenWeek(w){
- const keep={plan:S.plan,box:S.box,snacks:S.snacks};
+ const keep={plan:S.plan,box:S.box,snacks:S.snacks,abox:S.abox};
  generate();
  const n=+S.rules.snackCount||0;
- weekDays(w).forEach(d=>{keep.plan[d]=S.plan[d];if(keep.box&&S.box)keep.box[d]=S.box[d]});
+ weekDays(w).forEach(d=>{keep.plan[d]=S.plan[d];if(keep.box&&S.box)keep.box[d]=S.box[d];if(keep.abox&&S.abox)keep.abox[d]=S.abox[d]});
  if(keep.snacks&&S.snacks)for(let i=w*n;i<w*n+n;i++)keep.snacks[i]=S.snacks[i];
- S.plan=keep.plan;S.box=keep.box||S.box;S.snacks=keep.snacks||S.snacks;
+ S.plan=keep.plan;S.box=keep.box||S.box;S.snacks=keep.snacks||S.snacks;S.abox=keep.abox||S.abox;
 }
 /* Switch between a week and a month, keeping what's already planned */
 function setWeeks(n){
- const old={plan:S.plan||[],box:S.box||[],snacks:S.snacks||[]};const per=+S.rules.snackCount||0;
+ const old={plan:S.plan||[],box:S.box||[],snacks:S.snacks||[],abox:S.abox||[]};const per=+S.rules.snackCount||0;
  S.rules.weeks=n;generate();
  old.plan.slice(0,nDays()).forEach((p,d)=>{if(p&&Object.keys(p).length)S.plan[d]=p});
  if(S.box)old.box.slice(0,nDays()).forEach((b,d)=>{if(b)S.box[d]=b});
+ if(S.abox)old.abox.slice(0,nDays()).forEach((b,d)=>{if(b)S.abox[d]=b});
  if(S.snacks)old.snacks.slice(0,per*nWeeks()).forEach((x,i)=>{if(x)S.snacks[i]=x});
  viewWeek=Math.min(viewWeek,nWeeks()-1);if(shopRange!=="all"&&+shopRange>=nWeeks())shopRange="all";
 }
@@ -1146,6 +1178,7 @@ function shopping(range){
  })});
  const per=+S.rules.snackCount||0;const wks=[...new Set(days.map(d=>Math.floor(d/7)))];
  const sp=snackPacks();(S.snacks||[]).filter((_,i)=>per&&wks.includes(Math.floor(i/per))).forEach(id=>{const sn=SBY[id];if(sn)sn.i.forEach(([x,q])=>add(x,q*sp,"Adult snacks: "+sn.n))});
+ if(aboxOn()&&S.abox)S.abox.forEach((b,d)=>{if(!b||!inR.has(d)||isDone(d))return;const k=aboxCount(d);if(!k)return;BOX_PARTS.forEach(([g,i])=>{const it=BOXBY[b[g][i]];if(it)it.i.forEach(([x,q])=>add(x,q*k,"Adult lunch: "+it.n))})});
  if(boxOn()&&S.box){const k=schoolKids().length;S.box.forEach((b,d)=>{if(!b||!inR.has(d)||isDone(d)||boxSkipped(d))return;BOX_PARTS.forEach(([g,i])=>{const it=BOXBY[b[g][i]];if(it)it.i.forEach(([x,q])=>add(x,q*k,"Lunchbox: "+it.n))})})}
  if(S.rules.crunch&&!boxOn()){const k=S.members.filter(m=>m.school).length;if(k){add("apple",k*3*wks.length,"Crunch & Sip fruit");add("banana",k*2*wks.length,"Crunch & Sip fruit")}}
  essAdd(add,wks.length);
@@ -1170,6 +1203,7 @@ function dayUsage(day){
  slotTypes(day).forEach(type=>{const id=S.plan?.[day]?.[type];if(!id||!RBY[id])return;
   const ms=eaters(type,day);const nd=needs(ms,type);const f=ms.reduce((t,m)=>t+portion(m.age),0);
   resolve(RBY[id],nd).ing.forEach(([x,q])=>add(x,q*f))});
+ if(aboxOn()&&S.abox?.[day]){const k=aboxCount(day);const b=S.abox[day];if(k)BOX_PARTS.forEach(([g,i])=>{const it=BOXBY[b[g][i]];if(it)it.i.forEach(([x,q])=>add(x,q*k))})}
  if(boxOn()&&S.box?.[day]&&!boxSkipped(day)){const k=schoolKids().length;const b=S.box[day];BOX_PARTS.forEach(([g,i])=>{const it=BOXBY[b[g][i]];if(it)it.i.forEach(([x,q])=>add(x,q*k))})}
  return out;
 }
@@ -1198,7 +1232,7 @@ function renderWeek(){
  let h=`${seg}<div class="bar"><div><h2>${M?"Meals for the month":"Meals for the week"}</h2><p class="lead">Every meal suits everyone eating it. School lunches follow your school's rules and need no heating. Tap any meal to search for a different one, or tap ↻ for a random pick.</p>${S.example?`<p class="note"><span class="tag ok">Example household</span> Edit it under Household.</p>`:""}</div><div class="frow"><button class="btn" id="printWeek">Print / Save PDF</button>${M?`<button class="btn" id="genWeek">New plan for week ${viewWeek+1}</button>`:""}<button class="btn primary" id="gen">${M?"New month's plan":"New week's plan"}</button></div></div><p class="note" id="printMsg" role="status" style="margin:-8px 0 12px"></p>${wkTabs}<div class="days">`;
  weekDays(M?viewWeek:0).forEach(day=>{const dn=DAYS[day%7];
   const types=slotTypes(day);
-  const dc=types.reduce((s,t)=>s+mealCost(day,t),0)+boxCost(day);
+  const dc=types.reduce((s,t)=>s+mealCost(day,t),0)+boxCost(day)+aboxCost(day);
   const dn0=isDone(day);
   h+=`<article class="day${dn0?" done":""}"><header><span class="d">${dn}${dn0?` <span class="tag ok">Done</span>`:""}</span><span class="c">≈ ${money(dc)}</span></header>
   <button class="donebtn" data-${dn0?"undone":"done"}="${day}">${dn0?"Undo day done":"✓ Day done"}</button>${dn0&&S.done[day].pantry&&Object.keys(S.done[day].pantry).length?`<details class="note used-pan"><summary>Used ${Object.keys(S.done[day].pantry).length} ${Object.keys(S.done[day].pantry).length===1?"item":"items"} from My pantry</summary><ul>${Object.entries(S.done[day].pantry).filter(([id])=>C[id]).map(([id,q])=>`<li>${esc(C[id].n)}: ${esc(amountOf(id,q))}</li>`).join("")}</ul></details>`:""}`;
@@ -1221,6 +1255,7 @@ function renderWeek(){
    if(cur&&nd.preg&&PREG[cur]?.tip)meta.push(`<span class="tag preg">Pregnancy</span> ${esc(PREG[cur].tip)}`);
    if(meta.length)h+=`<div class="meta">${meta.join(" · ")}</div>`;
    if(type==="s"&&boxOn()&&!boxSkipped(day))h+=boxSummary(day);
+   if(aboxOn()&&type===(isSplit(day)?types.filter(x=>x.startsWith("a:")).slice(-1)[0]:"a"))h+=aboxSummary(day);
    h+=`</div>`;
   });
   h+=`</article>`;
@@ -1241,6 +1276,16 @@ function renderWeek(){
    h+=`</div>`;
   });
   h+=`</div>${S.rules.crunch?`<p class="note" style="margin-top:8px">Crunch &amp; Sip: pack one of the two fruits for the morning fruit break.</p>`:""}</section>`;
+ }
+ if(aboxOn()&&S.abox){
+  const days=weekDays(M?viewWeek:0).filter(d=>lunchAll(d).some(isAdult));
+  h+=`<section class="lunchbox"><div class="bar" style="margin:20px 0 10px"><div><h2>Adult lunch extras${M?` · week ${viewWeek+1}`:""}</h2><p class="lead">Fruit, snacks and an extra to go with the adults' lunch, from the same lists as the kids' lunchboxes. Set any to None. Switch this off under Household.</p></div><button class="btn" id="aboxNew">New picks</button></div><div class="box-grid">`;
+  days.forEach(d=>{const b=S.abox[d];if(!b)return;const k=aboxCount(d);
+   h+=`<div class="boxday"><div class="top"><span class="d">${DAYS[d%7]}</span><span class="c">${k?`≈ ${money(aboxCost(d))}`:"No home lunch"}</span></div>`;
+   BOX_PARTS.forEach(([g,i,lab])=>{const cur=b[g][i];const opts=[BOX_NONE].concat(BOX[g].filter(x=>aboxFits(x)||x.id===cur));
+    h+=`<label class="boxrow"><span class="label">${lab}</span><select id="abox-${d}-${g}${i}" data-abox="${d},${g},${i}">${opts.map(o=>`<option value="${o.id}"${o.id===cur?" selected":""}>${esc(o.n)}</option>`).join("")}</select></label>`});
+   h+=`</div>`});
+  h+=`</div></section>`;
  }
  const per=+S.rules.snackCount||0;const w0=(M?viewWeek:0)*per;const wkSn=(S.snacks||[]).slice(w0,w0+per);
  if(adults().length&&wkSn.length){
@@ -1279,6 +1324,7 @@ function renderHouse(){
   <h3 style="margin-top:8px">School lunch rules</h3>
   <label class="check"><input type="checkbox" id="r-nut" data-rule="nutFree"${S.rules.nutFree?" checked":""}> Nut-aware school: no nuts or peanut butter in lunchboxes</label>
   <label class="check"><input type="checkbox" id="r-egg" data-rule="eggFree"${S.rules.eggFree?" checked":""}> Egg-aware class: no egg in lunchboxes</label>
+  <label class="check"><input type="checkbox" id="r-akit" data-akit="1"${S.rules.adultKit!==false?" checked":""}> Add fruit, snacks and an extra to adult lunches</label>
   <label class="check"><input type="checkbox" id="r-kit" data-rule="lunchKit"${S.rules.lunchKit!==false?" checked":""}> Full lunchbox: one main, two fruits, two snacks and one extra each school day</label>
   <label class="check"><input type="checkbox" id="r-crunch" data-rule="crunch"${S.rules.crunch?" checked":""}> Crunch &amp; Sip: add fresh fruit or veg for the morning break</label>
   <p class="note">Changing people or rules rebuilds the plan so every meal still fits.</p>
@@ -1546,9 +1592,10 @@ function printDoc(){
   const types=slotTypes(d);
   rows+=`<tr><th class="day">${dn}</th>`+cols.map(([t])=>{
    if(t==="b"&&types.includes("b:kids"))return `<td><div class="split"><span>Kids:</span> <b>${e(mealName(d,"b:kids"))}</b></div><div class="split"><span>Adults:</span> <b>${e(mealName(d,"b:adults"))}</b></div></td>`;
-   if(t==="a"&&types.some(x=>x.startsWith("a:")))return `<td>${types.filter(x=>x.startsWith("a:")).map(x=>`<div class="split"><span>${e(slotName(x).replace("Lunch · ",""))}:</span> <b>${e(mealName(d,x))}</b></div>`).join("")}${types.includes("a")?`<div class="split"><span>Kids:</span> <b>${e(mealName(d,"a"))}</b></div>`:""}</td>`;
+   const aex=t==="a"&&S.abox?.[d]&&aboxCount(d)?(()=>{const b=S.abox[d];const nm=id=>id&&id!=="none"&&BOXBY[id]?BOXBY[id].n:"";const parts=[[b.f[0],b.f[1]],[b.s[0],b.s[1]],[b.x[0]]].map(g=>g.map(nm).filter(Boolean).join(", ")).filter(Boolean);return parts.length?`<div class="box">Adults: ${parts.map(e).join(" · ")}</div>`:""})():"";
+   if(t==="a"&&types.some(x=>x.startsWith("a:")))return `<td>${types.filter(x=>x.startsWith("a:")).map(x=>`<div class="split"><span>${e(slotName(x).replace("Lunch · ",""))}:</span> <b>${e(mealName(d,x))}</b></div>`).join("")}${types.includes("a")?`<div class="split"><span>Kids:</span> <b>${e(mealName(d,"a"))}</b></div>`:""}${aex}</td>`;
    if(!types.includes(t))return `<td class="none">–</td>`;
-   let cell=`<b>${e(mealName(d,t))}</b>`;
+   let cell=`<b>${e(mealName(d,t))}</b>`;if(t==="a")cell+=aex;
    if(t==="s"&&boxOn()&&S.box?.[d]&&!boxSkipped(d)){const b=S.box[d];const nm=id=>id&&id!=="none"&&BOXBY[id]?BOXBY[id].n:"";const parts=[[b.f[0],b.f[1]],[b.s[0],b.s[1]],[b.x[0]]].map(g=>g.map(nm).filter(Boolean).join(", ")).filter(Boolean);if(parts.length)cell+=`<div class="box">${parts.map(e).join("<br>")}</div>`}
    return `<td>${cell}</td>`;
   }).join("")+`</tr>`;
@@ -2101,6 +2148,7 @@ document.addEventListener("click",e=>{
  const sr=e.target.closest("[data-shoprange]");if(sr){shopRange=sr.dataset.shoprange;renderShop();$(`[data-shoprange="${shopRange}"]`)?.focus();return}
  if(e.target.id==="genWeek"){regenWeek(viewWeek);weekDays(viewWeek).forEach(d=>{if(S.done)delete S.done[d]});save();render();return}
  if(e.target.id==="boxNew"){pickBoxes();save();render();return}
+ if(e.target.id==="aboxNew"){pickABoxes();save();render();return}
  if(e.target.id==="snackNew"){pickSnacks();save();render();return}
  if(e.target.dataset.snackrr){const i=+e.target.dataset.snackrr;const ok=SNACKS.filter(x=>snackFits(x)&&x.id!==S.snacks[i]&&!S.snacks.includes(x.id));const alt=ok.length?ok:SNACKS.filter(x=>snackFits(x)&&x.id!==S.snacks[i]);if(alt.length)S.snacks[i]=alt[Math.floor(Math.random()*alt.length)].id;save();render();return}
  const vr=e.target.closest("[data-viewrecipe]");if(vr){openRecipe(vr.dataset.viewrecipe,{},vr);return}
@@ -2222,6 +2270,8 @@ document.addEventListener("change",e=>{
  if(t.dataset.ungot){const id=t.dataset.ungot;const n=C[id]?.n||"Item";pantryAdd(id,-(S.bought[id]||0));delete S.bought[id];save();renderShop();renderPantry();renderTotal();const cm=$("#copyMsg");if(cm)cm.textContent=`${n} taken back out of My pantry and back on the list.`;$(`[data-gotit="${id}"]`)?.focus();return}
  if(t.dataset.gotit){const id=t.dataset.gotit;const x=shopping().find(y=>y.id===id);if(x){const amt=x.packs*x.c.p;pantryAdd(id,amt);S.bought[id]=(S.bought[id]||0)+amt;
   const qty=x.c.p===1?amountOf(id,amt):`${x.packs} ${x.packs===1?"pack":"packs"}`;const m=`${x.c.n}: ${qty} added to My pantry.`;save();renderShop();renderPantry();renderTotal();const cm=$("#copyMsg");if(cm)cm.textContent=m;$(`[data-ungot="${id}"]`)?.focus()}return}
+ if(t.dataset.abox){const[d,g,i]=t.dataset.abox.split(",");S.abox[+d][g][+i]=t.value;save();render();return}
+ if(t.dataset.akit){S.rules.adultKit=t.checked;if(t.checked&&(!Array.isArray(S.abox)||S.abox.length!==nDays()))pickABoxes();save();setTimeout(render,0);return}
  if(t.dataset.box){const[d,g,i]=t.dataset.box.split(",");S.box[+d][g][+i]=t.value;save();render();return}
  if(t.dataset.snack){S.snacks[+t.dataset.snack]=t.value;save();render();return}
  if(t.id==="r-snacks"){S.rules.snackCount=Math.max(0,Math.min(10,Math.round(+t.value||0)));pickSnacks();save();setTimeout(render,0);return}
