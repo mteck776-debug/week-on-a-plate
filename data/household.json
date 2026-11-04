@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T03:29:27.477Z",
+ "updated": "2026-11-04T03:35:05.970Z",
  "state": {
   "members": [
    {
@@ -532,7 +532,7 @@
      ],
      [
       "eggs",
-      0.75
+      1
      ],
      [
       "x_mvx6gakw",
@@ -545,9 +545,13 @@
      [
       "x_mw1k4l67",
       0.125
+     ],
+     [
+      "x_mw05wq91",
+      6
      ]
     ],
-    "st": "",
+    "st": "For Kids\n1. Cook 2 min chicken noodles and frozen veg - Once cooked add 1/4 cup of honey soy and simmer for a few mins to finish this one\nFor Adults\n2. Boil two eggs and 1/2 of the Choy Pak\n3. Boil kettle to cook Ramyun noodles in bowls and set aside the seasoning packets\n4. in two seperate mini bowl, mix seasoning packets, one egg yolk and 1 tbsp of mayo for each bowl. Mix until combined.\n5. Once ramen noodles are ready put a little boiled water in the mini bowls and mix up to make it more liquidfied and easier to put in each ramen bowl\n6. slice eggs in half and add Choy Pak and eggs to ramen bowl. - Ready to serve",
     "raw": [
      [
       "x_mw1jtygz",
@@ -559,7 +563,7 @@
      ],
      [
       "eggs",
-      3
+      4
      ],
      [
       "x_mvx6gakw",
@@ -572,6 +576,10 @@
      [
       "x_mw1k4l67",
       0.5
+     ],
+     [
+      "x_mw05wq91",
+      24
      ]
     ],
     "measures": [
@@ -587,7 +595,7 @@
      ],
      [
       "eggs",
-      "3",
+      "4",
       "each"
      ],
      [
@@ -604,6 +612,11 @@
       "x_mw1k4l67",
       "1/2",
       "each"
+     ],
+     [
+      "x_mw05wq91",
+      "2",
+      "tbsp"
      ]
     ]
    }
