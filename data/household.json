@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T03:49:26.950Z",
+ "updated": "2026-11-04T03:49:28.805Z",
  "state": {
   "members": [
    {
@@ -70,7 +70,7 @@
     "b": "bft",
     "s": "lsu",
     "a": "lsp",
-    "d": "dbc"
+    "d": "x:parents"
    },
    {
     "b": "se",
