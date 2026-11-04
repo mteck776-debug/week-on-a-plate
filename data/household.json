@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T03:28:38.939Z",
+ "updated": "2026-11-04T03:29:27.477Z",
  "state": {
   "members": [
    {
@@ -510,6 +510,100 @@
       "bread",
       "33",
       "g"
+     ]
+    ]
+   },
+   {
+    "id": "u_mw1k5mmj",
+    "m": "d",
+    "n": "Quick 2 min Noodle (2 Ramen & 2 chicken)",
+    "t": 30,
+    "serves": 4,
+    "custom": true,
+    "preg": false,
+    "i": [
+     [
+      "x_mw1jtygz",
+      0.5
+     ],
+     [
+      "x_mvx6dxq6",
+      0.5
+     ],
+     [
+      "eggs",
+      0.75
+     ],
+     [
+      "x_mvx6gakw",
+      28.125
+     ],
+     [
+      "x_mvx6cwq8",
+      9.375
+     ],
+     [
+      "x_mw1k4l67",
+      0.125
+     ]
+    ],
+    "st": "",
+    "raw": [
+     [
+      "x_mw1jtygz",
+      2
+     ],
+     [
+      "x_mvx6dxq6",
+      2
+     ],
+     [
+      "eggs",
+      3
+     ],
+     [
+      "x_mvx6gakw",
+      112.5
+     ],
+     [
+      "x_mvx6cwq8",
+      37.5
+     ],
+     [
+      "x_mw1k4l67",
+      0.5
+     ]
+    ],
+    "measures": [
+     [
+      "x_mw1jtygz",
+      "2",
+      "each"
+     ],
+     [
+      "x_mvx6dxq6",
+      "2",
+      "each"
+     ],
+     [
+      "eggs",
+      "3",
+      "each"
+     ],
+     [
+      "x_mvx6gakw",
+      "3/4",
+      "cup"
+     ],
+     [
+      "x_mvx6cwq8",
+      "1/4",
+      "cup"
+     ],
+     [
+      "x_mw1k4l67",
+      "1/2",
+      "each"
      ]
     ]
    }
