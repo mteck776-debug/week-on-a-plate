@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:19:19.697Z",
+ "updated": "2026-11-04T04:21:03.100Z",
  "state": {
   "members": [
    {
@@ -1184,6 +1184,14 @@
     "serves": 6,
     "useBy": "",
     "notes": "Top Shelf Freezer",
+    "added": "2026-11-04"
+   },
+   {
+    "id": "mw1lzz8a",
+    "name": "Pumpkin Soup",
+    "serves": 4,
+    "useBy": "",
+    "notes": "",
     "added": "2026-11-04"
    }
   ],
