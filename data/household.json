@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:58:54.683Z",
+ "updated": "2026-11-04T12:31:08.787Z",
  "state": {
   "members": [
    {
@@ -43,7 +43,8 @@
    "snackCount": 4,
    "lunchKit": true,
    "weeks": 4,
-   "splitBreakfast": true
+   "splitBreakfast": true,
+   "adultKit": true
   },
   "postcode": "4870",
   "plan": [
@@ -1229,6 +1230,372 @@
    null,
    null
   ],
+  "abox": [
+   {
+    "f": [
+     "apple",
+     "none"
+    ],
+    "s": [
+     "shapes",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "blue",
+     "none"
+    ],
+    "s": [
+     "strip",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "straw",
+     "none"
+    ],
+    "s": [
+     "pretzel",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "grapes",
+     "none"
+    ],
+    "s": [
+     "shapes",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "apple",
+     "none"
+    ],
+    "s": [
+     "strip",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "blue",
+     "none"
+    ],
+    "s": [
+     "pretzel",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "straw",
+     "none"
+    ],
+    "s": [
+     "shapes",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "banana",
+     "none"
+    ],
+    "s": [
+     "cheesecrack",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "straw",
+     "none"
+    ],
+    "s": [
+     "teddy",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "blue",
+     "none"
+    ],
+    "s": [
+     "rice",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "pear",
+     "none"
+    ],
+    "s": [
+     "cheesecrack",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "banana",
+     "none"
+    ],
+    "s": [
+     "teddy",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "straw",
+     "none"
+    ],
+    "s": [
+     "rice",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "blue",
+     "none"
+    ],
+    "s": [
+     "cheesecrack",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "banana",
+     "none"
+    ],
+    "s": [
+     "rice",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "pear",
+     "none"
+    ],
+    "s": [
+     "cream",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "blue",
+     "none"
+    ],
+    "s": [
+     "teddy",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "kiwi",
+     "none"
+    ],
+    "s": [
+     "rice",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "banana",
+     "none"
+    ],
+    "s": [
+     "cream",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "pear",
+     "none"
+    ],
+    "s": [
+     "teddy",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "blue",
+     "none"
+    ],
+    "s": [
+     "rice",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "grapes",
+     "none"
+    ],
+    "s": [
+     "pretzel",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "straw",
+     "none"
+    ],
+    "s": [
+     "bar",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "blue",
+     "none"
+    ],
+    "s": [
+     "sultana",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "apple",
+     "none"
+    ],
+    "s": [
+     "pretzel",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "grapes",
+     "none"
+    ],
+    "s": [
+     "bar",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "straw",
+     "none"
+    ],
+    "s": [
+     "sultana",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   },
+   {
+    "f": [
+     "blue",
+     "none"
+    ],
+    "s": [
+     "pretzel",
+     "none"
+    ],
+    "x": [
+     "none"
+    ]
+   }
+  ],
   "ingEdits": {
    "rice": {
     "n": "White rice 1kg Bag"
@@ -1280,6 +1647,14 @@
     "useBy": "",
     "notes": "",
     "added": "2026-11-04"
+   },
+   {
+    "id": "mvyhlgcm",
+    "name": "Pumpkin Soup",
+    "serves": 3,
+    "useBy": "2026-11-06",
+    "notes": "In fridge",
+    "added": "2026-11-02"
    }
   ],
   "ess": {
