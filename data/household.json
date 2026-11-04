@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T03:37:25.789Z",
+ "updated": "2026-11-04T03:38:13.073Z",
  "state": {
   "members": [
    {
@@ -1163,7 +1163,7 @@
    {
     "id": "mvyhlgcm",
     "name": "Pumpkin Soup",
-    "serves": 3,
+    "serves": 1,
     "useBy": "2026-11-06",
     "notes": "In fridge",
     "added": "2026-11-02"
@@ -1171,10 +1171,11 @@
    {
     "id": "mvyhl0jw",
     "name": "Spaghetti bolognese",
-    "serves": 4,
+    "serves": 0,
     "useBy": "2026-11-04",
     "notes": "Middle of fridge",
-    "added": "2026-11-02"
+    "added": "2026-11-02",
+    "gone": true
    }
   ],
   "ess": {
@@ -1328,10 +1329,25 @@
    "0": true,
    "1": true
   },
-  "done": {},
+  "done": {
+   "0": {
+    "at": "2026-11-04T03:38:11.561Z",
+    "used": {
+     "mvyhlgcm": 2,
+     "mvyhl0jw": 4
+    },
+    "added": null,
+    "pantry": {
+     "eggs": 3.2
+    },
+    "gone": [
+     "mvyhl0jw"
+    ]
+   }
+  },
   "pantry": {
    "eggs": {
-    "q": 12,
+    "q": 8.8,
     "since": "2026-11-03"
    },
    "pasta": {
