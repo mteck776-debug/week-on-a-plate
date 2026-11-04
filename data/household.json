@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T03:38:49.526Z",
+ "updated": "2026-11-04T03:39:07.183Z",
  "state": {
   "members": [
    {
@@ -1163,7 +1163,7 @@
    {
     "id": "mvyhlgcm",
     "name": "Pumpkin Soup",
-    "serves": 1,
+    "serves": 0,
     "useBy": "2026-11-06",
     "notes": "In fridge",
     "added": "2026-11-02"
@@ -1176,6 +1176,15 @@
     "notes": "Middle of fridge",
     "added": "2026-11-02",
     "gone": true
+   },
+   {
+    "id": "mw1ki1xt",
+    "name": "Quick 2 min Noodle (2 Ramen & 2 chicken)",
+    "serves": 2,
+    "useBy": "2026-11-05",
+    "notes": "",
+    "added": "2026-11-04",
+    "from": "Week 1 Tue"
    }
   ],
   "ess": {
@@ -1343,15 +1352,30 @@
     "gone": [
      "mvyhl0jw"
     ]
+   },
+   "1": {
+    "at": "2026-11-04T03:39:05.681Z",
+    "used": {
+     "mvyhlgcm": 1
+    },
+    "added": {
+     "id": "mw1ki1xt",
+     "n": 2
+    },
+    "pantry": {
+     "eggs": 7.4,
+     "pasta": 70
+    },
+    "gone": []
    }
   },
   "pantry": {
    "eggs": {
-    "q": 8.8,
+    "q": 1.4000000000000004,
     "since": "2026-11-03"
    },
    "pasta": {
-    "q": 500,
+    "q": 430,
     "since": "2026-11-03"
    },
    "rice": {
