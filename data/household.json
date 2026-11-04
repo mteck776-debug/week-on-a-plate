@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:29:55.838Z",
+ "updated": "2026-11-04T04:30:07.129Z",
  "state": {
   "members": [
    {
@@ -1469,6 +1469,10 @@
    },
    "blueberries": {
     "q": 250,
+    "since": "2026-11-04"
+   },
+   "onion": {
+    "q": 700,
     "since": "2026-11-04"
    }
   },
