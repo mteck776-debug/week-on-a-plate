@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:37:27.323Z",
+ "updated": "2026-11-04T04:37:33.764Z",
  "state": {
   "members": [
    {
@@ -1577,6 +1577,10 @@
    },
    "bb_wipes": {
     "q": 240,
+    "since": "2026-11-04"
+   },
+   "bb_nappies": {
+    "q": 144,
     "since": "2026-11-04"
    }
   },
