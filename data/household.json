@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:21:36.413Z",
+ "updated": "2026-11-04T04:26:00.265Z",
  "state": {
   "members": [
    {
@@ -851,6 +851,20 @@
     ],
     "s": 0,
     "a": []
+   },
+   "x_mw1m6cir": {
+    "n": "Coco Pops",
+    "u": "g",
+    "p": 320,
+    "pr": [
+     5.5,
+     5.5,
+     5.5
+    ],
+    "s": 4,
+    "a": [
+     "gluten"
+    ]
    }
   },
   "example": false,
