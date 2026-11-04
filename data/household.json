@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:26:00.265Z",
+ "updated": "2026-11-04T04:27:17.701Z",
  "state": {
   "members": [
    {
@@ -617,6 +617,48 @@
       "x_mw05wq91",
       "2",
       "tbsp"
+     ]
+    ]
+   },
+   {
+    "id": "u_mw1m809z",
+    "m": "b",
+    "n": "Cereal",
+    "t": 1,
+    "serves": 1,
+    "custom": true,
+    "preg": false,
+    "i": [
+     [
+      "x_mw1m6cir",
+      30
+     ],
+     [
+      "milk",
+      125
+     ]
+    ],
+    "st": "",
+    "raw": [
+     [
+      "x_mw1m6cir",
+      30
+     ],
+     [
+      "milk",
+      125
+     ]
+    ],
+    "measures": [
+     [
+      "x_mw1m6cir",
+      "30",
+      "g"
+     ],
+     [
+      "milk",
+      "1/2",
+      "cup"
      ]
     ]
    }
