@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:31:44.041Z",
+ "updated": "2026-11-04T04:31:49.781Z",
  "state": {
   "members": [
    {
@@ -1497,6 +1497,10 @@
    },
    "crumbs": {
     "q": 50,
+    "since": "2026-11-04"
+   },
+   "coconutmilk": {
+    "q": 400,
     "since": "2026-11-04"
    }
   },
