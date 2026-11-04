@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-04T04:30:35.515Z",
+ "updated": "2026-11-04T04:30:44.460Z",
  "state": {
   "members": [
    {
@@ -1480,6 +1480,10 @@
     "since": "2026-11-04"
    },
    "beef_steak": {
+    "q": 1000,
+    "since": "2026-11-04"
+   },
+   "drumsticks": {
     "q": 1000,
     "since": "2026-11-04"
    }
