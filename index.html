@@ -689,6 +689,7 @@ function syncCustom(){
  Object.keys(PREG).forEach(k=>delete PREG[k]);Object.assign(PREG,JSON.parse(JSON.stringify(PREG_ORIG)));
  const base=BASE_R.filter(r=>!hidden.has(r.id)).map(r=>edits[r.id]?Object.assign({},edits[r.id],{id:r.id,edited:true,custom:false}):r);
  const lo=(S.leftovers||[]).map(l=>({id:"lo:"+l.id,m:"any",n:"Leftovers: "+l.name,t:5,i:[],st:l.notes||"",leftover:true,lid:l.id}));
+ lo.push(...NOFOOD.map(x=>Object.assign({m:"any",t:0,i:[],st:"",nofood:true},x)));
  R=base.concat((S.custom||[]).filter(r=>!hidden.has(r.id)),lo);RBY=Object.fromEntries(R.map(r=>[r.id,r]));
  lo.forEach(r=>{PREG[r.id]={tip:"Reheat until steaming hot all the way through. Eat leftovers within a day of cooking."}});
  R.filter(r=>r.custom||r.edited).forEach(r=>{
@@ -768,6 +769,8 @@ function boxSummary(day){
  return `<div class="boxline"><span class="label">In the lunchbox</span> ${esc(nm(b.f[0]))}, ${esc(nm(b.f[1]))} · ${esc(nm(b.s[0]))}, ${esc(nm(b.s[1]))} · ${esc(nm(b.x[0]))}</div>`;
 }
 const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+/* Meals that use nothing from home: $0 and no shopping */
+const NOFOOD=[{id:"x:takeaway",n:"Takeaway",lo:"Takeaway leftovers",note:"No food from home",kw:"takeaway take away takeout eating out restaurant"},{id:"x:parents",n:"Eating at parents'",lo:"Leftovers from parents'",note:"No food from home",kw:"eating at parents mum dad family nan pop"}];
 /* Plan length: one week, or a month of four weeks. Days are numbered 0..27; d%7 is the weekday. */
 const nWeeks=()=>S.rules&&+S.rules.weeks===4?4:1;
 const nDays=()=>7*nWeeks();
@@ -1042,6 +1045,7 @@ function resolve(r,nd){
 }
 const MEAL_WORD={b:"breakfast",l:"lunch",d:"dinner"};
 function whyNot(r,day,type){
+ if(r.nofood)return [];
  if(r.leftover){const st=loStatus(r.lid);return st&&st.left<0?[`Not enough leftovers: ${st.used} servings planned, ${st.l.serves} saved`]:[]}
  const want=type==="b"?"b":type==="d"?"d":"l";const out=[];
  if(r.m!==want)out.push(`Saved as a ${MEAL_WORD[r.m]} recipe`);
@@ -1185,7 +1189,8 @@ function renderWeek(){
    h+=`<div class="slot${type==="s"?" school":""}"><div class="top"><span class="label">${esc(slotName(type))}${type==="s"&&S.rules.crunch?" · Crunch & Sip":""}</span><button class="reroll" data-rr="${day},${type}" aria-label="Pick another ${esc(slotName(type))} for ${dn}">↻</button></div>`;
    if(!p.length)h+=`<div class="meta">No recipe fits everyone's needs here yet.</div>`;
    else h+=`<button class="pick" data-pick="${day},${type}" aria-haspopup="dialog"><span>${cur&&RBY[cur]?esc(RBY[cur].n):"Choose a meal"}</span><span aria-hidden="true">⌕</span></button>`;
-   if(cur&&RBY[cur]&&!RBY[cur].leftover)h+=`<button class="view-recipe" data-viewslot="${day},${type}">View recipe</button>`;
+   if(cur&&RBY[cur]?.nofood)h+=`<div class="meta"><span class="tag ok">$0</span> ${esc(RBY[cur].note)} · nothing added to the shopping list</div>`;
+   if(cur&&RBY[cur]&&!RBY[cur].leftover&&!RBY[cur].nofood)h+=`<button class="view-recipe" data-viewslot="${day},${type}">View recipe</button>`;
    if(type==="a"&&!isSplit(day)&&lunchAdults(day).length>1)h+=`<button class="view-recipe split-btn" data-split="${day}">Split: give each adult their own lunch</button>`;
    if(type.startsWith("a:")&&type===types.find(x=>x.startsWith("a:")))h+=`<button class="view-recipe split-btn" data-unsplit="${day}">Share one lunch again</button>`;
    if(cur&&RBY[cur]?.leftover){const st=loStatus(RBY[cur].lid);h+=`<div class="meta"><span class="tag ok">$0</span> Uses ${slotServes(day,type)} ${slotServes(day,type)===1?"serving":"servings"}${st?` · ${Math.max(0,st.left)} free after planned meals`:""}</div>`}
@@ -1431,7 +1436,7 @@ function renderRecipes(){
  const el=$("#tab-recipes");
  const fl=[["all","All"],["b","Breakfast"],["l","Lunchbox"],["d","Dinner"],["mine","Your recipes"]];
  let h=`<div class="bar"><div><h2>Recipes</h2><p class="lead">Amounts below are for one adult serving. Open a recipe to set how many servings you're cooking. Every recipe can be edited or deleted, and changes reach your other devices.</p></div><div class="filters"><button class="btn primary" data-act="new-recipe">Add your own recipe</button>${fl.map(([k,l])=>`<button class="chip" data-rf="${k}" aria-pressed="${rFilter===k}">${l}</button>`).join("")}</div></div>${(S.hiddenRecipes||[]).length?`<p class="note" style="margin:-6px 0 12px">${S.hiddenRecipes.length} built-in ${S.hiddenRecipes.length===1?"recipe is":"recipes are"} deleted. <button class="btn small" data-act="restore-recipes">Bring them back</button></p>`:""}${draft?formHTML():""}${savedMsg?`<p class="note" role="status" style="margin-bottom:12px"><span class="tag ok">Saved</span> ${esc(savedMsg)}</p>`:""}<div class="recipes">`;
- const shown=R.filter(r=>!r.leftover&&(rFilter==="all"||(rFilter==="mine"?r.custom:r.m===rFilter)));
+ const shown=R.filter(r=>!r.leftover&&!r.nofood&&(rFilter==="all"||(rFilter==="mine"?r.custom:r.m===rFilter)));
  if(!shown.length)h+=`<div class="empty">You haven't added any recipes yet. Use <b>Add your own recipe</b> to start.</div>`;
  shown.forEach(r=>{
   const al=new Set();r.i.forEach(([id])=>C[id]&&C[id].a.forEach(a=>al.add(a)));
@@ -1702,9 +1707,9 @@ let dn=null;
 function addDaysISO(n){const d=new Date();d.setDate(d.getDate()+n);return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
 function openDone(day,from){
  const id=S.plan?.[day]?.d;const r=id&&RBY[id];
- const name=r?(r.leftover?(S.leftovers.find(l=>"lo:"+l.id===id)?.name||r.n.replace(/^Leftovers: /,"")):r.n):"";
+ const name=r?(r.nofood?r.lo:r.leftover?(S.leftovers.find(l=>"lo:"+l.id===id)?.name||r.n.replace(/^Leftovers: /,"")):r.n):"";
  const preg=S.members.some(m=>m.d.includes("preg"));
- dn={day,from:from||null,name,serves:0,useBy:addDaysISO(preg?1:2),preg};
+ dn={day,from:from||null,name,dish:r?(r.nofood?r.n:name):"",serves:0,useBy:addDaysISO(preg?1:2),preg};
  $("#dnTitle").textContent=`${dayLabel(day)} done`;$("#doneBg").hidden=false;renderDone();setTimeout(()=>$("#dnMinus")?.focus()||$("#dnClose").focus(),0);
 }
 function closeDone(){$("#doneBg").hidden=true;const f=dn&&dn.from;dn=null;if(f&&document.body.contains(f))f.focus()}
@@ -1713,7 +1718,7 @@ function renderDone(){
  const used=slotTypes(d).map(t=>[t,S.plan[d]?.[t]]).filter(([,id])=>id&&RBY[id]?.leftover);
  const existing=(S.leftovers||[]).find(l=>!l.gone&&l.name.trim().toLowerCase()===dn.name.trim().toLowerCase());
  $("#dnBody").innerHTML=`
-  ${dn.name?`<p style="margin:0">Dinner was <b>${esc(dn.name)}</b>. Any leftovers?</p>`:`<p style="margin:0">Any leftovers from dinner?</p>`}
+  ${dn.dish?`<p style="margin:0">Dinner was <b>${esc(dn.dish)}</b>. Any leftovers?</p>`:`<p style="margin:0">Any leftovers from dinner?</p>`}
   <div class="serves"><span class="label">Servings left over</span>
    <div class="stepper"><button id="dnMinus" aria-label="One less serving"${dn.serves<=0?" disabled":""}>−</button><output aria-live="polite">${dn.serves}</output><button id="dnPlus" aria-label="One more serving">+</button></div></div>
   <div class="fgrid"${dn.serves>0?"":" hidden"}>
@@ -1767,7 +1772,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dn)closeDone()});
 function renderLeft(){
  const el=$("#tab-left");if(!el)return;
  const today=todayISO();
- const recs=[...new Set(R.filter(r=>!r.leftover).map(r=>r.n))].sort();
+ const recs=[...new Set(R.filter(r=>!r.leftover&&!r.nofood).map(r=>r.n).concat(NOFOOD.map(x=>x.lo)))].sort();
  let h=`<div class="bar"><div><h2>Leftovers</h2><p class="lead">Add food that's already cooked and how many servings are left. Put it on any meal and that meal costs nothing and adds nothing to the shopping list.</p></div></div>
  <div class="cols"><form class="panel" id="loForm" novalidate>
   <h3>Add leftovers</h3>
@@ -2011,11 +2016,12 @@ function renderPicker(){
  const need=slotServes(day,type);
  const los=(S.leftovers||[]).filter(l=>!l.gone).filter(l=>!words.length||words.every(w=>l.name.toLowerCase().includes(w)||"leftovers".includes(w))).map(l=>{const st=loStatus(l.id);const mine=cur==="lo:"+l.id?need:0;return {l,free:st.left+mine}});
  const loHtml=los.length?`<li class="pk-sep">Leftovers · $0</li>`+los.map(({l,free})=>`<li><button class="pk-item${free<need?" off":""}" data-choose="lo:${l.id}"${cur==="lo:"+l.id?' aria-current="true"':""}><span>${esc(l.name)}<span class="why${free<need?" warnline":""}">${free} ${free===1?"serving":"servings"} free · this meal needs ${need}</span></span><small>$0</small></button></li>`).join("")+`<li class="pk-sep">Recipes</li>`:"";
- const others=R.filter(r=>!okIds.has(r.id)&&!r.leftover).filter(r=>{
+ const others=R.filter(r=>!okIds.has(r.id)&&!r.leftover&&!r.nofood).filter(r=>{
   if(words.length)return words.every(w=>(r.custom?r.n+" "+r.i.map(([x])=>C[x]?.n||"").join(" "):r.n).toLowerCase().includes(w));
   return !!r.custom;
  }).map(r=>({r,why:whyNot(r,day,type)})).sort((a,b)=>(b.r.custom?1:0)-(a.r.custom?1:0)||a.r.n.localeCompare(b.r.n));
- $("#pkList").innerHTML=loHtml+(rows.length||others.length?rows.map(({r,cost,via})=>`<li><button class="pk-item" data-choose="${r.id}"${r.id===cur?' aria-current="true"':""}><span>${esc(r.n)}${r.custom?' <span class="tag ok">Yours</span>':""}${via.length?`<span class="why">Has ${via.map(esc).join(", ")}</span>`:""}</span><small>${r.t} min · ≈ ${money(cost)}</small></button></li>`).join("")+(others.length?`<li class="pk-sep">${rows.length?"Doesn't suit everyone or is a different meal":"These match, but don't suit everyone or are a different meal"}</li>`+others.map(({r,why})=>`<li><button class="pk-item off" data-choose="${r.id}"${r.id===cur?' aria-current="true"':""}><span>${esc(r.n)}${r.custom?' <span class="tag ok">Yours</span>':""}<span class="why warnline">${why.map(esc).join(" · ")}</span></span><small>Pick anyway</small></button></li>`).join(""):""):`<li class="empty">No meals match "${esc(q)}". Try another word, or add your own recipe on the Recipes tab.</li>`);
+ const nfHtml=NOFOOD.filter(x=>!words.length||words.every(w=>(x.n+" "+x.kw).toLowerCase().includes(w))).map(x=>`<li><button class="pk-item" data-choose="${x.id}"${cur===x.id?' aria-current="true"':""}><span>${esc(x.n)}<span class="why">${esc(x.note)}</span></span><small>$0</small></button></li>`).join("");
+ $("#pkList").innerHTML=(nfHtml?`<li class="pk-sep">No cooking · $0</li>${nfHtml}`:"")+loHtml+(rows.length||others.length?rows.map(({r,cost,via})=>`<li><button class="pk-item" data-choose="${r.id}"${r.id===cur?' aria-current="true"':""}><span>${esc(r.n)}${r.custom?' <span class="tag ok">Yours</span>':""}${via.length?`<span class="why">Has ${via.map(esc).join(", ")}</span>`:""}</span><small>${r.t} min · ≈ ${money(cost)}</small></button></li>`).join("")+(others.length?`<li class="pk-sep">${rows.length?"Doesn't suit everyone or is a different meal":"These match, but don't suit everyone or are a different meal"}</li>`+others.map(({r,why})=>`<li><button class="pk-item off" data-choose="${r.id}"${r.id===cur?' aria-current="true"':""}><span>${esc(r.n)}${r.custom?' <span class="tag ok">Yours</span>':""}<span class="why warnline">${why.map(esc).join(" · ")}</span></span><small>Pick anyway</small></button></li>`).join(""):""):`<li class="empty">No meals match "${esc(q)}". Try another word, or add your own recipe on the Recipes tab.</li>`);
 }
 $("#pkSearch").addEventListener("input",renderPicker);
 $("#pkSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){const b=$("#pkList .pk-item");if(b)b.click()}});
@@ -2071,7 +2077,7 @@ document.addEventListener("click",e=>{
  if(e.target.id==="snackNew"){pickSnacks();save();render();return}
  if(e.target.dataset.snackrr){const i=+e.target.dataset.snackrr;const ok=SNACKS.filter(x=>snackFits(x)&&x.id!==S.snacks[i]&&!S.snacks.includes(x.id));const alt=ok.length?ok:SNACKS.filter(x=>snackFits(x)&&x.id!==S.snacks[i]);if(alt.length)S.snacks[i]=alt[Math.floor(Math.random()*alt.length)].id;save();render();return}
  const vr=e.target.closest("[data-viewrecipe]");if(vr){openRecipe(vr.dataset.viewrecipe,{},vr);return}
- const vs=e.target.closest("[data-viewslot]");if(vs){const[d,ty]=vs.dataset.viewslot.split(",");const day=+d;const id=S.plan?.[day]?.[ty];if(id&&!RBY[id]?.leftover){const ms=eaters(ty,day);const portions=ms.reduce((a,m)=>a+portion(m.age),0);
+ const vs=e.target.closest("[data-viewslot]");if(vs){const[d,ty]=vs.dataset.viewslot.split(",");const day=+d;const id=S.plan?.[day]?.[ty];if(id&&!RBY[id]?.leftover&&!RBY[id]?.nofood){const ms=eaters(ty,day);const portions=ms.reduce((a,m)=>a+portion(m.age),0);
    const serves=Math.max(1,Math.ceil(portions-0.1));
    openRecipe(id,{serves,nd:needs(ms,ty),ctx:`${dayLabel(day)} ${slotName(ty).toLowerCase()} for ${ms.map(m=>m.name).join(", ")}. Set to ${serves} adult ${serves===1?"serving":"servings"} to cover everyone's ages. Change it if you're cooking extra.`},vs)}return}
  const pb=e.target.closest("[data-pick]");if(pb){const[d,ty]=pb.dataset.pick.split(",");openPicker(+d,ty,pb);return}
