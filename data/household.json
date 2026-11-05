@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-05T23:26:00.790Z",
+ "updated": "2026-11-05T23:28:55.540Z",
  "state": {
   "members": [
    {
@@ -1114,6 +1114,18 @@
      5.6
     ],
     "s": 4,
+    "a": []
+   },
+   "x_mw46g07d": {
+    "n": "Simply Mixed Vegetables Snap Frozen",
+    "u": "g",
+    "p": 1000,
+    "pr": [
+     2.8,
+     2.8,
+     2.8
+    ],
+    "s": 5,
     "a": []
    }
   },
