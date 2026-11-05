@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-05T22:52:06.860Z",
+ "updated": "2026-11-05T22:54:36.156Z",
  "state": {
   "members": [
    {
@@ -2066,6 +2066,10 @@
    "x_mw1m6cir": {
     "q": 248,
     "since": "2026-11-04"
+   },
+   "x_mw44zu9p": {
+    "q": 5,
+    "since": "2026-11-06"
    }
   },
   "bought": {}
