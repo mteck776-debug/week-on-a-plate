@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-05T22:57:02.040Z",
+ "updated": "2026-11-05T22:58:02.284Z",
  "state": {
   "members": [
    {
@@ -993,6 +993,20 @@
     ],
     "s": 6,
     "a": []
+   },
+   "x_mw45ca8b": {
+    "n": "Nestle Milo Energy Dairy Snack",
+    "u": "ea",
+    "p": 1,
+    "pr": [
+     2.85,
+     2.85,
+     2.85
+    ],
+    "s": 2,
+    "a": [
+     "dairy"
+    ]
    }
   },
   "example": false,
