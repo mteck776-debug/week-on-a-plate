@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-05T22:42:48.000Z",
+ "updated": "2026-11-05T22:42:57.503Z",
  "state": {
   "members": [
    {
@@ -1644,11 +1644,12 @@
    {
     "id": "mw23k7ik",
     "name": "Pizza leftovers",
-    "serves": 4,
+    "serves": 0,
     "useBy": "2026-11-07",
     "notes": "",
     "added": "2026-11-04",
-    "from": "Week 1 Wed"
+    "from": "Week 1 Wed",
+    "gone": true
    },
    {
     "id": "mw23oc2b",
@@ -1863,11 +1864,27 @@
     "gone": [
      "mw1ki1xt"
     ]
+   },
+   "3": {
+    "at": "2026-11-05T22:42:56.000Z",
+    "used": {
+     "mw23k7ik": 4
+    },
+    "added": null,
+    "pantry": {
+     "x_mw1m6cir": 36,
+     "eggs": 2,
+     "x_mvx5va6y": 4,
+     "lb_pop": 2
+    },
+    "gone": [
+     "mw23k7ik"
+    ]
    }
   },
   "pantry": {
    "eggs": {
-    "q": 10,
+    "q": 8,
     "since": "2026-11-03"
    },
    "pasta": {
@@ -1915,7 +1932,7 @@
     "since": "2026-11-04"
    },
    "x_mvx5va6y": {
-    "q": 29.6,
+    "q": 25.6,
     "since": "2026-11-04"
    },
    "crumbs": {
@@ -1955,7 +1972,7 @@
     "since": "2026-11-04"
    },
    "lb_pop": {
-    "q": 8,
+    "q": 6,
     "since": "2026-11-04"
    },
    "lb_teddy": {
@@ -2011,7 +2028,7 @@
     "since": "2026-11-04"
    },
    "x_mw1m6cir": {
-    "q": 284,
+    "q": 248,
     "since": "2026-11-04"
    }
   },
