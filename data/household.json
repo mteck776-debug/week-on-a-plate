@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-05T23:33:27.830Z",
+ "updated": "2026-11-05T23:34:53.017Z",
  "state": {
   "members": [
    {
@@ -44,7 +44,7 @@
    "lunchKit": true,
    "weeks": 4,
    "splitBreakfast": true,
-   "adultKit": true
+   "adultKit": false
   },
   "postcode": "4870",
   "plan": [
