@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-05T23:32:48.019Z",
+ "updated": "2026-11-05T23:33:27.830Z",
  "state": {
   "members": [
    {
@@ -726,16 +726,16 @@
    },
    {
     "id": "u_mw45cq73",
-    "m": "d",
+    "m": "l",
     "n": "Milo Yogurt Pouch",
-    "t": 30,
-    "serves": 4,
+    "t": 1,
+    "serves": 1,
     "custom": true,
     "preg": false,
     "i": [
      [
       "x_mw45ca8b",
-      0.25
+      1
      ]
     ],
     "st": "",
