@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-05T22:58:22.984Z",
+ "updated": "2026-11-05T23:00:29.283Z",
  "state": {
   "members": [
    {
@@ -1031,6 +1031,20 @@
      2.85,
      2.85,
      2.85
+    ],
+    "s": 2,
+    "a": [
+     "dairy"
+    ]
+   },
+   "x_mw45ffno": {
+    "n": "Vaalia Probiotics Yoghurt Vanilla | 900g",
+    "u": "g",
+    "p": 900,
+    "pr": [
+     6.8,
+     6.8,
+     6.8
     ],
     "s": 2,
     "a": [
