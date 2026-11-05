@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-05T22:44:37.445Z",
+ "updated": "2026-11-05T22:44:41.264Z",
  "state": {
   "members": [
    {
@@ -1023,7 +1023,7 @@
      "strip"
     ],
     "x": [
-     "fruitcup"
+     "none"
     ]
    },
    null,
