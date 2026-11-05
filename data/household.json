@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-05T22:44:41.264Z",
+ "updated": "2026-11-05T22:48:21.734Z",
  "state": {
   "members": [
    {
@@ -939,6 +939,18 @@
     "a": [
      "gluten"
     ]
+   },
+   "x_mw44zu9p": {
+    "u": "ea",
+    "n": "Indomie Fried Mi Goreng Instant Noodles 5x85g | 425g",
+    "p": 5,
+    "pr": [
+     0,
+     3.95,
+     3.95
+    ],
+    "s": 6,
+    "a": []
    }
   },
   "example": false,
