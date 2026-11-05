@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-05T22:42:57.503Z",
+ "updated": "2026-11-05T22:43:17.566Z",
  "state": {
   "members": [
    {
@@ -84,8 +84,7 @@
     "s": "lpw",
     "a": "lpu",
     "d": "sf",
-    "b:kids": "se",
-    "b:adults": "se"
+    "b": "se"
    },
    {
     "a": "lsu",
@@ -1813,7 +1812,9 @@
    "2": true,
    "3": true
   },
-  "splitB": {},
+  "splitB": {
+   "4": false
+  },
   "done": {
    "0": {
     "at": "2026-11-04T03:38:11.561Z",
