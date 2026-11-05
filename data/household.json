@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-05T22:54:36.156Z",
+ "updated": "2026-11-05T22:56:51.996Z",
  "state": {
   "members": [
    {
@@ -692,6 +692,35 @@
       "milk",
       "1/2",
       "cup"
+     ]
+    ]
+   },
+   {
+    "id": "u_mw45arzz",
+    "m": "l",
+    "n": "Mi Goreng Noodles",
+    "t": 30,
+    "serves": 1,
+    "custom": true,
+    "preg": false,
+    "i": [
+     [
+      "x_mw44zu9p",
+      1
+     ]
+    ],
+    "st": "1. Cook noodles\n2. Add packets\n3. Done",
+    "raw": [
+     [
+      "x_mw44zu9p",
+      1
+     ]
+    ],
+    "measures": [
+     [
+      "x_mw44zu9p",
+      "1",
+      "each"
      ]
     ]
    }
