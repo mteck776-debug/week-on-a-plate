@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-05T23:34:53.017Z",
+ "updated": "2026-11-06T23:46:07.863Z",
  "state": {
   "members": [
    {
@@ -82,17 +82,17 @@
    },
    {
     "s": "lo:mw44u10d",
-    "d": "sf",
+    "d": "u_mw1k5mmj",
     "b:kids": "u_mw1m809z",
     "b:adults": "u_mvx60kmo",
-    "a:1": "u_mw45arzz",
-    "a:2": "lpu"
+    "a:1": "x:takeaway",
+    "a:2": "u_mw45cq73"
    },
    {
     "a": "lsu",
     "d": "sp",
     "b:kids": "u_mvu9wzpk",
-    "b:adults": "u_mvu9wzpk"
+    "b:adults": "se"
    },
    {
     "a": "lac",
@@ -1931,7 +1931,7 @@
    {
     "id": "mw44u10d",
     "name": "Dino Banana Pancakes",
-    "serves": 4,
+    "serves": 2,
     "useBy": "",
     "notes": "",
     "added": "2026-11-06"
@@ -2160,11 +2160,27 @@
     "gone": [
      "mw23k7ik"
     ]
+   },
+   "4": {
+    "at": "2026-11-06T23:45:52.406Z",
+    "used": {
+     "mw44u10d": 2
+    },
+    "added": null,
+    "pantry": {
+     "x_mw1m6cir": 36,
+     "eggs": 5.2,
+     "x_mvx5va6y": 4,
+     "x_mw05wq91": 19.200000000000003,
+     "apple": 2,
+     "blueberries": 80
+    },
+    "gone": []
    }
   },
   "pantry": {
    "eggs": {
-    "q": 8,
+    "q": 2.8,
     "since": "2026-11-03"
    },
    "pasta": {
@@ -2183,12 +2199,8 @@
     "q": 2,
     "since": "2026-11-04"
    },
-   "apple": {
-    "q": 2,
-    "since": "2026-11-04"
-   },
    "blueberries": {
-    "q": 250,
+    "q": 170,
     "since": "2026-11-04"
    },
    "onion": {
@@ -2212,7 +2224,7 @@
     "since": "2026-11-04"
    },
    "x_mvx5va6y": {
-    "q": 25.6,
+    "q": 21.6,
     "since": "2026-11-04"
    },
    "crumbs": {
@@ -2224,7 +2236,7 @@
     "since": "2026-11-04"
    },
    "x_mw05wq91": {
-    "q": 445,
+    "q": 425.8,
     "since": "2026-11-04"
    },
    "nori": {
@@ -2308,7 +2320,7 @@
     "since": "2026-11-04"
    },
    "x_mw1m6cir": {
-    "q": 248,
+    "q": 212,
     "since": "2026-11-04"
    },
    "x_mw44zu9p": {
