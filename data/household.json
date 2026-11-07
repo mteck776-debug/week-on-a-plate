@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-07T03:13:47.332Z",
+ "updated": "2026-11-07T11:30:25.970Z",
  "state": {
   "members": [
    {
@@ -1907,10 +1907,17 @@
    {
     "id": "mw1kw4qt",
     "name": "Homemade sausage rolls",
-    "serves": 11,
+    "serves": 9,
     "useBy": "",
     "notes": "Top Shelf Freezer",
-    "added": "2026-11-04"
+    "added": "2026-11-04",
+    "history": [
+     {
+      "at": "2026-11-07T11:30:24.457Z",
+      "where": "Week 1 Sat lunch",
+      "n": 2
+     }
+    ]
    },
    {
     "id": "mw23k7ik",
@@ -1945,6 +1952,15 @@
     "goneAt": "2026-11-07",
     "goneHow": "marked",
     "leftOver": 2
+   },
+   {
+    "id": "mw6bnpzd",
+    "name": "Honey soy drumsticks",
+    "serves": 2,
+    "useBy": "2026-11-08",
+    "notes": "",
+    "added": "2026-11-07",
+    "from": "Week 1 Sat"
    }
   ],
   "ess": {
@@ -2187,19 +2203,33 @@
      "blueberries": 80
     },
     "gone": []
+   },
+   "5": {
+    "at": "2026-11-07T11:30:24.457Z",
+    "used": {
+     "mw1kw4qt": 2
+    },
+    "added": {
+     "id": "mw6bnpzd",
+     "n": 2
+    },
+    "pantry": {
+     "x_mvu9wmlv": 2.4,
+     "eggs": 2.8,
+     "drumsticks": 800,
+     "soy": 48,
+     "rice": 256
+    },
+    "gone": []
    }
   },
   "pantry": {
-   "eggs": {
-    "q": 2.8,
-    "since": "2026-11-03"
-   },
    "pasta": {
     "q": 500,
     "since": "2026-11-03"
    },
    "rice": {
-    "q": 1000,
+    "q": 744,
     "since": "2026-11-03"
    },
    "cheese": {
@@ -2227,7 +2257,7 @@
     "since": "2026-11-04"
    },
    "drumsticks": {
-    "q": 1000,
+    "q": 200,
     "since": "2026-11-04"
    },
    "x_mvuc30lr": {
@@ -2259,11 +2289,11 @@
     "since": "2026-11-04"
    },
    "soy": {
-    "q": 500,
+    "q": 452,
     "since": "2026-11-04"
    },
    "x_mvu9wmlv": {
-    "q": 150,
+    "q": 147.6,
     "since": "2026-11-04"
    },
    "lb_fruitcup": {
