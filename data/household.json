@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-07T00:17:03.777Z",
+ "updated": "2026-11-07T00:17:16.607Z",
  "state": {
   "members": [
    {
@@ -1935,10 +1935,14 @@
    {
     "id": "mw44u10d",
     "name": "Dino Banana Pancakes",
-    "serves": 2,
+    "serves": 0,
     "useBy": "",
     "notes": "",
-    "added": "2026-11-06"
+    "added": "2026-11-06",
+    "gone": true,
+    "goneAt": "2026-11-07",
+    "goneHow": "marked",
+    "leftOver": 2
    }
   ],
   "ess": {
