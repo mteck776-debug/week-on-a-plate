@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-06T23:46:07.863Z",
+ "updated": "2026-11-07T00:08:47.951Z",
  "state": {
   "members": [
    {
@@ -90,7 +90,7 @@
    },
    {
     "a": "lsu",
-    "d": "sp",
+    "d": "dhs",
     "b:kids": "u_mvu9wzpk",
     "b:adults": "se"
    },
