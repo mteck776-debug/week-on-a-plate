@@ -183,6 +183,8 @@ details.note li{margin-bottom:4px}
 .pa-qty input{width:74px}
 #pantrySearch{width:100%;margin-bottom:6px;font:500 .95rem var(--f-body);padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--sunk);color:var(--ink)}
 #pa-id{font:500 .92rem var(--f-body);padding:7px 8px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);width:100%}
+.used-lo{margin-top:16px}
+.lo.used b{color:var(--muted)}
 .lo{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
 .lo:first-of-type{border-top:0;padding-top:0}
 .lo-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
@@ -1128,9 +1130,9 @@ function generate(){
   plan[day][type]=pick.id;
  }));
  /* keep leftovers you've already put on meals */
- if(Array.isArray(S.plan))S.plan.forEach((p,d)=>{if(p&&plan[d])Object.entries(p).forEach(([t,id])=>{if(id&&String(id).startsWith("lo:")&&RBY[id]&&slotTypes(d).includes(t))plan[d][t]=id})});
+ if(Array.isArray(S.plan))S.plan.forEach((p,d)=>{if(p&&plan[d])Object.entries(p).forEach(([t,id])=>{if(id&&String(id).startsWith("lo:")&&RBY[id]&&!(S.leftovers||[]).find(l=>"lo:"+l.id===id)?.gone&&slotTypes(d).includes(t))plan[d][t]=id})});
  S.plan=plan;
- if(S.leftovers)S.leftovers=S.leftovers.filter(l=>!l.gone||plan.some(p=>Object.values(p).includes("lo:"+l.id)));
+ if(S.leftovers)S.leftovers=S.leftovers.filter(l=>!l.hidden||plan.some(p=>Object.values(p).includes("lo:"+l.id)));
  pickSnacks();
  pickBoxes();
  pickABoxes();
@@ -1765,7 +1767,7 @@ function renderPantry(){
 let pantryClearPending=false;
 
 /* ---------- Leftovers: food already made, zero cost ---------- */
-let loMsg="",loPending=null;
+let loMsg="",loPending=null,loClearPending=false;
 const slotServes=(day,type)=>{const ms=eaters(type,day);return Math.max(1,Math.ceil(ms.reduce((a,m)=>a+portion(m.age),0)-0.1))};
 function isDone(d){return !!(S.done&&S.done[d])}
 function loSlots(lid){const out=[];if(!S.plan)return out;allDays().forEach(d=>{if(isDone(d))return;slotTypes(d).forEach(t=>{if(S.plan[d]?.[t]==="lo:"+lid)out.push([d,t])})});return out}
@@ -1815,20 +1817,23 @@ function completeDay(){
  /* save new leftovers */
  if(dn.serves>0){
   const name=dn.name.trim();const ex=S.leftovers.find(l=>l.name.trim().toLowerCase()===name.toLowerCase());
-  if(ex){delete ex.gone;ex.serves+=dn.serves;if(dn.useBy&&(!ex.useBy||dn.useBy<ex.useBy))ex.useBy=dn.useBy;rec.added={id:ex.id,n:dn.serves}}
+  if(ex){if(ex.gone){ex.serves=0;delete ex.leftOver}delete ex.gone;delete ex.goneAt;delete ex.goneHow;delete ex.hidden;ex.serves+=dn.serves;if(dn.useBy&&(!ex.useBy||dn.useBy<ex.useBy))ex.useBy=dn.useBy;rec.added={id:ex.id,n:dn.serves}}
   else{const id=Date.now().toString(36);S.leftovers.push({id,name,serves:dn.serves,useBy:dn.useBy||"",notes:"",added:todayISO(),from:dayLabel(d)});rec.added={id,n:dn.serves}}
  }
  /* take that day's meals out of the pantry */
  rec.pantry={};Object.entries(dayUsage(d)).forEach(([id,q])=>{const took=Math.min(pantryQ(id),q);if(took>0){pantryAdd(id,-took);rec.pantry[id]=took}});
  S.done=S.done||{};S.done[d]=rec;
+ /* history of where leftovers went */
+ slotTypes(d).forEach(t=>{const id=S.plan[d]?.[t];if(id&&RBY[id]?.leftover){const l=S.leftovers.find(x=>x.id===RBY[id].lid);if(l&&rec.used[l.id]){l.history=(l.history||[]).concat([{at:rec.at,where:`${dayLabel(d)} ${slotName(t).toLowerCase()}`,n:slotServes(d,t)}])}}});
  /* leftovers with nothing left and no future meals go (kept on the record so Undo can bring them back) */
- rec.gone=[];S.leftovers.forEach(l=>{if(!l.gone&&!(l.serves>0||loSlots(l.id).length)){l.gone=true;rec.gone.push(l.id)}});
+ rec.gone=[];S.leftovers.forEach(l=>{if(!l.gone&&!(l.serves>0||loSlots(l.id).length)){l.gone=true;l.goneAt=todayISO();l.goneHow="eaten";rec.gone.push(l.id)}});
  syncCustom();save();render();return true;
 }
 function undoDone(d){
  const rec=S.done&&S.done[d];if(!rec)return;
  Object.entries(rec.pantry||{}).forEach(([id,q])=>pantryAdd(id,q));
- (rec.gone||[]).forEach(id=>{const l=S.leftovers.find(x=>x.id===id);if(l)delete l.gone});
+ (rec.gone||[]).forEach(id=>{const l=S.leftovers.find(x=>x.id===id);if(l){delete l.gone;delete l.goneAt;delete l.goneHow}});
+ (S.leftovers||[]).forEach(l=>{if(l.history)l.history=l.history.filter(h=>h.at!==rec.at)});
  Object.entries(rec.used||{}).forEach(([lid,n])=>{const l=S.leftovers.find(x=>x.id===lid);if(l)l.serves+=n});
  if(rec.added){const l=S.leftovers.find(x=>x.id===rec.added.id);if(l){l.serves-=rec.added.n;if(l.serves<=0&&!loSlots(l.id).length)l.gone=true}}
  delete S.done[d];syncCustom();save();render();
@@ -1868,15 +1873,27 @@ function renderLeft(){
    h+=`<div class="lo">
     <div class="lo-top"><div><b>${esc(l.name)}</b>${l.useBy?` <span class="tag ${past?"warn":"preg"}">${past?"Past use-by":"Use by"} ${fmtDate(l.useBy)}</span>`:""}${l.notes?`<div class="note" style="margin:2px 0 0">${esc(l.notes)}</div>`:""}</div>
      <div class="stepper sm"><button data-loinc="${l.id}" data-d="-1" aria-label="One less serving"${l.serves<=1?" disabled":""}>−</button><output>${l.serves}</output><button data-loinc="${l.id}" data-d="1" aria-label="One more serving">+</button></div></div>
+    ${(l.history||[]).length?`<div class="note" style="margin:0">Eaten so far: ${l.history.map(h=>`${esc(h.where)} (${h.n})`).join(", ")}</div>`:""}
     <div class="note" style="margin:0">${st.sl.length?`Planned for ${st.sl.map(([d,t])=>`${dayLabel(d)} ${esc(slotName(t).toLowerCase())} (${slotServes(d,t)})`).join(", ")}. `:""}<b class="${st.left<0?"neg":""}">${st.left<0?`${-st.left} ${-st.left===1?"serving":"servings"} short`:`${st.left} of ${l.serves} ${l.serves===1?"serving":"servings"} still free`}</b></div>
     <div class="frow">
      ${slots.length?`<select id="lo-slot-${l.id}" aria-label="Meal to put ${esc(l.name)} on">${slots.map(([d,t],k)=>`<option value="${d},${t}"${k===slots.findIndex(([,tt])=>tt==="d")?" selected":""}>${dayLabel(d)} · ${esc(slotName(t))} (${slotServes(d,t)} ${slotServes(d,t)===1?"serving":"servings"})</option>`).join("")}</select><button class="btn small primary" data-loput="${l.id}">Put on this meal</button>`:""}
      ${st.sl.length?`<button class="btn small" data-loclear="${l.id}">Take off all meals</button>`:""}
-     <button class="btn small" data-lodel="${l.id}">${loPending===l.id?"Tap again to remove":"Used up / remove"}</button>
+     <button class="btn small" data-lodel="${l.id}">${loPending===l.id?(st.sl.length?"Tap again: takes it off planned meals":"Tap again"):"Mark as used up"}</button>
     </div></div>`;
   });
  }
+ const used=(S.leftovers||[]).filter(l=>l.gone&&!l.hidden).sort((a,b)=>(b.goneAt||"").localeCompare(a.goneAt||""));
  h+=`</div></div>`;
+ if(used.length){
+  h+=`<section class="panel used-lo"><div class="ess-head"><div><h3>Used up</h3><p class="note" style="margin:2px 0 0">Leftovers that have all been eaten or that you marked as used.</p></div><button class="btn small" id="loClearUsed">${loClearPending?"Tap again to clear":"Clear list"}</button></div>`;
+  used.forEach(l=>{
+   h+=`<div class="lo used"><div class="lo-top"><div><b>${esc(l.name)}</b> <span class="tag ok">${l.goneHow==="marked"?"Marked used":"All eaten"}</span>${l.goneAt?` <span class="note">${fmtDate(l.goneAt)}</span>`:""}</div></div>
+    ${(l.history||[]).length?`<div class="note" style="margin:0">Eaten: ${l.history.map(h=>`${esc(h.where)} (${h.n})`).join(", ")}</div>`:""}
+    ${l.goneHow==="marked"&&l.leftOver?`<div class="note" style="margin:0">${l.leftOver} ${l.leftOver===1?"serving was":"servings were"} still saved when you marked it.</div>`:""}
+    <div class="frow"><button class="btn small" data-loback="${l.id}">Bring back</button><button class="btn small" data-loclearone="${l.id}">Remove from list</button></div></div>`;
+  });
+  h+=`</section>`;
+ }
  el.innerHTML=h;
 }
 
@@ -2141,7 +2158,12 @@ document.addEventListener("click",e=>{
  const lp=e.target.closest("[data-loput]");if(lp){const id=lp.dataset.loput;const v=$("#lo-slot-"+id)?.value;if(v){const[d,t]=v.split(",");S.plan[+d][t]="lo:"+id;const l=S.leftovers.find(x=>x.id===id);loMsg=`${l.name} is on ${dayLabel(+d)} ${slotName(t).toLowerCase()}.`;save();render();$("#loMsg").textContent=loMsg}return}
  const lc=e.target.closest("[data-loclear]");if(lc){loSlots(lc.dataset.loclear).forEach(([d,t])=>{S.plan[d][t]=null});refillSlots();save();render();return}
  const ld=e.target.closest("[data-lodel]");if(ld){const id=ld.dataset.lodel;if(loPending!==id){loPending=id;renderLeft();return}
-  loPending=null;const l=S.leftovers.find(x=>x.id===id);S.leftovers=S.leftovers.filter(x=>x.id!==id);syncCustom();refillSlots();loMsg=l?`${l.name} removed.`:"";save();render();return}
+  loPending=null;const l=S.leftovers.find(x=>x.id===id);if(l){loSlots(id).forEach(([d,t])=>{S.plan[d][t]=null});l.gone=true;l.goneAt=todayISO();l.goneHow="marked";l.leftOver=l.serves;l.serves=0}
+  syncCustom();refillSlots();loMsg=l?`${l.name} moved to Used up.`:"";save();render();return}
+ const lb=e.target.closest("[data-loback]");if(lb){const l=S.leftovers.find(x=>x.id===lb.dataset.loback);if(l){delete l.gone;delete l.goneAt;delete l.goneHow;l.serves=Math.max(1,l.leftOver||l.serves||1);delete l.leftOver;loMsg=`${l.name} is back in Saved leftovers with ${l.serves} ${l.serves===1?"serving":"servings"}. Change it with − and + if needed.`}syncCustom();save();render();return}
+ const lx=e.target.closest("[data-loclearone]");if(lx){const l=S.leftovers.find(x=>x.id===lx.dataset.loclearone);if(l)l.hidden=true;save();render();return}
+ if(e.target.id==="loClearUsed"){if(!loClearPending){loClearPending=true;renderLeft();return}loClearPending=false;(S.leftovers||[]).forEach(l=>{if(l.gone)l.hidden=true});loMsg="Used up list cleared.";save();render();return}
+ if(loClearPending&&e.target.id!=="loClearUsed"){loClearPending=false}
  if(loPending&&!e.target.closest("[data-lodel]")){loPending=null}
  const pl=e.target.closest("[data-plen]");if(pl){const n=+pl.dataset.plen;if(n!==nWeeks()){setWeeks(n);save();render()}return}
  const vw=e.target.closest("[data-vweek]");if(vw){viewWeek=+vw.dataset.vweek;renderWeek();$(`[data-vweek="${viewWeek}"]`)?.focus();return}
