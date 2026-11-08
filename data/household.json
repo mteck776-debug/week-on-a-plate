@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T04:31:35.346Z",
+ "updated": "2026-11-08T04:31:59.407Z",
  "state": {
   "members": [
    {
@@ -2453,6 +2453,10 @@
    "chicken_thigh": {
     "q": 1000,
     "since": "2026-11-08"
+   },
+   "x_mvx5mxd8": {
+    "q": 20,
+    "since": "2026-11-08"
    }
   },
   "bought": {
@@ -2477,7 +2481,8 @@
    "zucchini": 1,
    "sausages": 500,
    "chicken_breast": 1000,
-   "chicken_thigh": 1000
+   "chicken_thigh": 1000,
+   "x_mvx5mxd8": 20
   }
  }
 }
