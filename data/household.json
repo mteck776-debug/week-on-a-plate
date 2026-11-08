@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T04:13:40.875Z",
+ "updated": "2026-11-08T04:14:15.765Z",
  "state": {
   "members": [
    {
@@ -2243,7 +2243,7 @@
     "since": "2026-11-04"
    },
    "banana": {
-    "q": 2,
+    "q": 3,
     "since": "2026-11-04"
    },
    "blueberries": {
@@ -2396,7 +2396,8 @@
    "lb_chips": 10,
    "lb_jelly": 8,
    "rice": 1000,
-   "weetbix": 575
+   "weetbix": 575,
+   "banana": 1
   }
  }
 }
