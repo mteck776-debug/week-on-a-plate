@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T02:46:49.023Z",
+ "updated": "2026-11-08T02:47:13.459Z",
  "state": {
   "members": [
    {
@@ -134,7 +134,7 @@
    {
     "s": "ltc",
     "a": "u_mvx60kmo",
-    "d": "dsb",
+    "d": "dbu",
     "b:kids": "u_mvx60kmo",
     "b:adults": "u_mvx60kmo"
    },
