@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T04:20:39.337Z",
+ "updated": "2026-11-08T04:21:26.898Z",
  "state": {
   "members": [
    {
@@ -2417,6 +2417,10 @@
    "lettuce": {
     "q": 2,
     "since": "2026-11-08"
+   },
+   "cucumber": {
+    "q": 1,
+    "since": "2026-11-08"
    }
   },
   "bought": {
@@ -2432,7 +2436,8 @@
    "broccoli": 1,
    "carrot": 1000,
    "mushrooms": 400,
-   "lettuce": 2
+   "lettuce": 2,
+   "cucumber": 1
   }
  }
 }
