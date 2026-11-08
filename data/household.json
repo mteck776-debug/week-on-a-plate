@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T04:22:36.285Z",
+ "updated": "2026-11-08T04:23:56.321Z",
  "state": {
   "members": [
    {
@@ -2425,6 +2425,10 @@
    "capsicum": {
     "q": 1,
     "since": "2026-11-08"
+   },
+   "pear": {
+    "q": 6,
+    "since": "2026-11-08"
    }
   },
   "bought": {
@@ -2442,7 +2446,8 @@
    "mushrooms": 400,
    "lettuce": 2,
    "cucumber": 1,
-   "capsicum": 1
+   "capsicum": 1,
+   "pear": 6
   }
  }
 }
