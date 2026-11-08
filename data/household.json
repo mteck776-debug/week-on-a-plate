@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T04:46:28.480Z",
+ "updated": "2026-11-08T04:46:54.061Z",
  "state": {
   "members": [
    {
@@ -2493,6 +2493,10 @@
    "corn": {
     "q": 420,
     "since": "2026-11-08"
+   },
+   "beans": {
+    "q": 400,
+    "since": "2026-11-08"
    }
   },
   "bought": {
@@ -2528,7 +2532,8 @@
    "passata": 1400,
    "bakedbeans": 840,
    "tuna": 95,
-   "corn": 420
+   "corn": 420,
+   "beans": 400
   }
  }
 }
