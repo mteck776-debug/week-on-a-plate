@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T02:43:44.737Z",
+ "updated": "2026-11-08T02:43:47.871Z",
  "state": {
   "members": [
    {
@@ -2379,13 +2379,18 @@
    "lb_jelly": {
     "q": 8,
     "since": "2026-11-08"
+   },
+   "weetbix": {
+    "q": 575,
+    "since": "2026-11-08"
    }
   },
   "bought": {
    "x_mw04oopp": 120,
    "lb_chips": 10,
    "lb_jelly": 8,
-   "rice": 1000
+   "rice": 1000,
+   "weetbix": 575
   }
  }
 }
