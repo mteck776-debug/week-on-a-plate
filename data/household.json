@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T04:24:59.666Z",
+ "updated": "2026-11-08T04:26:38.257Z",
  "state": {
   "members": [
    {
@@ -2437,6 +2437,10 @@
    "mince": {
     "q": 1500,
     "since": "2026-11-08"
+   },
+   "zucchini": {
+    "q": 1,
+    "since": "2026-11-08"
    }
   },
   "bought": {
@@ -2457,7 +2461,8 @@
    "capsicum": 1,
    "pear": 6,
    "tomato": 6,
-   "mince": 1500
+   "mince": 1500,
+   "zucchini": 1
   }
  }
 }
