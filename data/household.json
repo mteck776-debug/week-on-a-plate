@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T05:00:02.410Z",
+ "updated": "2026-11-08T05:01:04.213Z",
  "state": {
   "members": [
    {
@@ -2505,6 +2505,10 @@
    "yoghurt": {
     "q": 1000,
     "since": "2026-11-08"
+   },
+   "cream": {
+    "q": 300,
+    "since": "2026-11-08"
    }
   },
   "bought": {
@@ -2543,7 +2547,8 @@
    "corn": 420,
    "beans": 400,
    "dg_can": 7,
-   "yoghurt": 1000
+   "yoghurt": 1000,
+   "cream": 300
   }
  }
 }
