@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T04:40:38.000Z",
+ "updated": "2026-11-08T04:41:59.739Z",
  "state": {
   "members": [
    {
@@ -2231,7 +2231,7 @@
   },
   "pantry": {
    "pasta": {
-    "q": 500,
+    "q": 1000,
     "since": "2026-11-03"
    },
    "rice": {
@@ -2507,7 +2507,8 @@
    "eggs": 36,
    "oats": 750,
    "tacoseas": 35,
-   "tacoshells": 12
+   "tacoshells": 12,
+   "pasta": 500
   }
  }
 }
