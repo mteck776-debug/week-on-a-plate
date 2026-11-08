@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T02:45:15.072Z",
+ "updated": "2026-11-08T02:45:21.225Z",
  "state": {
   "members": [
    {
@@ -126,7 +126,7 @@
    },
    {
     "s": "cs",
-    "a": "lac",
+    "a": "u_mvx60kmo",
     "d": "sf",
     "b:kids": "bpo",
     "b:adults": "bpo"
