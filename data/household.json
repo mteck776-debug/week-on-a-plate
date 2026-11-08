@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T04:42:59.180Z",
+ "updated": "2026-11-08T04:43:44.788Z",
  "state": {
   "members": [
    {
@@ -2481,6 +2481,10 @@
    "passata": {
     "q": 1400,
     "since": "2026-11-08"
+   },
+   "bakedbeans": {
+    "q": 840,
+    "since": "2026-11-08"
    }
   },
   "bought": {
@@ -2513,7 +2517,8 @@
    "tacoseas": 35,
    "tacoshells": 12,
    "pasta": 500,
-   "passata": 1400
+   "passata": 1400,
+   "bakedbeans": 840
   }
  }
 }
