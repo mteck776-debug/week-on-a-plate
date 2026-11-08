@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T05:02:27.624Z",
+ "updated": "2026-11-08T05:03:05.488Z",
  "state": {
   "members": [
    {
@@ -2271,7 +2271,7 @@
     "since": "2026-11-04"
    },
    "x_mvx5va6y": {
-    "q": 21.6,
+    "q": 105.6,
     "since": "2026-11-04"
    },
    "crumbs": {
@@ -2554,7 +2554,8 @@
    "yoghurt": 1000,
    "cream": 300,
    "x_mw45ca8b": 2,
-   "cheese": 500
+   "cheese": 500,
+   "x_mvx5va6y": 84
   }
  }
 }
