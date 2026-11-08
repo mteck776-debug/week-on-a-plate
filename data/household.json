@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T02:43:47.871Z",
+ "updated": "2026-11-08T02:44:42.185Z",
  "state": {
   "members": [
    {
@@ -104,10 +104,11 @@
    },
    {
     "s": "lcs",
-    "a": "u_mw04ryj1",
     "d": "dcs",
     "b:kids": "at",
-    "b:adults": "at"
+    "b:adults": "at",
+    "a:1": "u_mw04ryj1",
+    "a:2": "u_mw04ryj1"
    },
    {
     "s": "lpp",
@@ -2116,7 +2117,8 @@
    "2": true,
    "3": true,
    "4": true,
-   "5": true
+   "5": true,
+   "7": true
   },
   "splitB": {
    "4": true
