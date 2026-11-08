@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T04:29:52.832Z",
+ "updated": "2026-11-08T04:31:32.734Z",
  "state": {
   "members": [
    {
@@ -2445,6 +2445,10 @@
    "sausages": {
     "q": 500,
     "since": "2026-11-08"
+   },
+   "chicken_breast": {
+    "q": 1000,
+    "since": "2026-11-08"
    }
   },
   "bought": {
@@ -2467,7 +2471,8 @@
    "tomato": 6,
    "mince": 1500,
    "zucchini": 1,
-   "sausages": 500
+   "sausages": 500,
+   "chicken_breast": 1000
   }
  }
 }
