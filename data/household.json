@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T02:43:25.422Z",
+ "updated": "2026-11-08T02:43:44.737Z",
  "state": {
   "members": [
    {
@@ -2229,7 +2229,7 @@
     "since": "2026-11-03"
    },
    "rice": {
-    "q": 744,
+    "q": 1744,
     "since": "2026-11-03"
    },
    "cheese": {
@@ -2384,7 +2384,8 @@
   "bought": {
    "x_mw04oopp": 120,
    "lb_chips": 10,
-   "lb_jelly": 8
+   "lb_jelly": 8,
+   "rice": 1000
   }
  }
 }
