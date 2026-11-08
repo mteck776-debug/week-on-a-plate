@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T04:34:56.450Z",
+ "updated": "2026-11-08T04:40:38.000Z",
  "state": {
   "members": [
    {
@@ -2469,6 +2469,14 @@
    "oats": {
     "q": 750,
     "since": "2026-11-08"
+   },
+   "tacoseas": {
+    "q": 35,
+    "since": "2026-11-08"
+   },
+   "tacoshells": {
+    "q": 12,
+    "since": "2026-11-08"
    }
   },
   "bought": {
@@ -2497,7 +2505,9 @@
    "x_mvx5mxd8": 20,
    "milk": 2000,
    "eggs": 36,
-   "oats": 750
+   "oats": 750,
+   "tacoseas": 35,
+   "tacoshells": 12
   }
  }
 }
