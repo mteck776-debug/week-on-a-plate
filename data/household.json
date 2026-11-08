@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T03:16:32.909Z",
+ "updated": "2026-11-08T03:16:37.491Z",
  "state": {
   "members": [
    {
@@ -112,10 +112,11 @@
    },
    {
     "s": "lo:mw1kw4qt",
-    "a": "u_mw45cq73",
     "d": "dst",
     "b:kids": "oo",
-    "b:adults": "u_mvx60kmo"
+    "b:adults": "u_mvx60kmo",
+    "a:1": "u_mw45cq73",
+    "a:2": "u_mw45cq73"
    },
    {
     "s": "lo:mw1kw4qt",
@@ -2118,7 +2119,8 @@
    "3": true,
    "4": true,
    "5": true,
-   "7": true
+   "7": true,
+   "8": true
   },
   "splitB": {
    "4": true
