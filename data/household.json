@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T02:41:38.084Z",
+ "updated": "2026-11-08T02:43:25.422Z",
  "state": {
   "members": [
    {
@@ -2375,11 +2375,16 @@
    "lb_chips": {
     "q": 10,
     "since": "2026-11-08"
+   },
+   "lb_jelly": {
+    "q": 8,
+    "since": "2026-11-08"
    }
   },
   "bought": {
    "x_mw04oopp": 120,
-   "lb_chips": 10
+   "lb_chips": 10,
+   "lb_jelly": 8
   }
  }
 }
