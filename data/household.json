@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T05:15:28.698Z",
+ "updated": "2026-11-08T05:18:30.382Z",
  "state": {
   "members": [
    {
@@ -2537,6 +2537,10 @@
    "lb_puree": {
     "q": 6,
     "since": "2026-11-08"
+   },
+   "breadrolls": {
+    "q": 6,
+    "since": "2026-11-08"
    }
   },
   "bought": {
@@ -2584,7 +2588,8 @@
    "honey": 500,
    "x_mvx5ypva": 1000,
    "sn_bisc": 1,
-   "lb_puree": 6
+   "lb_puree": 6,
+   "breadrolls": 6
   }
  }
 }
