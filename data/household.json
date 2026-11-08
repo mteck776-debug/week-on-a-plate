@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T04:34:05.098Z",
+ "updated": "2026-11-08T04:34:07.206Z",
  "state": {
   "members": [
    {
@@ -2461,6 +2461,10 @@
    "milk": {
     "q": 2000,
     "since": "2026-11-08"
+   },
+   "eggs": {
+    "q": 36,
+    "since": "2026-11-08"
    }
   },
   "bought": {
@@ -2487,7 +2491,8 @@
    "chicken_breast": 1000,
    "chicken_thigh": 1000,
    "x_mvx5mxd8": 20,
-   "milk": 2000
+   "milk": 2000,
+   "eggs": 36
   }
  }
 }
