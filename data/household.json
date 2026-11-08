@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T04:23:56.321Z",
+ "updated": "2026-11-08T04:24:44.938Z",
  "state": {
   "members": [
    {
@@ -2429,6 +2429,10 @@
    "pear": {
     "q": 6,
     "since": "2026-11-08"
+   },
+   "tomato": {
+    "q": 6,
+    "since": "2026-11-08"
    }
   },
   "bought": {
@@ -2447,7 +2451,8 @@
    "lettuce": 2,
    "cucumber": 1,
    "capsicum": 1,
-   "pear": 6
+   "pear": 6,
+   "tomato": 6
   }
  }
 }
