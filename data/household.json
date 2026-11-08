@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T02:45:53.980Z",
+ "updated": "2026-11-08T02:45:56.202Z",
  "state": {
   "members": [
    {
@@ -140,7 +140,7 @@
    },
    {
     "a": "se",
-    "d": "dna",
+    "d": "tc",
     "b:kids": "bft",
     "b:adults": "bft"
    },
