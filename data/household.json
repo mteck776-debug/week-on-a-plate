@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T04:18:50.831Z",
+ "updated": "2026-11-08T04:19:31.532Z",
  "state": {
   "members": [
    {
@@ -2409,6 +2409,10 @@
    "carrot": {
     "q": 1000,
     "since": "2026-11-08"
+   },
+   "mushrooms": {
+    "q": 400,
+    "since": "2026-11-08"
    }
   },
   "bought": {
@@ -2422,7 +2426,8 @@
    "avocado": 1,
    "spinach": 120,
    "broccoli": 1,
-   "carrot": 1000
+   "carrot": 1000,
+   "mushrooms": 400
   }
  }
 }
