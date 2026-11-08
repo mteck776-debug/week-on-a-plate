@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T05:15:19.947Z",
+ "updated": "2026-11-08T05:15:26.914Z",
  "state": {
   "members": [
    {
@@ -2529,6 +2529,10 @@
    "x_mvx5ypva": {
     "q": 1000,
     "since": "2026-11-08"
+   },
+   "sn_bisc": {
+    "q": 1,
+    "since": "2026-11-08"
    }
   },
   "bought": {
@@ -2574,7 +2578,8 @@
    "x_mvx5sp6s": 400,
    "berries": 500,
    "honey": 500,
-   "x_mvx5ypva": 1000
+   "x_mvx5ypva": 1000,
+   "sn_bisc": 1
   }
  }
 }
