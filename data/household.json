@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T04:16:45.977Z",
+ "updated": "2026-11-08T04:18:16.820Z",
  "state": {
   "members": [
    {
@@ -2401,6 +2401,10 @@
    "spinach": {
     "q": 120,
     "since": "2026-11-08"
+   },
+   "broccoli": {
+    "q": 1,
+    "since": "2026-11-08"
    }
   },
   "bought": {
@@ -2412,7 +2416,8 @@
    "banana": 1,
    "apple": 4,
    "avocado": 1,
-   "spinach": 120
+   "spinach": 120,
+   "broccoli": 1
   }
  }
 }
