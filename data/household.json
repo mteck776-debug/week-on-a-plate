@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-08T02:40:34.332Z",
+ "updated": "2026-11-08T02:40:39.842Z",
  "state": {
   "members": [
    {
@@ -98,7 +98,7 @@
    },
    {
     "a": "x:none",
-    "d": "dhs",
+    "d": "x:parents",
     "b:kids": "u_mvu9wzpk",
     "b:adults": "u_mvx60kmo"
    },
