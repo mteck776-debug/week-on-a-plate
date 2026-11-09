@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-09T04:12:41.725Z",
+ "updated": "2026-11-09T04:15:44.550Z",
  "state": {
   "members": [
    {
@@ -1227,6 +1227,18 @@
     "a": [
      "meat"
     ]
+   },
+   "x_mw8r0erg": {
+    "n": "Worcestershire Sauce 250ml",
+    "u": "ml",
+    "p": 250,
+    "pr": [
+     2,
+     2,
+     2
+    ],
+    "s": 4,
+    "a": []
    }
   },
   "example": false,
