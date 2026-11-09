@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-09T03:55:13.602Z",
+ "updated": "2026-11-09T04:12:41.725Z",
  "state": {
   "members": [
    {
@@ -1213,6 +1213,20 @@
     ],
     "s": 5,
     "a": []
+   },
+   "x_mw8qwhp2": {
+    "n": "Sausage Mince",
+    "u": "g",
+    "p": 500,
+    "pr": [
+     5.5,
+     5.5,
+     5.5
+    ],
+    "s": 1,
+    "a": [
+     "meat"
+    ]
    }
   },
   "example": false,
