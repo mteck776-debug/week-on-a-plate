@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-10T11:42:40.833Z",
+ "updated": "2026-11-10T11:44:33.730Z",
  "state": {
   "members": [
    {
@@ -2106,11 +2106,15 @@
    {
     "id": "mw6bnpzd",
     "name": "Honey soy drumsticks",
-    "serves": 2,
+    "serves": 0,
     "useBy": "2026-11-08",
     "notes": "",
     "added": "2026-11-07",
-    "from": "Week 1 Sat"
+    "from": "Week 1 Sat",
+    "gone": true,
+    "goneAt": "2026-11-10",
+    "goneHow": "marked",
+    "leftOver": 2
    },
    {
     "id": "mw8q9hzp",
