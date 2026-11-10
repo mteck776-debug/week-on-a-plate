@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-09T04:16:05.973Z",
+ "updated": "2026-11-10T03:52:08.988Z",
  "state": {
   "members": [
    {
@@ -2024,11 +2024,10 @@
    {
     "id": "mvyhl0jw",
     "name": "Spaghetti bolognese",
-    "serves": 0,
+    "serves": 2,
     "useBy": "2026-11-04",
     "notes": "Middle of fridge",
-    "added": "2026-11-02",
-    "gone": true
+    "added": "2026-11-02"
    },
    {
     "id": "mw1ki1xt",
@@ -2043,7 +2042,7 @@
    {
     "id": "mw1kw4qt",
     "name": "Homemade sausage rolls",
-    "serves": 9,
+    "serves": 7,
     "useBy": "",
     "notes": "Top Shelf Freezer",
     "added": "2026-11-04",
@@ -2051,6 +2050,11 @@
      {
       "at": "2026-11-07T11:30:24.457Z",
       "where": "Week 1 Sat lunch",
+      "n": 2
+     },
+     {
+      "at": "2026-11-10T03:52:07.475Z",
+      "where": "Week 2 Mon school lunch",
       "n": 2
      }
     ]
@@ -2101,11 +2105,21 @@
    {
     "id": "mw8q9hzp",
     "name": "Roast Dinner",
-    "serves": 1,
+    "serves": 0,
     "useBy": "2026-11-10",
     "notes": "",
     "added": "2026-11-09",
-    "from": "Week 1 Sun"
+    "from": "Week 1 Sun",
+    "history": [
+     {
+      "at": "2026-11-10T03:52:07.475Z",
+      "where": "Week 2 Mon lunch · dad",
+      "n": 1
+     }
+    ],
+    "gone": true,
+    "goneAt": "2026-11-10",
+    "goneHow": "eaten"
    }
   ],
   "ess": {
@@ -2387,11 +2401,45 @@
      "x_mvx5ypva": 60
     },
     "gone": []
+   },
+   "7": {
+    "at": "2026-11-10T03:52:07.475Z",
+    "used": {
+     "mw1kw4qt": 2,
+     "mw8q9hzp": 1
+    },
+    "added": {
+     "id": "mvyhl0jw",
+     "n": 2
+    },
+    "pantry": {
+     "avocado": 0.6,
+     "tomato": 0.6,
+     "x_mvx5mxd8": 2,
+     "eggs": 2,
+     "x_mvx5pk1c": 2,
+     "x_mvx5sp6s": 60,
+     "x_mvx5va6y": 4,
+     "x_mvx5ypva": 60,
+     "x_mw45ca8b": 1,
+     "pasta": 320,
+     "mince": 400,
+     "passata": 384,
+     "onion": 160,
+     "carrot": 128,
+     "cheese": 32,
+     "pear": 2,
+     "lb_chips": 2,
+     "lb_jelly": 2
+    },
+    "gone": [
+     "mw8q9hzp"
+    ]
    }
   },
   "pantry": {
    "pasta": {
-    "q": 1000,
+    "q": 680,
     "since": "2026-11-03"
    },
    "rice": {
@@ -2399,7 +2447,7 @@
     "since": "2026-11-03"
    },
    "cheese": {
-    "q": 750,
+    "q": 718,
     "since": "2026-11-04"
    },
    "banana": {
@@ -2411,7 +2459,7 @@
     "since": "2026-11-04"
    },
    "onion": {
-    "q": 700,
+    "q": 540,
     "since": "2026-11-04"
    },
    "potato": {
@@ -2431,7 +2479,7 @@
     "since": "2026-11-04"
    },
    "x_mvx5va6y": {
-    "q": 17.599999999999994,
+    "q": 13.599999999999994,
     "since": "2026-11-04"
    },
    "crumbs": {
@@ -2539,11 +2587,11 @@
     "since": "2026-11-08"
    },
    "lb_chips": {
-    "q": 10,
+    "q": 8,
     "since": "2026-11-08"
    },
    "lb_jelly": {
-    "q": 8,
+    "q": 6,
     "since": "2026-11-08"
    },
    "weetbix": {
@@ -2555,7 +2603,7 @@
     "since": "2026-11-08"
    },
    "avocado": {
-    "q": 1,
+    "q": 0.4,
     "since": "2026-11-08"
    },
    "spinach": {
@@ -2567,7 +2615,7 @@
     "since": "2026-11-08"
    },
    "carrot": {
-    "q": 1000,
+    "q": 872,
     "since": "2026-11-08"
    },
    "mushrooms": {
@@ -2587,15 +2635,15 @@
     "since": "2026-11-08"
    },
    "pear": {
-    "q": 6,
+    "q": 4,
     "since": "2026-11-08"
    },
    "tomato": {
-    "q": 6,
+    "q": 5.4,
     "since": "2026-11-08"
    },
    "mince": {
-    "q": 1500,
+    "q": 1100,
     "since": "2026-11-08"
    },
    "zucchini": {
@@ -2615,7 +2663,7 @@
     "since": "2026-11-08"
    },
    "x_mvx5mxd8": {
-    "q": 18,
+    "q": 16,
     "since": "2026-11-08"
    },
    "milk": {
@@ -2623,7 +2671,7 @@
     "since": "2026-11-08"
    },
    "eggs": {
-    "q": 34,
+    "q": 32,
     "since": "2026-11-08"
    },
    "oats": {
@@ -2639,7 +2687,7 @@
     "since": "2026-11-08"
    },
    "passata": {
-    "q": 1400,
+    "q": 1016,
     "since": "2026-11-08"
    },
    "bakedbeans": {
@@ -2671,11 +2719,11 @@
     "since": "2026-11-08"
    },
    "x_mw45ca8b": {
-    "q": 2,
+    "q": 1,
     "since": "2026-11-08"
    },
    "x_mvx5sp6s": {
-    "q": 340,
+    "q": 280,
     "since": "2026-11-08"
    },
    "berries": {
@@ -2687,7 +2735,7 @@
     "since": "2026-11-08"
    },
    "x_mvx5ypva": {
-    "q": 940,
+    "q": 880,
     "since": "2026-11-08"
    },
    "sn_bisc": {
@@ -2703,7 +2751,7 @@
     "since": "2026-11-08"
    },
    "x_mvx5pk1c": {
-    "q": 14,
+    "q": 12,
     "since": "2026-11-08"
    },
    "butter": {
