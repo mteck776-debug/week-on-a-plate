@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-10T11:41:51.195Z",
+ "updated": "2026-11-10T11:42:40.833Z",
  "state": {
   "members": [
    {
@@ -2024,10 +2024,20 @@
    {
     "id": "mvyhl0jw",
     "name": "Spaghetti bolognese",
-    "serves": 2,
+    "serves": 0,
     "useBy": "2026-11-04",
     "notes": "Middle of fridge",
-    "added": "2026-11-02"
+    "added": "2026-11-02",
+    "history": [
+     {
+      "at": "2026-11-10T11:42:39.325Z",
+      "where": "Week 2 Tue school lunch",
+      "n": 2
+     }
+    ],
+    "gone": true,
+    "goneAt": "2026-11-10",
+    "goneHow": "eaten"
    },
    {
     "id": "mw1ki1xt",
@@ -2120,6 +2130,15 @@
     "gone": true,
     "goneAt": "2026-11-10",
     "goneHow": "eaten"
+   },
+   {
+    "id": "mwamf10d",
+    "name": "Butter Chicken Curry",
+    "serves": 2,
+    "useBy": "2026-11-11",
+    "notes": "",
+    "added": "2026-11-10",
+    "from": "Week 2 Tue"
    }
   ],
   "ess": {
@@ -2435,6 +2454,28 @@
     "gone": [
      "mw8q9hzp"
     ]
+   },
+   "8": {
+    "at": "2026-11-10T11:42:39.325Z",
+    "used": {
+     "mvyhl0jw": 2
+    },
+    "added": {
+     "id": "mwamf10d",
+     "n": 2
+    },
+    "pantry": {
+     "x_mvu9wmlv": 6.4,
+     "x_mw44zu9p": 1,
+     "x_mw45ca8b": 1,
+     "rice": 120,
+     "onion": 80,
+     "apple": 2,
+     "lb_puree": 2
+    },
+    "gone": [
+     "mvyhl0jw"
+    ]
    }
   },
   "pantry": {
@@ -2443,7 +2484,7 @@
     "since": "2026-11-03"
    },
    "rice": {
-    "q": 1744,
+    "q": 1624,
     "since": "2026-11-03"
    },
    "cheese": {
@@ -2459,7 +2500,7 @@
     "since": "2026-11-04"
    },
    "onion": {
-    "q": 540,
+    "q": 460,
     "since": "2026-11-04"
    },
    "potato": {
@@ -2507,7 +2548,7 @@
     "since": "2026-11-04"
    },
    "x_mvu9wmlv": {
-    "q": 145.2,
+    "q": 138.79999999999998,
     "since": "2026-11-04"
    },
    "lb_fruitcup": {
@@ -2579,7 +2620,7 @@
     "since": "2026-11-04"
    },
    "x_mw44zu9p": {
-    "q": 5,
+    "q": 4,
     "since": "2026-11-06"
    },
    "x_mw04oopp": {
@@ -2599,7 +2640,7 @@
     "since": "2026-11-08"
    },
    "apple": {
-    "q": 4,
+    "q": 2,
     "since": "2026-11-08"
    },
    "avocado": {
@@ -2718,10 +2759,6 @@
     "q": 300,
     "since": "2026-11-08"
    },
-   "x_mw45ca8b": {
-    "q": 1,
-    "since": "2026-11-08"
-   },
    "x_mvx5sp6s": {
     "q": 280,
     "since": "2026-11-08"
@@ -2743,7 +2780,7 @@
     "since": "2026-11-08"
    },
    "lb_puree": {
-    "q": 6,
+    "q": 4,
     "since": "2026-11-08"
    },
    "breadrolls": {
