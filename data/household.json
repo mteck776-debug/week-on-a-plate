@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-14T21:36:00.990Z",
+ "updated": "2026-11-14T21:36:05.024Z",
  "state": {
   "members": [
    {
@@ -2177,11 +2177,21 @@
    {
     "id": "mwgxcvsf",
     "name": "Creamy mushroom chicken pasta",
-    "serves": 2,
+    "serves": 0,
     "useBy": "2026-11-16",
     "notes": "",
     "added": "2026-11-15",
-    "from": "Week 2 Thu"
+    "from": "Week 2 Thu",
+    "history": [
+     {
+      "at": "2026-11-14T21:36:03.512Z",
+      "where": "Week 2 Fri school lunch",
+      "n": 2
+     }
+    ],
+    "gone": true,
+    "goneAt": "2026-11-15",
+    "goneHow": "eaten"
    }
   ],
   "ess": {
@@ -2575,6 +2585,28 @@
     "gone": [
      "mwgxc4i5"
     ]
+   },
+   "11": {
+    "at": "2026-11-14T21:36:03.512Z",
+    "used": {
+     "mwgxcvsf": 2
+    },
+    "added": null,
+    "pantry": {
+     "x_mw1m6cir": 36,
+     "milk": 150,
+     "x_mvx5mxd8": 4,
+     "eggs": 4,
+     "x_mvx5pk1c": 4,
+     "x_mvx5sp6s": 120,
+     "x_mvx5va6y": 8,
+     "x_mvx5ypva": 120,
+     "pear": 2,
+     "lb_jelly": 2
+    },
+    "gone": [
+     "mwgxcvsf"
+    ]
    }
   },
   "pantry": {
@@ -2619,7 +2651,7 @@
     "since": "2026-11-04"
    },
    "x_mvx5va6y": {
-    "q": 9.599999999999994,
+    "q": 1.5999999999999943,
     "since": "2026-11-04"
    },
    "crumbs": {
@@ -2715,7 +2747,7 @@
     "since": "2026-11-04"
    },
    "x_mw1m6cir": {
-    "q": 212,
+    "q": 176,
     "since": "2026-11-04"
    },
    "x_mw44zu9p": {
@@ -2731,7 +2763,7 @@
     "since": "2026-11-08"
    },
    "lb_jelly": {
-    "q": 4,
+    "q": 2,
     "since": "2026-11-08"
    },
    "weetbix": {
@@ -2770,10 +2802,6 @@
     "q": 1,
     "since": "2026-11-08"
    },
-   "pear": {
-    "q": 2,
-    "since": "2026-11-08"
-   },
    "tomato": {
     "q": 5.4,
     "since": "2026-11-08"
@@ -2799,15 +2827,15 @@
     "since": "2026-11-08"
    },
    "x_mvx5mxd8": {
-    "q": 14,
+    "q": 10,
     "since": "2026-11-08"
    },
    "milk": {
-    "q": 1360,
+    "q": 1210,
     "since": "2026-11-08"
    },
    "eggs": {
-    "q": 30,
+    "q": 26,
     "since": "2026-11-08"
    },
    "oats": {
@@ -2855,7 +2883,7 @@
     "since": "2026-11-08"
    },
    "x_mvx5sp6s": {
-    "q": 220,
+    "q": 100,
     "since": "2026-11-08"
    },
    "berries": {
@@ -2867,7 +2895,7 @@
     "since": "2026-11-08"
    },
    "x_mvx5ypva": {
-    "q": 820,
+    "q": 700,
     "since": "2026-11-08"
    },
    "sn_bisc": {
@@ -2883,7 +2911,7 @@
     "since": "2026-11-08"
    },
    "x_mvx5pk1c": {
-    "q": 10,
+    "q": 6,
     "since": "2026-11-08"
    },
    "butter": {
