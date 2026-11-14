@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-13T02:45:31.857Z",
+ "updated": "2026-11-14T21:34:58.234Z",
  "state": {
   "members": [
    {
@@ -2052,7 +2052,7 @@
    {
     "id": "mw1kw4qt",
     "name": "Homemade sausage rolls",
-    "serves": 7,
+    "serves": 5,
     "useBy": "",
     "notes": "Top Shelf Freezer",
     "added": "2026-11-04",
@@ -2065,6 +2065,11 @@
      {
       "at": "2026-11-10T03:52:07.475Z",
       "where": "Week 2 Mon school lunch",
+      "n": 2
+     },
+     {
+      "at": "2026-11-14T21:34:56.717Z",
+      "where": "Week 2 Wed school lunch",
       "n": 2
      }
     ]
@@ -2143,6 +2148,15 @@
     "notes": "",
     "added": "2026-11-10",
     "from": "Week 2 Tue"
+   },
+   {
+    "id": "mwgxc4i5",
+    "name": "Tray-bake sausages & veg",
+    "serves": 3,
+    "useBy": "2026-11-16",
+    "notes": "",
+    "added": "2026-11-15",
+    "from": "Week 2 Wed"
    }
   ],
   "ess": {
@@ -2480,6 +2494,34 @@
     "gone": [
      "mvyhl0jw"
     ]
+   },
+   "9": {
+    "at": "2026-11-14T21:34:56.717Z",
+    "used": {
+     "mw1kw4qt": 2
+    },
+    "added": {
+     "id": "mwgxc4i5",
+     "n": 3
+    },
+    "pantry": {
+     "x_mvu9wmlv": 2.4,
+     "x_mvx5mxd8": 2,
+     "eggs": 2,
+     "x_mvx5pk1c": 2,
+     "x_mvx5sp6s": 60,
+     "x_mvx5va6y": 4,
+     "x_mvx5ypva": 60,
+     "x_mw44zu9p": 1,
+     "sausages": 480,
+     "potato": 640,
+     "broccoli": 0.8,
+     "onion": 160,
+     "apple": 2,
+     "lb_chips": 2,
+     "lb_jelly": 2
+    },
+    "gone": []
    }
   },
   "pantry": {
@@ -2504,11 +2546,11 @@
     "since": "2026-11-04"
    },
    "onion": {
-    "q": 460,
+    "q": 300,
     "since": "2026-11-04"
    },
    "potato": {
-    "q": 2000,
+    "q": 1360,
     "since": "2026-11-04"
    },
    "beef_steak": {
@@ -2524,7 +2566,7 @@
     "since": "2026-11-04"
    },
    "x_mvx5va6y": {
-    "q": 13.599999999999994,
+    "q": 9.599999999999994,
     "since": "2026-11-04"
    },
    "crumbs": {
@@ -2552,7 +2594,7 @@
     "since": "2026-11-04"
    },
    "x_mvu9wmlv": {
-    "q": 138.79999999999998,
+    "q": 136.39999999999998,
     "since": "2026-11-04"
    },
    "lb_fruitcup": {
@@ -2624,7 +2666,7 @@
     "since": "2026-11-04"
    },
    "x_mw44zu9p": {
-    "q": 4,
+    "q": 3,
     "since": "2026-11-06"
    },
    "x_mw04oopp": {
@@ -2632,19 +2674,15 @@
     "since": "2026-11-08"
    },
    "lb_chips": {
-    "q": 8,
+    "q": 6,
     "since": "2026-11-08"
    },
    "lb_jelly": {
-    "q": 6,
+    "q": 4,
     "since": "2026-11-08"
    },
    "weetbix": {
     "q": 575,
-    "since": "2026-11-08"
-   },
-   "apple": {
-    "q": 2,
     "since": "2026-11-08"
    },
    "avocado": {
@@ -2656,7 +2694,7 @@
     "since": "2026-11-08"
    },
    "broccoli": {
-    "q": 1,
+    "q": 0.19999999999999996,
     "since": "2026-11-08"
    },
    "carrot": {
@@ -2696,7 +2734,7 @@
     "since": "2026-11-08"
    },
    "sausages": {
-    "q": 500,
+    "q": 20,
     "since": "2026-11-08"
    },
    "chicken_breast": {
@@ -2708,7 +2746,7 @@
     "since": "2026-11-08"
    },
    "x_mvx5mxd8": {
-    "q": 16,
+    "q": 14,
     "since": "2026-11-08"
    },
    "milk": {
@@ -2716,7 +2754,7 @@
     "since": "2026-11-08"
    },
    "eggs": {
-    "q": 32,
+    "q": 30,
     "since": "2026-11-08"
    },
    "oats": {
@@ -2764,7 +2802,7 @@
     "since": "2026-11-08"
    },
    "x_mvx5sp6s": {
-    "q": 280,
+    "q": 220,
     "since": "2026-11-08"
    },
    "berries": {
@@ -2776,7 +2814,7 @@
     "since": "2026-11-08"
    },
    "x_mvx5ypva": {
-    "q": 880,
+    "q": 820,
     "since": "2026-11-08"
    },
    "sn_bisc": {
@@ -2792,7 +2830,7 @@
     "since": "2026-11-08"
    },
    "x_mvx5pk1c": {
-    "q": 12,
+    "q": 10,
     "since": "2026-11-08"
    },
    "butter": {
