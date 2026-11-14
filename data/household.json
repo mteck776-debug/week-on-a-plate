@@ -1,7 +1,7 @@
 {
  "app": "week-on-a-plate",
  "version": 1,
- "updated": "2026-11-14T21:35:20.472Z",
+ "updated": "2026-11-14T21:35:24.714Z",
  "state": {
   "members": [
    {
@@ -131,7 +131,7 @@
     "d": "dmp",
     "b:kids": "bpo",
     "b:adults": "bpo",
-    "a:1": "u_mvx60kmo",
+    "a:1": "x:none",
     "a:2": "lo:mwgxc4i5"
    },
    {
